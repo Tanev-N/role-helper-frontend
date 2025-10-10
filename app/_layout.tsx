@@ -1,24 +1,11 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import useStore from '@/hooks/store';
+import { Slot } from 'expo-router';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
+// Keep root layout minimal to ensure the navigator mounts immediately.
+// Platform-specific providers (SafeArea, GestureHandler, StatusBar) can be
+// added in app/_layout.native.tsx or app/_layout.web.tsx if needed.
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useStore();
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+  return <Slot />;
 }
