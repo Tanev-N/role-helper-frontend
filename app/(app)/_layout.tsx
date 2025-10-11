@@ -1,4 +1,4 @@
-import { Stack, Redirect, useRouter } from "expo-router";
+import { Stack, Redirect, useRouter, usePathname } from "expo-router";
 import { observer } from "mobx-react-lite";
 import useStore from "@/hooks/store";
 import { View, StyleSheet, Pressable, Image } from "react-native";
@@ -9,6 +9,8 @@ import { useState } from "react";
 function AppLayoutContent() {
     const { authStore } = useStore();
     const isAuth = !!authStore?.isAuth;
+    const pathname = usePathname();
+    console.log(pathname);
 
     if (!isAuth) {
         return <Redirect href="/login" />;
@@ -17,8 +19,8 @@ function AppLayoutContent() {
     return (
         <View style={styles.container}>
             <View style={styles.routeBox}>
-                <ElementMenu icon={ICONS.home} path="/(app)/main" />
-                <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />
+                {!("/main" === pathname) && <ElementMenu icon={ICONS.home} path="/(app)/main" />}
+                {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
             </View>
 
             <Stack
