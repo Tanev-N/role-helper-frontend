@@ -1,17 +1,18 @@
 import { observer } from "mobx-react-lite";
 import { View, Text, Image, StyleSheet, Platform, Pressable } from "react-native";
-import React from 'react';
+import { useState } from 'react';
 import { ICONS } from "@/constant/icons";
 import { COLORS } from "@/constant/colors";
 import { SIZES } from "@/constant/sizes";
+import { router } from "expo-router";
 
 const MainScreen = observer(() => {
     return (
         <View style={styles.mainContainer}>
             <Text style={styles.title}>Critical Roll</Text>
             <View style={styles.buttonContainer}>
-                <IconBox label="Подключиться" source={ICONS.connect} />
-                <IconBox label="Создать сессию" source={ICONS.createSession} />
+                <IconBox label="Подключиться" source={ICONS.connect} path={"/(app)/connect"} />
+                <IconBox label="Создать сессию" source={ICONS.createSession} path={"/(app)/session"} />
             </View>
         </View>
     );
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 64,
         color: COLORS.primary,
+        fontFamily: "Roboto"
 
     },
     iconContainer: {
@@ -61,13 +63,14 @@ const styles = StyleSheet.create({
     }
 });
 
-function IconBox({ label, source }: { label: string; source: any }) {
-    const [hovered, setHovered] = React.useState(false);
+function IconBox({ label, source, path = "/" }: { label: string; source: any; path: any }) {
+    const [hovered, setHovered] = useState(false);
 
     return (
         <Pressable
             onHoverIn={() => setHovered(true)}
             onHoverOut={() => setHovered(false)}
+            onPress={() => { router.push(path) }}
             style={[styles.iconContainer, hovered ? { borderWidth: 2, borderColor: COLORS.primary } : {}]}
         >
             <Image source={source} style={styles.icon} accessibilityLabel={`${label} icon`} />

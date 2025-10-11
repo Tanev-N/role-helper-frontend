@@ -1,11 +1,12 @@
 import { View, Text } from "react-native";
 import { observer } from "mobx-react-lite";
 
-const CabinetScreen = () => {
+const ConnectScreen = () => {
     return (
         <View>
-            <Text>Cabinet Screen</Text>
+            <Text>Connect Screen</Text>
         </View>
-    );
+    )
 }
-export default observer(CabinetScreen);
+
+export default observer(ConnectScreen);
