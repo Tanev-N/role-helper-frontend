@@ -20,7 +20,7 @@ const RegisterScreen = observer(() => {
             }
             await authStore.register(username, password, repassword);
             if (authStore.isAuth) {
-                router.replace("/(app)/cabinet");
+                router.replace("/(app)/main");
             } else {
                 Alert.alert("Регистер не прошел бро", "Что-то у тебя не правильно");
             }

@@ -19,7 +19,7 @@ const LoginScreen = observer(() => {
             }
             await authStore.login(username, password);
             if (authStore.isAuth) {
-                router.replace("/(app)/cabinet");
+                router.replace("/(app)/main");
             } else {
                 Alert.alert("Логин не прошел бро", "Что-то у тебя не правильно");
             }
