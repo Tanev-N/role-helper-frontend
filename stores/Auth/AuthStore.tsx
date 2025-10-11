@@ -13,12 +13,15 @@ export class AuthStore {
 
     constructor() {
         makeAutoObservable(this);
-        this.restoreUserFromLocalStorage();
+        // only try to restore when running in a browser environment
+        if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+            this.restoreUserFromLocalStorage();
+        }
     }
 
     private restoreUserFromLocalStorage() {
         try {
-            const rawUser = localStorage.getItem(this.localStorageKey);
+            const rawUser = typeof localStorage !== "undefined" ? localStorage.getItem(this.localStorageKey) : null;
             if (rawUser) {
                 const parsedUser = JSON.parse(rawUser) as User;
                 if (parsedUser && parsedUser.login) {
@@ -33,6 +36,7 @@ export class AuthStore {
 
     private persistUser(user: User | null) {
         try {
+            if (typeof localStorage === "undefined") return;
             if (user) {
                 localStorage.setItem(this.localStorageKey, JSON.stringify(user));
             } else {
@@ -57,8 +61,8 @@ export class AuthStore {
             const response = await apiAuth.login(login, password);
             if (response.status === 200) {
                 this.setUser({
-                    login: response.data.data.username,
-                    avatar_url: response.data.data.avatar_url,
+                    login: response.data.data.user.username,
+                    avatar_url: response.data.data.user.avatar_url,
                 });
             }
         } catch (e) {
