@@ -57,8 +57,8 @@ export class AuthStore {
             const response = await apiAuth.login(login, password);
             if (response.status === 200) {
                 this.setUser({
-                    login: response.data.user.username,
-                    avatar_url: response.data.user.avatar_url,
+                    login: response.data.data.username,
+                    avatar_url: response.data.data.avatar_url,
                 });
             }
         } catch (e) {
@@ -86,8 +86,8 @@ export class AuthStore {
             const response = await apiAuth.register(login, password, repassword);
             if (response.status === 201) {
                 this.setUser({
-                    login: response.data.user.username,
-                    avatar_url: response.data.user.avatar_url,
+                    login: response.data.data.username,
+                    avatar_url: response.data.data.avatar_url,
                 });
             }
         } catch (e) {
