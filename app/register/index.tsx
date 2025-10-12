@@ -18,90 +18,35 @@ const RegisterScreen = observer(() => {
   const [errorLogin, setErrorLogin] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
 
-//   const handleRegister = () => {
-//     void (async () => {
-//       if (!authStore) {
-//         Alert.alert("Ошибка", "AuthStore не инициализирован");
-//         return;
-//       }
+  const handleRegister = () => {
+    void (async () => {
+      if (!authStore) {
+        Alert.alert("Ошибка", "AuthStore не инициализирован");
+        return;
+      }
 
-//       // очищаем ошибки перед новой попыткой
-//       setErrorLogin("");
-//       setErrorPassword("");
+      setErrorLogin("");
+      setErrorPassword("");
 
-//       // проверка совпадения паролей
-//       if (password !== repassword) {
-//         setErrorPassword("Пароли должны совпадать");
-//         return;
-//       }
+      // Проверка совпадения паролей
+      if (password !== repassword) {
+        setErrorPassword("Пароли должны совпадать");
+        return;
+      }
 
-//       await authStore.register(login, password, repassword);
+      await authStore.register(login, password, repassword);
 
-//       if (authStore.isAuth) {
-//         router.replace("/(app)/main");
-//       } else if (authStore.error === "UserAlreadyExists") {
-//         setErrorLogin("Данный логин уже существует");
-//       } else {
-//         Alert.alert("Регистрация не прошла");
-//       }
-//     })();
-//   };
-
-// const handleRegister = () => {
-//     void (async () => {
-//         if (!authStore) {
-//         Alert.alert("Ошибка", "AuthStore не инициализирован");
-//         return;
-//         }
-
-//         setErrorLogin("");
-//         setErrorPassword("");
-
-//         if (password !== repassword) {
-//         setErrorPassword("Пароли должны совпадать");
-//         return;
-//         }
-
-//         const result = await authStore.register(login, password, repassword);
-
-//         if (result === "ok" && authStore.isAuth) {
-//         router.replace("/(app)/main");
-//         } else if (result === "exists") {
-//         setErrorLogin("Данный логин уже существует");
-//         } else {
-//         Alert.alert("Регистрация не прошла");
-//         }
-//     })();
-//     };
-
-const handleRegister = () => {
-  void (async () => {
-    if (!authStore) {
-      Alert.alert("Ошибка", "AuthStore не инициализирован");
-      return;
-    }
-
-    setErrorLogin("");
-    setErrorPassword("");
-
-    if (password !== repassword) {
-      setErrorPassword("Пароли должны совпадать");
-      return;
-    }
-
-    await authStore.register(login, password, repassword);
-
-    if (authStore.isAuth) {
-      router.replace("/(app)/main");
-    } else if (authStore.error === "UserAlreadyExists") {
-      setErrorLogin("Данный логин уже существует");
-    } else {
-      Alert.alert("Регистрация не прошла");
-    }
-  })();
-};
-
-
+      if (authStore.isAuth) {
+        router.replace("/(app)/main");
+      } else if (authStore.error === "UserAlreadyExists") {
+        setErrorLogin("Данный логин уже существует");
+      } else if (authStore.error === "NetworkError") {
+        Alert.alert("Ошибка сети", "Не удалось подключиться к серверу");
+      } else {
+        Alert.alert("Регистрация не прошла");
+      }
+    })();
+  };
 
   const isActive =
     login.trim() !== "" && password.trim() !== "" && repassword.trim() !== "";
@@ -137,6 +82,7 @@ const handleRegister = () => {
 
       {/* === Поля === */}
       <View style={{ marginTop: 32 }}>
+        {/* Логин */}
         <AuthInput
           placeholder="Логин"
           value={login}
@@ -147,6 +93,7 @@ const handleRegister = () => {
           error={errorLogin}
         />
 
+        {/* Пароль */}
         <AuthInput
           placeholder="Пароль"
           secure
@@ -157,6 +104,7 @@ const handleRegister = () => {
           }}
         />
 
+        {/* Повтор пароля */}
         <AuthInput
           placeholder="Повторите пароль"
           secure

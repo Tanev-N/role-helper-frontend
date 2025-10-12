@@ -25,7 +25,7 @@ export default function AuthCard({ children, width }: Props) {
       imageStyle={s.bgImage}
       resizeMode="cover"
     >
-      <View style={[s.center]}>
+      <View style={s.center}>
         <View style={[s.card, { width: cardWidth }]}>{children}</View>
       </View>
     </ImageBackground>
@@ -52,8 +52,7 @@ const s = StyleSheet.create({
     backgroundColor: COLORS.cardBg,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    // borderColor: "rgba(255,255,255,0.25)",
-    paddingTop:71,
+    paddingTop: 71,
     paddingBottom: 89,
     paddingHorizontal: 25,
     alignSelf: "center",

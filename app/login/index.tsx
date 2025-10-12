@@ -23,12 +23,17 @@ const LoginScreen = observer(() => {
         return;
       }
 
+      setError(""); // очищаем старую ошибку
       await authStore.login(username, password);
 
       if (authStore.isAuth) {
-        router.replace("/(app)/main"); 
+        router.replace("/(app)/main");
+      } else if (authStore.error === "InvalidCredentials") {
+        setError("Неверный логин или пароль");
+      } else if (authStore.error === "NetworkError") {
+        Alert.alert("Ошибка сети", "Не удалось подключиться к серверу");
       } else {
-        setError("неверный логин или пароль");
+        Alert.alert("Ошибка", "Не удалось войти");
       }
     })();
   };
@@ -74,7 +79,6 @@ const LoginScreen = observer(() => {
             setError("");
           }}
         />
-
         <AuthInput
           placeholder="Пароль"
           secure
@@ -83,9 +87,10 @@ const LoginScreen = observer(() => {
             setPassword(text);
             setError("");
           }}
-          error={error} 
+          error={error}
         />
 
+        {/* === Кнопка входа === */}
         <AuthButton
           title="Войти"
           onPress={handleLogin}

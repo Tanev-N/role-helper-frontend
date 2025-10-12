@@ -9,7 +9,7 @@ type Props = {
   onChangeText: (t: string) => void;
   secure?: boolean;
   error?: string;
-  onBlur?: () => void; 
+  onBlur?: () => void; // поддержка onBlur
 };
 
 export default function AuthInput({
@@ -18,7 +18,7 @@ export default function AuthInput({
   onChangeText,
   secure,
   error,
-  onBlur, // деструктурируем
+  onBlur,
 }: Props) {
   return (
     <View style={s.field}>
@@ -28,7 +28,7 @@ export default function AuthInput({
         secureTextEntry={secure}
         value={value}
         onChangeText={onChangeText}
-        onBlur={onBlur} // пробрасываем в TextInput
+        onBlur={onBlur}
         style={s.input}
       />
       {error && <Text style={s.errorText}>*{error}</Text>}
