@@ -24,7 +24,7 @@ const SessionScreen = () => {
 
     return (
         <View style={styles.container}>
-            <View style={{ height: 500, width: 500, backgroundColor: COLORS.backgroundSecondary }}>
+            <View style={{ height: 700, width: 700, backgroundColor: COLORS.backgroundSecondary, borderRadius: 16, padding: 16 }}>
                 <Chat />
             </View>
 
@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: COLORS.backgroundPrimary
+        backgroundColor: COLORS.backgroundPrimary,
     }
 });

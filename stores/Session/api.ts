@@ -11,8 +11,12 @@ const apiSessionUrl = {
 };
 
 export const apiSession = {
-  async voiseTranscribe(audio: FormData) {
-    return await axios.post(apiSessionUrl.voiseTranscribe, audio, {
+  async voiseTranscribe(audio: File | Blob) {
+    const form = new FormData();
+    // rename file to file_to_process in
+    // The parameter 'audio' is already the file, so just append as 'file_to_process'
+    form.append("file_to_process", audio);
+    return await axios.post(apiSessionUrl.voiseTranscribe, form, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

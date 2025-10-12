@@ -20,14 +20,35 @@ export class SessionStore {
     try {
       const response = await apiSession.getHistory(this.user_id, session_id);
       if (response.status === 200) {
-        this.history = response.data;
+        // normalize history items from backend into { query, answer, timestamp }
+        const data = response.data as any[];
+        this.history = (data || []).map((item: any) => {
+          const query =
+            item.query ??
+            item.input_text ??
+            item.request_text ??
+            item.text ??
+            "";
+          const answer =
+            item.answer ??
+            item.response ??
+            item.text ??
+            item.llm_response ??
+            "";
+          const timestamp =
+            item.timestamp ?? item.created_at ?? new Date().toISOString();
+          return { query, answer, timestamp } as HistoryItem;
+        });
       }
     } catch (e) {
       console.warn("SessionStore: initSession error", e);
     }
   }
 
-  public async sendMessage(askFormat: string, input: string | FormData) {
+  public async sendMessage(
+    askFormat: string,
+    input: string | File | Blob | null = null
+  ) {
     try {
       const response = await apiSession.llmAsk(
         this.user_id,
@@ -36,9 +57,14 @@ export class SessionStore {
         input
       );
       if (response.status === 200) {
+        // Backend may return different shapes. Try to extract query and answer.
+        const d = response.data as any;
+        const answer = d.answer ?? d.text ?? d.response ?? d.llm_response ?? "";
+        const query =
+          d.query ?? (askFormat === "TEXT" ? (input as string) : "");
         this.history.push({
-          query: response.data.query,
-          answer: response.data.answer,
+          query,
+          answer,
           timestamp: new Date().toISOString(),
         });
       }
@@ -47,11 +73,15 @@ export class SessionStore {
     }
   }
 
-  public async transcribeAudio(audio: FormData) {
+  public async transcribeAudio(audio: Blob | File) {
     try {
       const response = await apiSession.voiseTranscribe(audio);
       if (response.status === 200) {
-        return response.data.transcription as string;
+        const d = response.data as any;
+        // backend may return { transcription } or { text }
+        return (d.transcription ?? d.text ?? d.transcribed_text ?? null) as
+          | string
+          | null;
       }
     } catch (e) {
       console.warn("SessionStore: transcribeAudio error", e);
