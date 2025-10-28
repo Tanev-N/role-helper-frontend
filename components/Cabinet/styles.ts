@@ -1,8 +1,9 @@
 import { StyleSheet } from "react-native";
 
-export const s = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "rgba(24,25,26,1)" },
 
+  // Header
   headerBlock: {
     backgroundColor: "rgba(44,44,49,1)",
     borderRadius: 16,
@@ -49,6 +50,7 @@ export const s = StyleSheet.create({
   },
   logoutButton: { marginLeft: "auto", marginRight: 16 },
 
+  // Section blocks
   sectionBlock: {
     backgroundColor: "rgba(44,44,49,1)",
     borderRadius: 16,
@@ -64,7 +66,11 @@ export const s = StyleSheet.create({
     alignItems: "center",
     paddingRight: 16,
   },
-  sectionTitleRow: { flexDirection: "row", alignItems: "center", marginLeft: 60 },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 60,
+  },
   sectionTitle: {
     fontFamily: "Roboto",
     fontWeight: "400",
