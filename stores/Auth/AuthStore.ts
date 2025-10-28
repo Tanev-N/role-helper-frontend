@@ -23,14 +23,12 @@ export class AuthStore {
     }
   }
 
-  // === Восстановление пользователя ===
   private restoreUserFromLocalStorage() {
     try {
       const rawUser =
         typeof localStorage !== "undefined"
           ? localStorage.getItem(this.localStorageKey)
           : null;
-
       if (rawUser) {
         const parsedUser = JSON.parse(rawUser) as User;
         if (parsedUser && parsedUser.login) {
@@ -57,7 +55,7 @@ export class AuthStore {
   }
 
   private setUser(user: User | null) {
-    this.isAuthentication = !!user;
+    this.isAuthentication = user ? true : false;
     this.user = user;
     this.persistUser(user);
   }
@@ -81,7 +79,6 @@ export class AuthStore {
       }
     }
   }
-
 
   public async logout() {
     try {

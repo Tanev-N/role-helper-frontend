@@ -12,28 +12,11 @@ const RegisterScreen = observer(() => {
   const { authStore } = useStore();
   const router = useRouter();
 
-<<<<<<< HEAD
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [repassword, setRepassword] = useState("");
   const [errorLogin, setErrorLogin] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
-=======
-    const handleRegister = () => {
-        void (async () => {
-            if (!authStore) {
-                Alert.alert("Ошибка", "AuthStore не инициализирован");
-                return;
-            }
-            await authStore.register(username, password, repassword);
-            if (authStore.isAuth) {
-                router.replace("/(app)/main");
-            } else {
-                Alert.alert("Регистер не прошел бро", "Что-то у тебя не правильно");
-            }
-        })();
-    };
->>>>>>> main
 
   const handleRegister = () => {
     void (async () => {
@@ -45,7 +28,7 @@ const RegisterScreen = observer(() => {
       setErrorLogin("");
       setErrorPassword("");
 
-      // Проверка совпадения паролей
+      // Проверяем совпадение паролей
       if (password !== repassword) {
         setErrorPassword("Пароли должны совпадать");
         return;
