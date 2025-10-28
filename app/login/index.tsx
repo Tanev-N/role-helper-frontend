@@ -23,7 +23,7 @@ const LoginScreen = observer(() => {
         return;
       }
 
-      setError(""); // очищаем старую ошибку
+      setError(""); // сбрасываем прошлые ошибки
       await authStore.login(username, password);
 
       if (authStore.isAuth) {
@@ -79,6 +79,7 @@ const LoginScreen = observer(() => {
             setError("");
           }}
         />
+
         <AuthInput
           placeholder="Пароль"
           secure
@@ -91,11 +92,7 @@ const LoginScreen = observer(() => {
         />
 
         {/* === Кнопка входа === */}
-        <AuthButton
-          title="Войти"
-          onPress={handleLogin}
-          disabled={!isActive}
-        />
+        <AuthButton title="Войти" onPress={handleLogin} disabled={!isActive} />
 
         {/* === Ссылка на регистрацию === */}
         <Pressable

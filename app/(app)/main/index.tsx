@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 64,
         color: COLORS.primary,
-        fontFamily: "Roboto"
+        fontFamily: 'Uncial Antiqua'
 
     },
     iconContainer: {

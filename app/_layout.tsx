@@ -7,8 +7,8 @@ export default function RootLayout() {
   useStore();
 
   const [loaded] = useFonts({
-    "UncialAntiqua": require("../assets/fonts/UncialAntiqua-Regular.ttf"),
-    "Roboto": require("../assets/fonts/Roboto-Regular.ttf"),
+    UncialAntiqua: require("../assets/fonts/UncialAntiqua-Regular.ttf"),
+    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
   });
 
   if (!loaded) {
