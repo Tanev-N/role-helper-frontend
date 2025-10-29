@@ -1,4 +1,4 @@
-import { View, TextInput, Button, Alert } from "react-native";
+import { View, TextInput, Button, Alert, Text } from "react-native";
 import { useState } from "react";
 import useStore from "@/hooks/store";
 import { observer } from "mobx-react-lite";
@@ -28,6 +28,7 @@ const LoginScreen = observer(() => {
 
     return (
         <View style={styles.container}>
+            <Text>Проверка автодеплоя</Text>
             <TextInput
                 placeholder="Username"
                 value={username}
