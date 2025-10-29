@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Pressable, useWindowDimensions } from "react-native";
 import { Users2, ArrowRight, Plus } from "lucide-react-native";
-import { s } from "./styles";
+import { styles } from "./styles";
 
 export default function CharactersBlock() {
   const { width } = useWindowDimensions();
@@ -24,28 +24,28 @@ export default function CharactersBlock() {
     (blockWidth - 35 * 2 - (charsPerRow - 1) * 8) / charsPerRow;
 
   return (
-    <View style={[s.sectionBlock, { width: blockWidth }]}>
-      <View style={s.sectionHeader}>
-        <View style={s.sectionTitleRow}>
+    <View style={[styles.sectionBlock, { width: blockWidth }]}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
           <Users2 size={28} color={"rgba(227,227,227,1)"} />
           <View style={{ marginLeft: 25 }}>
-            <Text style={s.sectionTitle}>Мои персонажи</Text>
-            <Text style={s.sectionSubtitle}>Доступно 15 персонажей</Text>
+            <Text style={styles.sectionTitle}>Мои персонажи</Text>
+            <Text style={styles.sectionSubtitle}>Доступно 15 персонажей</Text>
           </View>
         </View>
-        <TouchableOpacity style={s.iconCircle}>
+        <TouchableOpacity style={styles.iconCircle}>
           <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>
 
-      <View style={s.divider} />
+      <View style={styles.divider} />
 
-      <View style={[s.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
+      <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
         {[...Array(displayCharacters)].map((_, i) => (
           <Pressable
             key={i}
             style={({ pressed }) => [
-              s.characterSquare,
+              styles.characterSquare,
               {
                 backgroundColor: colors[i % colors.length],
                 width: charCardSize,
@@ -57,7 +57,7 @@ export default function CharactersBlock() {
         ))}
 
         <TouchableOpacity
-          style={[s.addSquare, { width: charCardSize, height: charCardSize }]}
+          style={[styles.addSquare, { width: charCardSize, height: charCardSize }]}
         >
           <Plus size={36} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>

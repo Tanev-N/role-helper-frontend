@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Pressable, useWindowDimensions } from "react-native";
 import { Globe2, ArrowRight, Plus } from "lucide-react-native";
-import { s } from "./styles";
+import { styles } from "./styles";
 
 export default function WorldsBlock() {
   const { width } = useWindowDimensions();
@@ -24,28 +24,28 @@ export default function WorldsBlock() {
     (blockWidth - 35 * 2 - (worldsPerRow - 1) * 8) / worldsPerRow;
 
   return (
-    <View style={[s.sectionBlock, { width: blockWidth }]}>
-      <View style={s.sectionHeader}>
-        <View style={s.sectionTitleRow}>
+    <View style={[styles.sectionBlock, { width: blockWidth }]}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
           <Globe2 size={28} color={"rgba(227,227,227,1)"} />
           <View style={{ marginLeft: 25 }}>
-            <Text style={s.sectionTitle}>Мои миры</Text>
-            <Text style={s.sectionSubtitle}>Доступно 7 миров</Text>
+            <Text style={styles.sectionTitle}>Мои миры</Text>
+            <Text style={styles.sectionSubtitle}>Доступно 7 миров</Text>
           </View>
         </View>
-        <TouchableOpacity style={s.iconCircle}>
+        <TouchableOpacity style={styles.iconCircle}>
           <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>
 
-      <View style={s.divider} />
+      <View style={styles.divider} />
 
-      <View style={[s.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
+      <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
         {[...Array(displayWorlds)].map((_, i) => (
           <Pressable
             key={i}
             style={({ pressed }) => [
-              s.worldRect,
+              styles.worldRect,
               {
                 backgroundColor: colors[i % colors.length],
                 width: worldCardWidth,
@@ -57,7 +57,7 @@ export default function WorldsBlock() {
         ))}
 
         <TouchableOpacity
-          style={[s.addRect, { width: worldCardWidth, height: 88 }]}
+          style={[styles.addRect, { width: worldCardWidth, height: 88 }]}
         >
           <Plus size={36} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
