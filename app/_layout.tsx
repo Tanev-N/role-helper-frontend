@@ -1,16 +1,23 @@
-import useStore from '@/hooks/store';
-import { Slot } from 'expo-router';
-import { useFonts } from 'expo-font';
+import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import { ActivityIndicator, View } from "react-native";
+import useStore from "@/hooks/store";
 
-// Keep root layout minimal to ensure the navigator mounts immediately.
-// Platform-specific providers (SafeArea, GestureHandler, StatusBar) can be
-// added in app/_layout.native.tsx or app/_layout.web.tsx if needed.
 export default function RootLayout() {
   useStore();
 
-  const [fontsLoaded] = useFonts({
-    'Uncial Antiqua': require('../assets/font/UncialAntiqua-Regular.ttf'),
+  const [loaded] = useFonts({
+    UncialAntiqua: require("../assets/fonts/UncialAntiqua-Regular.ttf"),
+    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
   });
 
-  return <Slot />;
+  if (!loaded) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

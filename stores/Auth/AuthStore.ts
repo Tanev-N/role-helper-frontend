@@ -9,11 +9,12 @@ interface User {
 export class AuthStore {
   private isAuthentication: boolean = false;
   private user: User | null = null;
+  public error: string | null = null;
   private readonly localStorageKey = "auth.user";
 
   constructor() {
     makeAutoObservable(this);
-    // only try to restore when running in a browser environment
+
     if (
       typeof window !== "undefined" &&
       typeof window.localStorage !== "undefined"
@@ -49,7 +50,7 @@ export class AuthStore {
         localStorage.removeItem(this.localStorageKey);
       }
     } catch (e) {
-      console.warn("AuthStore: не могу засетить юзера в локальную хранилку", e);
+      console.warn("AuthStore: не могу записать юзера в localStorage", e);
     }
   }
 
@@ -60,9 +61,7 @@ export class AuthStore {
   }
 
   public async login(login: string, password: string) {
-    // if (this.isAuthentication) {
-    //     return;
-    // }
+    this.error = null;
     try {
       const response = await apiAuth.login(login, password);
       if (response.status === 200) {
@@ -71,27 +70,27 @@ export class AuthStore {
           avatar_url: response.data.data.user.avatar_url,
         });
       }
-    } catch (e) {
-      console.log(e);
+    } catch (e: any) {
+      console.warn("AuthStore: ошибка логина", e);
+      if (e.response?.status === 401) {
+        this.error = "InvalidCredentials";
+      } else {
+        this.error = "NetworkError";
+      }
     }
   }
 
   public async logout() {
-    // if (!this.isAuthentication) {
-    //     return;
-    // }
     try {
       await apiAuth.logout();
     } catch (e) {
-      console.warn("AuthStore: логоут ошибка", e);
+      console.warn("AuthStore: ошибка логаута", e);
     }
     this.setUser(null);
   }
 
   public async register(login: string, password: string, repassword: string) {
-    // if (this.isAuthentication) {
-    //     return;
-    // }
+    this.error = null;
     try {
       const response = await apiAuth.register(login, password, repassword);
       if (response.status === 201) {
@@ -100,11 +99,17 @@ export class AuthStore {
           avatar_url: response.data.data.avatar_url,
         });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn("AuthStore: регистрация ошибка", e);
+      if (e.response?.status === 409) {
+        this.error = "UserAlreadyExists"; 
+      } else {
+        this.error = "NetworkError";
+      }
     }
   }
 
+  // === Геттеры ===
   get getUser(): User | null {
     return this.user;
   }
