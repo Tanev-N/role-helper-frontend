@@ -1,8 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Platform } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    FlatList,
+    StyleSheet,
+    Platform,
+    useWindowDimensions,
+} from "react-native";
 import { observer } from "mobx-react-lite";
 import useStore from "@/hooks/store";
 import { COLORS } from "@/constant/colors";
+import ChatUsers from "./ChatUsers";
 
 type Message = {
     id: string;
@@ -12,6 +22,8 @@ type Message = {
 };
 
 const Chat = () => {
+    const { width } = useWindowDimensions();
+    const isMobile = width < 768;
     const { sessionStore } = useStore();
     const [text, setText] = useState("");
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -34,6 +46,7 @@ const Chat = () => {
         setLocalMessages(msgs);
     }, [sessionStore, sessionStore?.history.length]);
 
+    // --- отправка текста ---
     const sendText = async () => {
         if (!sessionStore || !text.trim()) return;
         const localId = `u-${Date.now()}`;
@@ -44,6 +57,8 @@ const Chat = () => {
         // after store updates, it will re-map on next effect or we can append response
     };
 
+    // --- запись аудио ---
+    
     // Web MediaRecorder recorder — try to record as MP3, otherwise record and convert
     const startRecordingWeb = async () => {
         if (!(navigator && (navigator as any).mediaDevices)) return alert("Recording not supported");
@@ -182,36 +197,62 @@ const Chat = () => {
     };
 
     const renderItem = ({ item }: { item: Message }) => (
-        <View style={[styles.message, item.fromUser ? styles.user : styles.bot]}>
+        <View style={[styles.message, item.fromUser ? styles.userMessage : styles.botMessage]}>
             <Text style={styles.messageText}>{item.text}</Text>
         </View>
     );
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={localMessages}
-                keyExtractor={(i) => i.id}
-                renderItem={renderItem}
-                style={styles.history}
-            />
+        <View style={styles.fullscreen}>
+            <View style={[styles.page, isMobile && { flexDirection: "column" }]}>
+                {/* Левая колонка */}
+                <View
+                    style={[
+                        styles.leftColumn,
+                        isMobile && {
+                            flexDirection: "column",
+                            width: "100%",
+                            paddingHorizontal: 24,
+                            paddingVertical: 24,
+                            justifyContent: "flex-end",
+                        },
+                    ]}
+                >
+                    <ChatUsers />
+                </View>
 
-            <View style={styles.composer}>
-                <TextInput
-                    placeholder="Type a message"
-                    placeholderTextColor={COLORS.textLowEmphasis}
-                    value={text}
-                    onChangeText={setText}
-                    style={styles.input}
-                />
+                {/* Правая колонка — чат */}
+                <View
+                    style={[
+                        styles.chatContainer,
+                        isMobile && { width: "100%", padding: 24 },
+                    ]}
+                >
+                    <FlatList
+                        data={localMessages}
+                        keyExtractor={(i) => i.id}
+                        renderItem={renderItem}
+                        style={styles.history}
+                    />
 
-                <TouchableOpacity onPress={sendText} style={styles.sendButton}>
-                    <Text style={styles.sendText}>Send</Text>
-                </TouchableOpacity>
+                    <View style={styles.composer}>
+                        <TextInput
+                            placeholder="Введите текст"
+                            placeholderTextColor={COLORS.textLowEmphasis}
+                            value={text}
+                            onChangeText={setText}
+                            style={[styles.input, { fontSize: 24, fontFamily: "Roboto" }]}
+                        />
 
-                <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
-                    <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity onPress={sendText} style={styles.sendButton}>
+                            <Text style={styles.sendText}>Send</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
+                            <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
         </View>
     );
@@ -220,60 +261,84 @@ const Chat = () => {
 export default observer(Chat);
 
 const styles = StyleSheet.create({
-    container: {
+    fullscreen: {
         flex: 1,
-        backgroundColor: COLORS.backgroundSecondary,
-        padding: 12,
-        borderRadius: 16,
+        width: "100%",
+        height: "100%",
+        backgroundColor: COLORS.backgroundPrimary,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    page: {
+        flex: 1,
+        flexDirection: "row",
+        width: "100%",
+        height: "100%",
+    },
+    leftColumn: {
+        flex: 3,
+        backgroundColor: "transparent",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        paddingHorizontal: 72,
+        paddingVertical: 66,
+    },
+    chatContainer: {
+        flex: 7,
+        backgroundColor: "#18191A",
+        borderRadius: 0,
+        paddingHorizontal: 72,
+        paddingVertical: 66,
     },
     history: {
         flex: 1,
         marginBottom: 8,
     },
     message: {
-        padding: 10,
-        borderRadius: 8,
-        marginVertical: 6,
+        padding: 16,
+        borderRadius: 16,
+        marginVertical: 8,
         maxWidth: "85%",
+        backgroundColor: "#2C2C31",
     },
-    user: {
-        alignSelf: "flex-end",
-        backgroundColor: COLORS.primary,
-    },
-    bot: {
-        alignSelf: "flex-start",
-        backgroundColor: COLORS.backgroundSecondary,
-    },
+    userMessage: { alignSelf: "flex-end" },
+    botMessage: { alignSelf: "flex-start" },
     messageText: {
+        fontFamily: "Roboto",
+        fontWeight: "400",
+        fontSize: 24,
+        lineHeight: 24,
         color: COLORS.textPrimary,
     },
     composer: {
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
+        marginTop: 12,
     },
     input: {
         flex: 1,
-        backgroundColor: COLORS.backgroundSecondary,
+        backgroundColor: "#2C2C31",
         color: COLORS.textPrimary,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderRadius: 8,
+        fontFamily: "Roboto",
     },
     sendButton: {
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         backgroundColor: COLORS.primary,
         borderRadius: 8,
         marginLeft: 8,
-
     },
-    sendText: {
-        color: COLORS.textPrimary,
-    },
+    sendText: { color: COLORS.textPrimary, fontFamily: "Roboto" },
     micButton: {
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         backgroundColor: COLORS.backgroundPrimary,
         borderRadius: 8,
         marginLeft: 8,
