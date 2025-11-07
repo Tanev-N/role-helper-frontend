@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { ActivityIndicator, View } from "react-native";
 import useStore from "@/hooks/store";
+import Head from "expo-router/head";
 
 export default function RootLayout() {
   useStore();

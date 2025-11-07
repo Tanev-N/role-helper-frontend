@@ -23,11 +23,17 @@ const SessionScreen = () => {
     }, [id, sessionStore]);
 
     return (
-        <View style={styles.container}>
-            <View style={{ height: 700, width: 700, backgroundColor: COLORS.backgroundSecondary, borderRadius: 16, padding: 16 }}>
-                <Chat />
-            </View>
-
+        <View
+            style={{
+                height: "100%",
+                width: "100%",
+                backgroundColor: COLORS.backgroundSecondary,
+                borderRadius: 16,
+                paddingHorizontal: 72,
+                paddingVertical: 66,
+            }}
+        >
+            <Chat />
         </View>
 
     );

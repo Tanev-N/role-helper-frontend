@@ -5,15 +5,22 @@ import { View, StyleSheet, Pressable, Image } from "react-native";
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
 import { useState } from "react";
+import DEBUG_MODE from "../../config/debug";
 
 function AppLayoutContent() {
     const { authStore } = useStore();
     const isAuth = !!authStore?.isAuth;
     const pathname = usePathname();
-    console.log(pathname);
+    const router = useRouter();
 
-    if (!isAuth) {
-        return <Redirect href="/login" />;
+    console.log("DEBUG_MODE =", DEBUG_MODE);
+    console.log("isAuth =", isAuth);
+
+    // Пропуск редиректа, если DEBUG_MODE включен
+    if (!DEBUG_MODE) {
+        if (!isAuth) {
+            return <Redirect href="/login" />;
+        }
     }
 
     return (
@@ -23,10 +30,10 @@ function AppLayoutContent() {
                 {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
             </View>
 
-            <Stack
-                screenOptions={{
+            <Stack 
+                screenOptions={{ 
                     headerShown: false,
-                }}
+                }} 
             />
         </View>
     );
@@ -86,10 +93,13 @@ const ElementMenu = ({ icon, path }: { icon: any, path: any }) => {
             onHoverIn={() => setHovered(true)}
             onHoverOut={() => setHovered(false)}
             onPress={() => { router.push(path) }}
-            style={[styles.elementMenu, hovered ? { borderWidth: 1, borderColor: COLORS.primary } : {}]}
+            style={[
+                styles.elementMenu,
+                hovered ? { borderWidth: 1, borderColor: COLORS.primary } : {},
+            ]}
         >
             <Image source={icon} />
         </Pressable>
     );
-
-} 
+    
+}

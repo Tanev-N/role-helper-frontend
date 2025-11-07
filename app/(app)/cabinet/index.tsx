@@ -9,6 +9,8 @@ import CharactersBlock from "@/components/Cabinet/CharactersBlock";
 import WorldsBlock from "@/components/Cabinet/WorldsBlock";
 import { styles } from "@/components/Cabinet/styles";
 
+
+
 const CabinetScreen = observer(() => {
   const { authStore } = useStore();
   const router = useRouter();
