@@ -1,4 +1,3 @@
 // Включить отладочный режим (true = не требует авторизации)
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 export default DEBUG_MODE;
-

@@ -2,11 +2,16 @@ import React from "react";
 import { View, Text, TouchableOpacity, Pressable, useWindowDimensions } from "react-native";
 import { Users2, ArrowRight, Plus } from "lucide-react-native";
 import { styles } from "./styles";
+import { useRouter } from "expo-router";
+import useStore from "@/hooks/store";
+import { useEffect } from "react";
 
 export default function CharactersBlock() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const blockWidth = Math.min(width * 0.95, 904);
+  const router = useRouter();
+  const { charactersStore } = useStore();
 
   const colors = [
     "rgba(73,124,0,1)",
@@ -16,8 +21,11 @@ export default function CharactersBlock() {
     "rgba(92,15,0,1)",
   ];
 
+  useEffect(() => {
+    charactersStore.fetchCharacters();
+  }, [charactersStore]);
+
   const maxCharacters = isMobile ? 8 : 24;
-  const displayCharacters = Math.min(15, maxCharacters);
   const charsPerRow = isMobile ? 4 : 8;
 
   const charCardSize =
@@ -30,7 +38,7 @@ export default function CharactersBlock() {
           <Users2 size={28} color={"rgba(227,227,227,1)"} />
           <View style={{ marginLeft: 25 }}>
             <Text style={styles.sectionTitle}>Мои персонажи</Text>
-            <Text style={styles.sectionSubtitle}>Доступно 15 персонажей</Text>
+            <Text style={styles.sectionSubtitle}>Персонажей доступно {charactersStore.getCharacters ? charactersStore.getCharacters.length : 0}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.iconCircle}>
@@ -41,7 +49,7 @@ export default function CharactersBlock() {
       <View style={styles.divider} />
 
       <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
-        {[...Array(displayCharacters)].map((_, i) => (
+        {charactersStore.getCharacters && charactersStore.getCharacters.map((_, i) => (
           <Pressable
             key={i}
             style={({ pressed }) => [
@@ -59,7 +67,7 @@ export default function CharactersBlock() {
         <TouchableOpacity
           style={[styles.addSquare, { width: charCardSize, height: charCardSize }]}
         >
-          <Plus size={36} color={"rgba(227,227,227,1)"} />
+          <Plus size={36} color={"rgba(227,227,227,1)"} onPress={() => { router.navigate("/(app)/cabinet/character") }} />
         </TouchableOpacity>
       </View>
     </View>
