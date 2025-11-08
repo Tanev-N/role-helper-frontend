@@ -27,7 +27,7 @@ const SessionScreen = () => {
             style={{
                 height: "100%",
                 width: "100%",
-                backgroundColor: COLORS.backgroundSecondary,
+                backgroundColor: COLORS.backgroundPrimary,
                 borderRadius: 16,
                 paddingHorizontal: 72,
                 paddingVertical: 66,

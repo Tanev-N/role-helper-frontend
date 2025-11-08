@@ -30,7 +30,7 @@ const users: User[] = [
 const ChatUsers = () => {
     const { width } = useWindowDimensions();
     const [containerWidth, setContainerWidth] = useState(0);
-    const isMobile = width < 768;
+    const isMobile = width < 1300;
 
     useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -50,25 +50,24 @@ const ChatUsers = () => {
             `;
             document.head.appendChild(style);
             return () => {
-                if (style.parentNode) {
-                    style.parentNode.removeChild(style);
-                }
+                if (style.parentNode) style.parentNode.removeChild(style);
             };
         }
     }, []);
 
-    // === мобильная версия (одна вертикальная колонка сбоку)  - доработать! ===
-    if (isMobile) {
+        if (isMobile) {
         return (
             <ScrollView
-                showsVerticalScrollIndicator={true}
+                horizontal
+                showsHorizontalScrollIndicator={true}
                 style={styles.scrollMobile}
                 contentContainerStyle={{
                     flexGrow: 1,
-                    justifyContent: "flex-end",
+                    justifyContent: "flex-start",
                     alignItems: "center",
                     gap: 22,
-                    paddingVertical: 24,
+                    paddingHorizontal: 24,
+                    paddingVertical: 16,
                 }}
             >
                 {users.map((u) => (
@@ -83,7 +82,6 @@ const ChatUsers = () => {
         );
     }
 
-    // === десктоп (2 колонки) ===
     const columns: User[][] = [[], []];
     users.forEach((u, i) => columns[i % 2].unshift(u));
 
@@ -160,8 +158,9 @@ const styles = StyleSheet.create({
 
     /** мобилка */
     scrollMobile: {
-        flex: 1,
+        flexGrow: 0,
         width: "100%",
+        maxHeight: 160,
     },
     userBoxMobile: {
         width: 100,
@@ -169,6 +168,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
+        flexShrink: 0, 
     },
     userNameMobile: {
         fontFamily: "Roboto",

@@ -63,7 +63,7 @@ const RegisterScreen = observer(() => {
           color: "#499A00",
         }}
       >
-        CriticalRoll
+        Critical Roll
       </Text>
 
       {/* === Подзаголовок === */}

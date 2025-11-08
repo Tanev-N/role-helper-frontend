@@ -1,7 +1,13 @@
 import { Stack, Redirect, useRouter, usePathname } from "expo-router";
 import { observer } from "mobx-react-lite";
 import useStore from "@/hooks/store";
-import { View, StyleSheet, Pressable, Image } from "react-native";
+import {
+    View,
+    StyleSheet,
+    Pressable,
+    Image,
+    useWindowDimensions,
+} from "react-native";
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
 import { useState } from "react";
@@ -12,6 +18,8 @@ function AppLayoutContent() {
     const isAuth = !!authStore?.isAuth;
     const pathname = usePathname();
     const router = useRouter();
+    const { width } = useWindowDimensions();
+    const isMobile = width < 1300;
 
     console.log("DEBUG_MODE =", DEBUG_MODE);
     console.log("isAuth =", isAuth);
@@ -25,16 +33,36 @@ function AppLayoutContent() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.routeBox}>
-                {!("/main" === pathname) && <ElementMenu icon={ICONS.home} path="/(app)/main" />}
-                {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
+            {/* Панель с кнопками */}
+            <View
+                style={[
+                    styles.routeBox,
+                    isMobile ? styles.routeBoxMobile : styles.routeBoxDesktop,
+                ]}
+            >
+                {isMobile ? (
+                    <>
+                        {!("/cabinet" === pathname) && (
+                            <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" small />
+                        )}
+                        {!("/main" === pathname) && (
+                            <ElementMenu icon={ICONS.home} path="/(app)/main" small />
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {!("/main" === pathname) && (
+                            <ElementMenu icon={ICONS.home} path="/(app)/main" />
+                        )}
+                        {!("/cabinet" === pathname) && (
+                            <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />
+                        )}
+                    </>
+                )}
             </View>
 
-            <Stack 
-                screenOptions={{ 
-                    headerShown: false,
-                }} 
-            />
+            {/* Контент страниц */}
+            <Stack screenOptions={{ headerShown: false }} />
         </View>
     );
 }
@@ -43,21 +71,37 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.backgroundPrimary,
-        fontWeight: "400",
-        fontStyle: "normal",
-
     },
+
+    /** === Общая основа панели === */
     routeBox: {
         position: "absolute",
-        top: 50,
-        right: 50,
-        display: "flex",
-        flexDirection: "column",
         zIndex: 100,
         justifyContent: "center",
         alignItems: "center",
+    },
+
+    /** Desktop - vertical */
+    routeBoxDesktop: {
+        top: 50,
+        right: 50,
+        flexDirection: "column",
         gap: 12,
     },
+
+    /** Mobile - horizontal */
+    routeBoxMobile: {
+        top: 0,
+        left: 0,
+        right: 0,
+        flexDirection: "row-reverse",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#18191A",
+        paddingVertical: 8,
+        gap: 8,
+    },
+
     elementMenu: {
         width: 70,
         height: 70,
@@ -66,40 +110,54 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4.65,
         elevation: 8,
-        transitionDuration: "200ms",
     },
+
+    elementMenuSmall: {
+        width: 55,
+        height: 55,
+        borderRadius: 12,
+    },
+
     icon: {
         width: 32,
         height: 32,
-    }
+    },
+    iconSmall: {
+        width: 26,
+        height: 26,
+    },
 });
 
-export default observer(AppLayoutContent);
-
-
-
-const ElementMenu = ({ icon, path }: { icon: any, path: any }) => {
+const ElementMenu = ({
+    icon,
+    path,
+    small = false,
+}: {
+    icon: any;
+    path: any;
+    small?: boolean;
+}) => {
     const [hovered, setHovered] = useState(false);
     const router = useRouter();
+
     return (
         <Pressable
             onHoverIn={() => setHovered(true)}
             onHoverOut={() => setHovered(false)}
-            onPress={() => { router.push(path) }}
+            onPress={() => router.push(path)}
             style={[
                 styles.elementMenu,
-                hovered ? { borderWidth: 1, borderColor: COLORS.primary } : {},
+                small && styles.elementMenuSmall,
+                hovered && { borderWidth: 1, borderColor: COLORS.primary },
             ]}
         >
-            <Image source={icon} />
+            <Image source={icon} style={small ? styles.iconSmall : styles.icon} />
         </Pressable>
     );
-    
-}
+};
+
+export default observer(AppLayoutContent);

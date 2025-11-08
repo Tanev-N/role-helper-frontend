@@ -15,7 +15,7 @@ import { connectStyles as styles } from "@/components/Session/ConnectSession";
 const ConnectScreen = () => {
     const router = useRouter();
     const { width } = useWindowDimensions();
-    const isMobile = width < 768;
+    const isMobile = width < 1300;
     const isSmallScreen = width < 425;
     const containerWidth = isMobile ? "90%" : 723;
 
@@ -42,7 +42,7 @@ const ConnectScreen = () => {
     return (
         <View style={[styles.container, isSmallScreen && { paddingTop: 120 }]}>
             {/* === ЛОГОТИП === */}
-            <Text style={styles.logo}>CriticalRoll</Text>
+            <Text style={styles.logo}>Critica lRoll</Text>
 
             {/* === БЛОК 1: Код сессии === */}
             <View style={[styles.block, { width: containerWidth }]}>
