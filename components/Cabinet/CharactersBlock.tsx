@@ -66,8 +66,9 @@ export default function CharactersBlock() {
 
         <TouchableOpacity
           style={[styles.addSquare, { width: charCardSize, height: charCardSize }]}
+          onPress={() => { router.navigate("/(app)/cabinet/character") }}
         >
-          <Plus size={36} color={"rgba(227,227,227,1)"} onPress={() => { router.navigate("/(app)/cabinet/character") }} />
+          <Plus size={36} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>
     </View>

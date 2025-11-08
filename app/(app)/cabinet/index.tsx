@@ -1,8 +1,8 @@
+import useStore from "@/hooks/store";
+import { useRouter } from "expo-router";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { ScrollView, useWindowDimensions } from "react-native";
-import { observer } from "mobx-react-lite";
-import { useRouter } from "expo-router";
-import useStore from "@/hooks/store";
 
 import CabinetHeader from "@/components/Cabinet/CabinetHeader";
 import CharactersBlock from "@/components/Cabinet/CharactersBlock";
@@ -22,7 +22,7 @@ const CabinetScreen = observer(() => {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ alignItems: "center", paddingVertical: 24 }}
+      contentContainerStyle={{ alignItems: "center", paddingVertical: 24, justifyContent: "center", height: "100%" }}
     >
       <CabinetHeader authStore={authStore} router={router} blockWidth={blockWidth} />
       <CharactersBlock blockWidth={blockWidth} isMobile={isMobile} />

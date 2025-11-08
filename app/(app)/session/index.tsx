@@ -1,36 +1,70 @@
-import React, { useState } from "react";
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    useWindowDimensions,
-} from "react-native";
-import { observer } from "mobx-react-lite";
+import { styles } from "@/components/Session/CreateSession";
+import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { Game } from "@/stores/Games/api";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
-import { COLORS } from "@/constant/colors";
-import { styles } from "@/components/Session/CreateSession";
+import { observer } from "mobx-react-lite";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
+} from "react-native";
 
 const CreateSessionScreen = () => {
     const router = useRouter();
+    const { gamesStore } = useStore();
     const { width } = useWindowDimensions();
     const isMobile = width < 768;
-    const isSmallScreen = width < 425; 
+    const isSmallScreen = width < 425;
     const containerWidth = isMobile ? "90%" : 723;
 
-    const [worldName, setWorldName] = useState("");
-    const [sessionCode, setSessionCode] = useState("");
-    const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const [searchFilter, setSearchFilter] = useState("");
+    const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
+    // Загружаем игры при монтировании
+    useEffect(() => {
+        gamesStore.fetchGames();
+    }, []);
+
+    // Фильтруем игры по поисковому запросу
+    const filteredGames = useMemo(() => {
+        const games = gamesStore.getGames;
+        if (!searchFilter.trim()) {
+            return games;
+        }
+        return games.filter((game) =>
+            game.name.toLowerCase().includes(searchFilter.toLowerCase())
+        );
+    }, [gamesStore.getGames, searchFilter]);
+
+    // Цвета для карточек игр
     const colors = [COLORS.primary, COLORS.intelligence];
 
-    const isButtonDisabled =
-        !worldName.trim() || !sessionCode.trim() || !selectedColor;
+    const isButtonDisabled = !selectedGame || gamesStore.IsLoading;
 
-    const handleCreateSession = () => {
-        if (isButtonDisabled) return;
-        router.push("/session/1");
+    const handleCreateSession = async () => {
+        if (isButtonDisabled || !selectedGame) return;
+
+        try {
+            const session = await gamesStore.createSession(selectedGame.id);
+            if (session) {
+                router.push(`/session/${session.id}`);
+            }
+        } catch (error: any) {
+            const errorMessage = gamesStore.getError || "Не удалось создать сессию";
+            Alert.alert("Ошибка", errorMessage);
+            console.error("Create session error:", error);
+        }
+    };
+
+    const handleCreateGame = () => {
+        router.push("/(app)/cabinet/game");
     };
 
     return (
@@ -38,49 +72,59 @@ const CreateSessionScreen = () => {
             {/* === ЛОГОТИП === */}
             <Text style={styles.logo}>CriticalRoll</Text>
 
-            {/* === БЛОК 1: Создание мира === */}
+            {/* === БЛОК 1: Выбор мира === */}
             <View style={[styles.block, { width: containerWidth }]}>
                 <TextInput
                     style={styles.input}
                     placeholder="Введите имя мира"
                     placeholderTextColor={COLORS.textSecondary}
-                    value={worldName}
-                    onChangeText={setWorldName}
+                    value={searchFilter}
+                    onChangeText={setSearchFilter}
                 />
 
-                <View style={styles.colorRow}>
-                    {colors.map((color) => (
+                {gamesStore.IsLoading && gamesStore.getGames.length === 0 ? (
+                    <View style={{ alignItems: "center", paddingVertical: 40 }}>
+                        <ActivityIndicator size="large" color={COLORS.primary} />
+                    </View>
+                ) : (
+                    <View style={styles.colorRow}>
+                        {filteredGames.map((game, index) => (
+                            <TouchableOpacity
+                                key={game.id}
+                                onPress={() => setSelectedGame(game)}
+                                style={[
+                                    styles.colorRect,
+                                    {
+                                        backgroundColor:
+                                            colors[index % colors.length],
+                                    },
+                                    selectedGame?.id === game.id &&
+                                    styles.colorSelected,
+                                ]}
+                            >
+                                <Text
+                                    style={{
+                                        color: COLORS.textPrimary,
+                                        fontFamily: "Roboto",
+                                        fontSize: 18,
+                                        fontWeight: "600",
+                                        textAlign: "center",
+                                        paddingHorizontal: 8,
+                                    }}
+                                    numberOfLines={2}
+                                >
+                                    {game.name}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
                         <TouchableOpacity
-                            key={color}
-                            onPress={() => setSelectedColor(color)}
-                            style={[
-                                styles.colorRect,
-                                { backgroundColor: color },
-                                selectedColor === color && styles.colorSelected,
-                            ]}
-                        />
-                    ))}
-                    <TouchableOpacity style={styles.addRect}>
-                        <Plus size={36} color={COLORS.textSecondary} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {/* === БЛОК 2: Код сессии === */}
-            <View
-                style={[
-                    styles.block,
-                    { width: containerWidth, justifyContent: "center" },
-                ]}
-            >
-                <TextInput
-                    style={styles.inputCentered}
-                    placeholder="Код сессии"
-                    placeholderTextColor={COLORS.textSecondary}
-                    value={sessionCode}
-                    onChangeText={setSessionCode}
-                    textAlign="center"
-                />
+                            style={styles.addRect}
+                            onPress={handleCreateGame}
+                        >
+                            <Plus size={36} color={COLORS.textSecondary} />
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             {/* === КНОПКА СОЗДАНИЯ === */}
@@ -92,7 +136,9 @@ const CreateSessionScreen = () => {
                 ]}
                 disabled={isButtonDisabled}
             >
-                <Text style={styles.buttonText}>Создать</Text>
+                <Text style={styles.buttonText}>
+                    {gamesStore.IsLoading ? "Создание..." : "Создать"}
+                </Text>
             </TouchableOpacity>
         </View>
     );

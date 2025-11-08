@@ -1,12 +1,50 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { characterStyles as styles } from "./styles";
 import CharacterModifiers from "./CharacterModifiers";
 import CharacterEquipment from "./CharacterEquipment";
 import CharacterModal from "./CharacterModal";
 import { COLORS } from "../../constant/colors";
 
-const CharacterSecondary = () => {
+interface CharacterSecondaryProps {
+    initiative: string;
+    armorClass: string;
+    speed: string;
+    hitPoints: string;
+    tempHitPoints: string;
+    hitDice: string;
+    background: string;
+    features: string;
+    onInitiativeChange: (value: string) => void;
+    onArmorClassChange: (value: string) => void;
+    onSpeedChange: (value: string) => void;
+    onHitPointsChange: (value: string) => void;
+    onTempHitPointsChange: (value: string) => void;
+    onHitDiceChange: (value: string) => void;
+    onBackgroundChange: (value: string) => void;
+    onFeaturesChange: (value: string) => void;
+    dexterityMod: number;
+}
+
+const CharacterSecondary = ({
+    initiative,
+    armorClass,
+    speed,
+    hitPoints,
+    tempHitPoints,
+    hitDice,
+    background,
+    features,
+    onInitiativeChange,
+    onArmorClassChange,
+    onSpeedChange,
+    onHitPointsChange,
+    onTempHitPointsChange,
+    onHitDiceChange,
+    onBackgroundChange,
+    onFeaturesChange,
+    dexterityMod,
+}: CharacterSecondaryProps) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState<"Предыстория" | "Подробнее" | null>(null);
 
@@ -16,6 +54,15 @@ const CharacterSecondary = () => {
     };
 
     const closeModal = () => setModalVisible(false);
+
+    const stats = [
+        { label: "Иниц.", value: initiative, onChange: onInitiativeChange, placeholder: dexterityMod.toString() },
+        { label: "КД", value: armorClass, onChange: onArmorClassChange, placeholder: "0" },
+        { label: "Скорость", value: speed, onChange: onSpeedChange, placeholder: "30" },
+        { label: "Хиты", value: hitPoints, onChange: onHitPointsChange, placeholder: "0" },
+        { label: "Врем. хиты", value: tempHitPoints, onChange: onTempHitPointsChange, placeholder: "0" },
+        { label: "Кость хитов", value: hitDice, onChange: onHitDiceChange, placeholder: "1d10" },
+    ];
 
     return (
         <View style={styles.secondaryBlock}>
@@ -29,10 +76,17 @@ const CharacterSecondary = () => {
                 {/* Правая часть — характеристики и кнопки */}
                 <View style={styles.rightColumn}>
                     <View style={styles.statsGrid}>
-                        {["Иниц.", "КД", "Скорость", "Хиты", "Врем. хиты", "Кость хитов"].map((item) => (
-                            <View key={item} style={styles.smallStatBox}>
-                                <Text style={styles.smallStatValue}>99</Text>
-                                <Text style={styles.smallStatLabel}>{item}</Text>
+                        {stats.map((stat) => (
+                            <View key={stat.label} style={styles.smallStatBox}>
+                                <TextInput
+                                    style={styles.smallStatValue}
+                                    value={stat.value}
+                                    onChangeText={stat.onChange}
+                                    placeholder={stat.placeholder}
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    keyboardType={stat.label === "Кость хитов" ? "default" : "numeric"}
+                                />
+                                <Text style={styles.smallStatLabel}>{stat.label}</Text>
                             </View>
                         ))}
                     </View>
@@ -59,16 +113,36 @@ const CharacterSecondary = () => {
             {/* === Модалка === */}
             <CharacterModal visible={modalVisible} onClose={closeModal} title={modalType || ""}>
                 {modalType === "Предыстория" && (
-                    <Text style={{ color: COLORS.textSecondary, fontSize: 16, lineHeight: 22 }}>
-                        Родился в маленькой деревне, вырос среди приключений и мечтал стать героем.{"\n\n"}
-                        Теперь он стоит на пороге новых испытаний, готовый доказать свою доблесть.
-                    </Text>
+                    <TextInput
+                        style={{
+                            color: COLORS.textSecondary,
+                            fontSize: 16,
+                            lineHeight: 22,
+                            minHeight: 200,
+                            textAlignVertical: "top",
+                        }}
+                        multiline
+                        placeholder="Введите предысторию персонажа..."
+                        placeholderTextColor={COLORS.textSecondary}
+                        value={background}
+                        onChangeText={onBackgroundChange}
+                    />
                 )}
                 {modalType === "Подробнее" && (
-                    <Text style={{ color: COLORS.textSecondary, fontSize: 16, lineHeight: 22 }}>
-                        Здесь можно добавить дополнительную информацию о персонаже: способности, заклинания,
-                        снаряжение и т.д.
-                    </Text>
+                    <TextInput
+                        style={{
+                            color: COLORS.textSecondary,
+                            fontSize: 16,
+                            lineHeight: 22,
+                            minHeight: 200,
+                            textAlignVertical: "top",
+                        }}
+                        multiline
+                        placeholder="Введите дополнительную информацию о персонаже: способности, заклинания, снаряжение и т.д."
+                        placeholderTextColor={COLORS.textSecondary}
+                        value={features}
+                        onChangeText={onFeaturesChange}
+                    />
                 )}
             </CharacterModal>
         </View>

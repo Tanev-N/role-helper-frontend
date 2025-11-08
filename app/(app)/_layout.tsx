@@ -1,10 +1,10 @@
-import { Stack, Redirect, useRouter, usePathname } from "expo-router";
-import { observer } from "mobx-react-lite";
-import useStore from "@/hooks/store";
-import { View, StyleSheet, Pressable, Image } from "react-native";
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
+import useStore from "@/hooks/store";
+import { Redirect, Stack, usePathname, useRouter } from "expo-router";
+import { observer } from "mobx-react-lite";
 import { useState } from "react";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 import DEBUG_MODE from "../../config/debug";
 
 function AppLayoutContent() {
@@ -23,17 +23,19 @@ function AppLayoutContent() {
         }
     }
 
+
     return (
         <View style={styles.container}>
             <View style={styles.routeBox}>
                 {!("/main" === pathname) && <ElementMenu icon={ICONS.home} path="/(app)/main" />}
                 {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
+
             </View>
 
-            <Stack 
-                screenOptions={{ 
+            <Stack
+                screenOptions={{
                     headerShown: false,
-                }} 
+                }}
             />
         </View>
     );
@@ -101,5 +103,5 @@ const ElementMenu = ({ icon, path }: { icon: any, path: any }) => {
             <Image source={icon} />
         </Pressable>
     );
-    
+
 }
