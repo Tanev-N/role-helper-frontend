@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, Pressable, useWindowDimensions } from "react-native";
-import { Globe2, ArrowRight, Plus } from "lucide-react-native";
-import { styles } from "./styles";
-import { useRouter } from "expo-router";
 import useStore from "@/hooks/store";
+import { useRouter } from "expo-router";
+import { ArrowRight, Globe2, Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
+import React, { useEffect } from "react";
+import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { styles } from "./styles";
 
 const WorldsBlock = observer(() => {
   const { width } = useWindowDimensions();
@@ -49,7 +49,7 @@ const WorldsBlock = observer(() => {
       <View style={styles.divider} />
 
       <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
-        {games.map((game, i) => (
+        {games && games.map((game, i) => (
           <Pressable
             key={game.id}
             style={({ pressed }) => [

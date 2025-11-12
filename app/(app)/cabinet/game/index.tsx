@@ -15,21 +15,14 @@ const CreateGameScreen = observer(() => {
     const [description, setDescription] = useState("");
 
     const handleCreateGame = async () => {
-        // Валидация обязательных полей
-        if (!name.trim()) {
-            Alert.alert("Ошибка", "Введите название игры");
-            return;
-        }
-
         try {
             await gamesStore.createGame(name.trim(), description.trim() || "");
-            // Автоматический переход на предыдущую страницу после успешного создания
-            router.back();
         } catch (error: any) {
             const errorMessage = gamesStore.getError || "Не удалось создать игру";
             Alert.alert("Ошибка", errorMessage);
             console.error("Create game error:", error);
         }
+        router.back();
     };
 
     return (

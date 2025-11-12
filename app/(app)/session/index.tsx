@@ -34,7 +34,7 @@ const CreateSessionScreen = () => {
 
     // Фильтруем игры по поисковому запросу
     const filteredGames = useMemo(() => {
-        const games = gamesStore.getGames;
+        const games = gamesStore.getGames || [];
         if (!searchFilter.trim()) {
             return games;
         }
@@ -82,13 +82,13 @@ const CreateSessionScreen = () => {
                     onChangeText={setSearchFilter}
                 />
 
-                {gamesStore.IsLoading && gamesStore.getGames.length === 0 ? (
+                {gamesStore.IsLoading && gamesStore.getGames && gamesStore.getGames.length === 0 ? (
                     <View style={{ alignItems: "center", paddingVertical: 40 }}>
                         <ActivityIndicator size="large" color={COLORS.primary} />
                     </View>
                 ) : (
                     <View style={styles.colorRow}>
-                        {filteredGames.map((game, index) => (
+                        {filteredGames && filteredGames.map((game, index) => (
                             <TouchableOpacity
                                 key={game.id}
                                 onPress={() => setSelectedGame(game)}

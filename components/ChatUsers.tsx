@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-    View,
-    Text,
-    StyleSheet,
-    useWindowDimensions,
-    ScrollView,
-    LayoutChangeEvent,
-    Platform,
-} from "react-native";
-import { observer } from "mobx-react-lite";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { observer } from "mobx-react-lite";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+    LayoutChangeEvent,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
+} from "react-native";
 
 type User = {
     id: number;
@@ -50,7 +50,7 @@ const ChatUsers = () => {
         const gamePlayers = gamesStore.getGamePlayers;
         if (gamePlayers && gamePlayers.length > 0) {
             gamePlayers.forEach((player) => {
-                const character = charactersStore.getCharacters.find(
+                const character = charactersStore.getCharacters && charactersStore.getCharacters.find(
                     (char) => char.id === player.character_id
                 );
                 if (!character && !charactersStore.getCharacterById(player.character_id)) {
@@ -70,13 +70,13 @@ const ChatUsers = () => {
 
         return gamePlayers.map((player, index) => {
             // Получаем информацию о персонаже
-            const character = charactersStore.getCharacters.find(
+            const character = charactersStore.getCharacters && charactersStore.getCharacters.find(
                 (char) => char.id === player.character_id
             ) || charactersStore.getCharacterById(player.character_id);
 
             // Используем имя персонажа или fallback
             const name = character?.name || `Игрок ${player.id}`;
-            
+
             // Генерируем цвет на основе id игрока
             const color = playerColors[index % playerColors.length];
 

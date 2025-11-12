@@ -1,10 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Pressable, useWindowDimensions } from "react-native";
-import { Users2, ArrowRight, Plus } from "lucide-react-native";
-import { styles } from "./styles";
-import { useRouter } from "expo-router";
 import useStore from "@/hooks/store";
-import { useEffect } from "react";
+import { useRouter } from "expo-router";
+import { ArrowRight, Plus, Users2 } from "lucide-react-native";
+import React, { useEffect } from "react";
+import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { styles } from "./styles";
 
 export default function CharactersBlock() {
   const { width } = useWindowDimensions();
@@ -25,8 +24,9 @@ export default function CharactersBlock() {
     charactersStore.fetchCharacters();
   }, [charactersStore]);
 
-  const maxCharacters = isMobile ? 8 : 24;
   const charsPerRow = isMobile ? 4 : 8;
+  const characters = charactersStore.getCharacters || [];
+
 
   const charCardSize =
     (blockWidth - 35 * 2 - (charsPerRow - 1) * 8) / charsPerRow;
@@ -38,7 +38,7 @@ export default function CharactersBlock() {
           <Users2 size={28} color={"rgba(227,227,227,1)"} />
           <View style={{ marginLeft: 25 }}>
             <Text style={styles.sectionTitle}>Мои персонажи</Text>
-            <Text style={styles.sectionSubtitle}>Персонажей доступно {charactersStore.getCharacters ? charactersStore.getCharacters.length : 0}</Text>
+            <Text style={styles.sectionSubtitle}>Персонажей доступно {characters ? characters.length : 0}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.iconCircle}>
@@ -49,7 +49,7 @@ export default function CharactersBlock() {
       <View style={styles.divider} />
 
       <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
-        {charactersStore.getCharacters && charactersStore.getCharacters.map((_, i) => (
+        {characters && characters.map((_, i) => (
           <Pressable
             key={i}
             style={({ pressed }) => [

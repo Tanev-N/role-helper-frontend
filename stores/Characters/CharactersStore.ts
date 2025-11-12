@@ -1,5 +1,11 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { apiCharacters, Character, CharacterCreate, CharacterShort, CharacterUpdate } from "./api";
+import {
+  apiCharacters,
+  Character,
+  CharacterCreate,
+  CharacterShort,
+  CharacterUpdate,
+} from "./api";
 
 export class CharactersStore {
   private characters: CharacterShort[] = [];
@@ -32,7 +38,6 @@ export class CharactersStore {
 
   public async fetchCharacters() {
     if (this.isLoading) return;
-    if (this.characters && this.characters.length > 0) return;
 
     this.setIsLoading(true);
     try {
