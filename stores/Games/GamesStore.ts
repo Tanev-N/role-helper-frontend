@@ -146,19 +146,14 @@ export class GamesStore {
     this.setIsLoading(true);
     try {
       const response = await apiGames.createSession(gameId);
-      console.log("[GamesStore] createSession response:", response.status, response.data);
       if (response.status === 201) {
         const data = response.data as CreateSessionResponse;
-        console.log("[GamesStore] createSession data:", data);
-        console.log("[GamesStore] session:", data.session);
-        console.log("[GamesStore] session_key:", data.session?.session_key);
         runInAction(() => {
           this.setCurrentSession(data.session);
           if (data.previous_sessions) {
             this.setPreviousSessions(data.previous_sessions);
           }
         });
-        console.log("[GamesStore] currentSession установлен:", this.getCurrentSession);
         return data.session;
       }
     } catch (e: any) {
@@ -187,8 +182,7 @@ export class GamesStore {
           this.setCurrentSession(session);
           if (session.game_id) {
             // Обновляем текущую игру, если она найдена в списке
-            // game_id теперь UUID (string), но Game.id может быть number, поэтому сравниваем как строки
-            const game = this.games.find((g) => String(g.id) === String(session.game_id));
+            const game = this.games.find((g) => g.id === session.game_id);
             if (game) {
               this.setCurrentGame(game);
             }
@@ -211,15 +205,15 @@ export class GamesStore {
     }
   }
 
-  public async finishSession(sessionId: string | number, summary?: string) {
+  public async finishSession(sessionId: number, summary?: string) {
     this.setError(null);
     this.setIsLoading(true);
     try {
-      const response = await apiGames.finishSession(sessionId as number, summary);
+      const response = await apiGames.finishSession(sessionId, summary);
       if (response.status === 200) {
         runInAction(() => {
           // Обновляем текущую сессию, если она была завершена
-          if (this.currentSession && String(this.currentSession.id) === String(sessionId)) {
+          if (this.currentSession?.id === sessionId) {
             this.setCurrentSession(null);
           }
         });
@@ -240,7 +234,7 @@ export class GamesStore {
     }
   }
 
-  public async fetchGamePlayers(gameId: string | number) {
+  public async fetchGamePlayers(gameId: number) {
     if (this.isLoading) return;
     this.setIsLoading(true);
     this.setError(null);
