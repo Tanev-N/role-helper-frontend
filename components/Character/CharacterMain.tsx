@@ -171,22 +171,13 @@ const CharacterMain = ({
                                 value={race}
                                 onChangeText={onRaceChange}
                             />
-                            {race ? (
-                                selectedRaceIcon ? (
-                                    <TouchableOpacity
-                                        onPress={() => setRaceModalVisible(true)}
-                                        style={styles.iconButton}
-                                    >
-                                        <Image source={selectedRaceIcon} style={styles.inputIcon} />
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity
-                                        onPress={() => setRaceModalVisible(true)}
-                                        style={styles.iconButton}
-                                    >
-                                        <View style={styles.iconPlaceholder} />
-                                    </TouchableOpacity>
-                                )
+                            {selectedRaceIcon ? (
+                                <TouchableOpacity
+                                    onPress={() => setRaceModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <Image source={selectedRaceIcon} style={styles.inputIcon} />
+                                </TouchableOpacity>
                             ) : (
                                 <TouchableOpacity
                                     onPress={() => setRaceModalVisible(true)}
@@ -215,22 +206,13 @@ const CharacterMain = ({
                                 value={className}
                                 onChangeText={onClassChange}
                             />
-                            {className ? (
-                                selectedClassIcon ? (
-                                    <TouchableOpacity
-                                        onPress={() => setClassModalVisible(true)}
-                                        style={styles.iconButton}
-                                    >
-                                        <Image source={selectedClassIcon} style={styles.inputIcon} />
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity
-                                        onPress={() => setClassModalVisible(true)}
-                                        style={styles.iconButton}
-                                    >
-                                        <View style={styles.iconPlaceholder} />
-                                    </TouchableOpacity>
-                                )
+                            {selectedClassIcon ? (
+                                <TouchableOpacity
+                                    onPress={() => setClassModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <Image source={selectedClassIcon} style={styles.inputIcon} />
+                                </TouchableOpacity>
                             ) : (
                                 <TouchableOpacity
                                     onPress={() => setClassModalVisible(true)}

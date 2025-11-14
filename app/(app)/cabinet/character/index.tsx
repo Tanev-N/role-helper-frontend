@@ -18,10 +18,10 @@ const CharactersScreen = () => {
     const [race, setRace] = useState("");
     const [level, setLevel] = useState("");
     const [className, setClassName] = useState("");
-    const [alignment, setAlignment] = useState("1");
+    const [alignment, setAlignment] = useState("");
     const [strength, setStrength] = useState("1");
     const [dexterity, setDexterity] = useState("1");
-    const [constitution, setConstitution] = useState("");
+    const [constitution, setConstitution] = useState("1");
     const [intelligence, setIntelligence] = useState("1");
     const [wisdom, setWisdom] = useState("1");
     const [charisma, setCharisma] = useState("1");
