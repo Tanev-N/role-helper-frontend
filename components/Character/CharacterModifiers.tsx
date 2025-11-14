@@ -313,6 +313,7 @@ const styles = StyleSheet.create({
         maxWidth: "100%",
         height: 820,
         overflow: "hidden",
+        alignItems: 'center',
     },
 
     scrollArea: {

@@ -90,10 +90,12 @@ export const characterStyles = StyleSheet.create({
         fontFamily: "Roboto",
         fontWeight: "400",
         fontSize: INPUT_FONT_SIZE,
-        lineHeight: INPUT_FONT_SIZE, // 100%
+        lineHeight: INPUT_FONT_SIZE,
         letterSpacing: 0,
         paddingHorizontal: 16,
         height: INPUT_HEIGHT,
+        flex: 1,
+        paddingVertical: 6,
     },
 
     inputWide: {
@@ -110,14 +112,26 @@ export const characterStyles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: COLORS.backgroundSecondary,
         borderRadius: 8,
-        paddingRight: 8,
-        gap: 8,
         height: INPUT_HEIGHT,
+        paddingLeft: 16,
+        paddingRight: 40,    
+        position: "relative",
+    },
+
+
+    inputContainer: {
+        backgroundColor: COLORS.backgroundSecondary,
+        borderRadius: 8,
+        height: INPUT_HEIGHT,
+        paddingHorizontal: 16,
+        justifyContent: "center",
     },
 
     iconButton: {
-        width: 32,
-        height: 32,
+        position: "absolute",
+        right: 8,
+        width: 28,
+        height: 28,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -198,7 +212,7 @@ export const characterStyles = StyleSheet.create({
     additionalRow: {
         flexDirection: "row",
         alignItems: "flex-start",
-        justifyContent: "space-between",
+        justifyContent: "center",
         flexWrap: "wrap",
         width: "100%",
         gap: 16,

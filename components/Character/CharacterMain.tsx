@@ -153,13 +153,15 @@ const CharacterMain = ({
                     ]}
                 >
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <TextInput
-                            style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                            placeholder="Имя персонажа"
-                            placeholderTextColor={COLORS.textSecondary}
-                            value={name}
-                            onChangeText={onNameChange}
-                        />
+                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
+                            <TextInput
+                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
+                                placeholder="Имя персонажа"
+                                placeholderTextColor={COLORS.textSecondary}
+                                value={name}
+                                onChangeText={onNameChange}
+                            />
+                        </View>
                     </View>
 
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
@@ -187,14 +189,16 @@ const CharacterMain = ({
                                 </TouchableOpacity>
                             )}
                         </View>
-                        <TextInput
-                            style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                            placeholder="Уровень"
-                            placeholderTextColor={COLORS.textSecondary}
-                            value={level}
-                            onChangeText={onLevelChange}
-                            keyboardType="numeric"
-                        />
+                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
+                            <TextInput
+                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
+                                placeholder="Уровень"
+                                placeholderTextColor={COLORS.textSecondary}
+                                value={level}
+                                onChangeText={onLevelChange}
+                                keyboardType="numeric"
+                            />
+                        </View>
                     </View>
 
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
@@ -222,13 +226,15 @@ const CharacterMain = ({
                                 </TouchableOpacity>
                             )}
                         </View>
-                        <TextInput
-                            style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                            placeholder="Мировоззрение"
-                            placeholderTextColor={COLORS.textSecondary}
-                            value={alignment}
-                            onChangeText={onAlignmentChange}
-                        />
+                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
+                            <TextInput
+                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
+                                placeholder="Мировоззрение"
+                                placeholderTextColor={COLORS.textSecondary}
+                                value={alignment}
+                                onChangeText={onAlignmentChange}
+                            />
+                        </View>
                     </View>
                 </View>
             </View>
