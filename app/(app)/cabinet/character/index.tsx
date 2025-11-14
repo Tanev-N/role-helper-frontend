@@ -13,17 +13,17 @@ const CharactersScreen = () => {
     const { charactersStore } = useStore();
 
     // Основная информация
-    const [name, setName] = useState("");
-    const [race, setRace] = useState("");
-    const [level, setLevel] = useState("");
-    const [className, setClassName] = useState("");
+    const [name, setName] = useState("1");
+    const [race, setRace] = useState("1");
+    const [level, setLevel] = useState("1");
+    const [className, setClassName] = useState("1");
     const [alignment, setAlignment] = useState("");
-    const [strength, setStrength] = useState("");
-    const [dexterity, setDexterity] = useState("");
-    const [constitution, setConstitution] = useState("");
-    const [intelligence, setIntelligence] = useState("");
-    const [wisdom, setWisdom] = useState("");
-    const [charisma, setCharisma] = useState("");
+    const [strength, setStrength] = useState("1");
+    const [dexterity, setDexterity] = useState("1");
+    const [constitution, setConstitution] = useState("1");
+    const [intelligence, setIntelligence] = useState("1");
+    const [wisdom, setWisdom] = useState("1");
+    const [charisma, setCharisma] = useState("1");
     const [photo, setPhoto] = useState("");
 
     // Дополнительная информация

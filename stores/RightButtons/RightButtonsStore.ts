@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 
 export interface RightButton {
   id: string;
@@ -19,22 +19,42 @@ export class RightButtonsStore {
   }
 
   public addButton(button: RightButton) {
-    // Проверяем, нет ли уже кнопки с таким id
-    if (!this.buttons.find((b) => b.id === button.id)) {
-      this.buttons.push(button);
-    }
+    console.log("[RightButtonsStore] addButton вызван:", button.id);
+    runInAction(() => {
+      // Проверяем, нет ли уже кнопки с таким id
+      const existingButton = this.buttons.find((b) => b.id === button.id);
+      if (!existingButton) {
+        this.buttons.push(button);
+        console.log("[RightButtonsStore] Кнопка добавлена. Всего кнопок:", this.buttons.length);
+      } else {
+        console.log("[RightButtonsStore] Кнопка с таким id уже существует, обновляем");
+        // Обновляем существующую кнопку
+        const index = this.buttons.findIndex((b) => b.id === button.id);
+        this.buttons[index] = button;
+      }
+    });
   }
 
   public removeButton(buttonId: string) {
-    this.buttons = this.buttons.filter((b) => b.id !== buttonId);
+    console.log("[RightButtonsStore] removeButton вызван:", buttonId);
+    runInAction(() => {
+      const beforeCount = this.buttons.length;
+      this.buttons = this.buttons.filter((b) => b.id !== buttonId);
+      const afterCount = this.buttons.length;
+      console.log("[RightButtonsStore] Кнопка удалена. Было:", beforeCount, "Стало:", afterCount);
+    });
   }
 
   public clearButtons() {
-    this.buttons = [];
+    runInAction(() => {
+      this.buttons = [];
+    });
   }
 
   public setButtons(buttons: RightButton[]) {
-    this.buttons = buttons;
+    runInAction(() => {
+      this.buttons = buttons;
+    });
   }
 }
 

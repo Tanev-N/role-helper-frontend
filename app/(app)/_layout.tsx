@@ -24,6 +24,8 @@ function AppLayoutContent() {
     }
 
     const rightButtons = rightButtonsStore.getButtons;
+    console.log("[AppLayout] rightButtons count:", rightButtons.length);
+    console.log("[AppLayout] rightButtons:", rightButtons.map(b => ({ id: b.id, hasIcon: !!b.icon })));
 
     return (
         <View style={styles.container}>
@@ -32,13 +34,16 @@ function AppLayoutContent() {
                 {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
 
                 {/* Динамические кнопки из стора */}
-                {rightButtons.map((button) => (
-                    <RightButtonElement
-                        key={button.id}
-                        icon={button.icon}
-                        onPress={button.onPress}
-                    />
-                ))}
+                {rightButtons.map((button) => {
+                    console.log("[AppLayout] Рендерим кнопку:", button.id);
+                    return (
+                        <RightButtonElement
+                            key={button.id}
+                            icon={button.icon}
+                            onPress={button.onPress}
+                        />
+                    );
+                })}
             </View>
 
             <Stack
@@ -118,7 +123,9 @@ const RightButtonElement = ({ icon, onPress }: { icon: any, onPress: () => void 
     const [hovered, setHovered] = useState(false);
 
     // Проверяем, является ли icon React компонентом (функцией) или источником изображения
-    const isReactComponent = typeof icon === 'function' || React.isValidElement(icon);
+    const iconType = typeof icon;
+    const isReactComponent = iconType === 'function' || React.isValidElement(icon);
+    console.log("[RightButtonElement] icon type:", iconType, "isReactComponent:", isReactComponent);
 
     return (
         <Pressable

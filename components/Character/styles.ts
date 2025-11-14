@@ -211,8 +211,8 @@ export const characterStyles = StyleSheet.create({
         justifyContent: "center",
         padding: 8,
         aspectRatio: 1,
-        minWidth: 120,
-        maxWidth: 150,
+        minWidth: 30,
+        maxWidth: 40,
         flexGrow: 1,
         flexBasis: "30%", // чтобы на мобилке помещалось 3 в ряд
     },

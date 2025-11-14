@@ -1,10 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import {
-    apiGames,
-    CreateSessionResponse,
-    Game,
-    GamePlayer,
-    Session,
+  apiGames,
+  CreateSessionResponse,
+  Game,
+  GamePlayer,
+  Session,
 } from "./api";
 
 export class GamesStore {
@@ -146,14 +146,19 @@ export class GamesStore {
     this.setIsLoading(true);
     try {
       const response = await apiGames.createSession(gameId);
+      console.log("[GamesStore] createSession response:", response.status, response.data);
       if (response.status === 201) {
         const data = response.data as CreateSessionResponse;
+        console.log("[GamesStore] createSession data:", data);
+        console.log("[GamesStore] session:", data.session);
+        console.log("[GamesStore] session_key:", data.session?.session_key);
         runInAction(() => {
           this.setCurrentSession(data.session);
           if (data.previous_sessions) {
             this.setPreviousSessions(data.previous_sessions);
           }
         });
+        console.log("[GamesStore] currentSession установлен:", this.getCurrentSession);
         return data.session;
       }
     } catch (e: any) {
