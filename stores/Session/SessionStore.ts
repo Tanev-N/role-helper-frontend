@@ -11,6 +11,7 @@ export class SessionStore {
   user_id: string = "1";
   session_id: string = "1";
   history: HistoryItem[] = [] as HistoryItem[];
+  code: string = "";
   constructor() {
     makeAutoObservable(this);
   }
@@ -91,6 +92,10 @@ export class SessionStore {
 
   public get getUserId() {
     return this.user_id;
+  }
+
+  public get getCode() {
+    return this.code;
   }
   public get getSessionId() {
     return this.session_id;

@@ -3,12 +3,12 @@ import { ICONS } from "@/constant/icons";
 import useStore from "@/hooks/store";
 import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import DEBUG_MODE from "../../config/debug";
 
 function AppLayoutContent() {
-    const { authStore } = useStore();
+    const { authStore, rightButtonsStore } = useStore();
     const isAuth = !!authStore?.isAuth;
     const pathname = usePathname();
     const router = useRouter();
@@ -23,6 +23,7 @@ function AppLayoutContent() {
         }
     }
 
+    const rightButtons = rightButtonsStore.getButtons;
 
     return (
         <View style={styles.container}>
@@ -30,6 +31,14 @@ function AppLayoutContent() {
                 {!("/main" === pathname) && <ElementMenu icon={ICONS.home} path="/(app)/main" />}
                 {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
 
+                {/* Динамические кнопки из стора */}
+                {rightButtons.map((button) => (
+                    <RightButtonElement
+                        key={button.id}
+                        icon={button.icon}
+                        onPress={button.onPress}
+                    />
+                ))}
             </View>
 
             <Stack
@@ -103,5 +112,29 @@ const ElementMenu = ({ icon, path }: { icon: any, path: any }) => {
             <Image source={icon} />
         </Pressable>
     );
+}
 
+const RightButtonElement = ({ icon, onPress }: { icon: any, onPress: () => void }) => {
+    const [hovered, setHovered] = useState(false);
+
+    // Проверяем, является ли icon React компонентом (функцией) или источником изображения
+    const isReactComponent = typeof icon === 'function' || React.isValidElement(icon);
+
+    return (
+        <Pressable
+            onHoverIn={() => setHovered(true)}
+            onHoverOut={() => setHovered(false)}
+            onPress={onPress}
+            style={[
+                styles.elementMenu,
+                hovered ? { borderWidth: 1, borderColor: COLORS.primary } : {},
+            ]}
+        >
+            {isReactComponent ? (
+                React.createElement(icon, { size: 32, color: COLORS.textPrimary })
+            ) : (
+                <Image source={icon} style={styles.icon} />
+            )}
+        </Pressable>
+    );
 }

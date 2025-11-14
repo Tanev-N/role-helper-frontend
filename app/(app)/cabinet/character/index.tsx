@@ -61,12 +61,12 @@ const CharactersScreen = () => {
 
         // Валидация характеристик
         const stats = {
-            strength: parseInt(strength) || 0,
-            dexterity: parseInt(dexterity) || 0,
-            constitution: parseInt(constitution) || 0,
-            intelligence: parseInt(intelligence) || 0,
-            wisdom: parseInt(wisdom) || 0,
-            charisma: parseInt(charisma) || 0,
+            strength: parseInt(strength) || 1,
+            dexterity: parseInt(dexterity) || 1,
+            constitution: parseInt(constitution) || 1,
+            intelligence: parseInt(intelligence) || 1,
+            wisdom: parseInt(wisdom) || 1,
+            charisma: parseInt(charisma) || 1,
         };
 
         if (Object.values(stats).some(stat => stat < 1 || stat > 30)) {

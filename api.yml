@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: |
     API для управления персонажами Dungeons & Dragons с полной поддержкой характеристик из официального листа персонажа.
-    
+
     ## Автоматические расчеты
-    
+
     Система автоматически рассчитывает производные характеристики:
     - **Модификаторы характеристик** - всегда рассчитываются по формуле (значение - 10) / 2
     - **Производные характеристики** - рассчитываются только если переданы как 0:
@@ -14,15 +14,15 @@ info:
       - **Инициатива** - равна модификатору ловкости
       - **Максимальные хиты** - рассчитываются по кости хитов и уровню
     - **Модификаторы навыков** - рассчитываются автоматически, если равны 0
-    
+
     ## Упрощенные структуры
-    
+
     - **Equipment** - только название и описание
     - **Spell** - только название и описание
     - **Без полей времени** - нет created_at и updated_at
-    
+
     ## Примеры использования
-    
+
     **Частичное обновление (только модификаторы пересчитаются):**
     ```json
     {
@@ -31,7 +31,7 @@ info:
       "strength": 22
     }
     ```
-    
+
     **Принудительный пересчет производных характеристик:**
     ```json
     {
@@ -90,7 +90,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+          description: ID персонажа
       responses:
         "200":
           description: Характеристики персонажа
@@ -109,7 +110,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+          description: ID персонажа
       requestBody:
         required: true
         content:
@@ -134,7 +136,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+          description: ID персонажа
       responses:
         "204":
           description: Персонаж удалён
@@ -175,7 +178,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenResponse"
+                $ref: "#/components/schemas/User"
 
   /api/auth/logout:
     post:
@@ -187,7 +190,7 @@ paths:
 
   /api/games:
     post:
-      tags: [ games ]
+      tags: [games]
       summary: Создание новой игры
       description: Создаёт игру для текущего пользователя-мастера с указанным названием.
       requestBody:
@@ -225,7 +228,9 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
+          description: UUID игры
       responses:
         "201":
           description: Сессия создана
@@ -261,7 +266,9 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
+          description: UUID сессии
       requestBody:
         required: false
         content:
@@ -285,7 +292,9 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
+          description: UUID игры
       responses:
         "200":
           description: Список игроков игры
@@ -302,11 +311,14 @@ components:
       type: object
       properties:
         id:
-          type: string
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          type: integer
+          example: 1
         name:
           type: string
           example: "Арагорн"
+        user_id:
+          type: integer
+          example: 1
         race:
           type: string
           example: "Человек"
@@ -449,7 +461,6 @@ components:
       type: object
       required:
         - name
-        - description
       properties:
         name:
           type: string
@@ -458,7 +469,7 @@ components:
         description:
           type: string
           example: "Описание"
-          description: Описание игры
+          description: Описание игры (необязательное поле)
     CharacterCreate:
       type: object
       required:
@@ -601,7 +612,7 @@ components:
       type: object
       description: |
         Поля, которые можно обновить (любая характеристика). 
-        
+
         **Логика автоматических расчетов:**
         - Модификаторы характеристик (strength_mod, dexterity_mod, etc.) всегда пересчитываются автоматически
         - Производные характеристики (proficiency_bonus, initiative, max_hit_points) пересчитываются только если переданы как 0
@@ -701,8 +712,8 @@ components:
       type: object
       properties:
         id:
-          type: string
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          type: integer
+          example: 1
         name:
           type: string
           example: "Арагорн"
@@ -750,8 +761,8 @@ components:
       type: object
       properties:
         id:
-          type: string
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          type: integer
+          example: 1
         username:
           type: string
           example: "e2e_user"
@@ -788,24 +799,30 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          example: 1
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
         name:
           type: string
           example: "SESSION-1762519417783061264"
         master_id:
           type: integer
           example: 2
+        description:
+          type: string
+          example: "Описание игры"
 
     Session:
       type: object
       properties:
         id:
-          type: integer
-          example: 4
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
         game_id:
-          type: integer
-          example: 3
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
         session_key:
           type: string
           example: "AF83B08DE1F7"
@@ -828,14 +845,15 @@ components:
           type: integer
           example: 4
         game_id:
-          type: integer
-          example: 3
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
         user_id:
           type: integer
           example: 2
         character_id:
-          type: string
-          example: "0bf33c42-fe74-4398-ad06-2a60c94b2652"
+          type: integer
+          example: 1
 
     CreateSessionResponse:
       type: object
@@ -858,8 +876,8 @@ components:
           type: string
           example: "AF83B08DE1F7"
         character_id:
-          type: string
-          example: "0bf33c42-fe74-4398-ad06-2a60c94b2652"
+          type: integer
+          example: 1
 
     FinishSessionRequest:
       type: object
@@ -888,4 +906,3 @@ components:
         error:
           type: string
           example: "description of the error"
-
