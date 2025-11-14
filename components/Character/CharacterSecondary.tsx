@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constant/colors";
 import { CharacterSkill } from "../../stores/Characters/api";
-import CharacterEquipment from "./CharacterEquipment";
 import CharacterModal from "./CharacterModal";
 import CharacterModifiers from "./CharacterModifiers";
 import { characterStyles as styles } from "./styles";
@@ -134,7 +133,7 @@ const CharacterSecondary = ({
             </View>
 
             {/* === Снаряжение === */}
-            <CharacterEquipment />
+            {/* <CharacterEquipment /> */}
 
             {/* === Модалка === */}
             <CharacterModal visible={modalVisible} onClose={closeModal} title={modalType || ""}>

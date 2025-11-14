@@ -21,7 +21,7 @@ const CharactersScreen = () => {
     const [alignment, setAlignment] = useState("1");
     const [strength, setStrength] = useState("1");
     const [dexterity, setDexterity] = useState("1");
-    const [constitution, setConstitution] = useState("1");
+    const [constitution, setConstitution] = useState("");
     const [intelligence, setIntelligence] = useState("1");
     const [wisdom, setWisdom] = useState("1");
     const [charisma, setCharisma] = useState("1");
