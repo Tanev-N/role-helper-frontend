@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
-import { characterStyles as styles } from "./styles";
-import CharacterModifiers from "./CharacterModifiers";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { COLORS } from "../../constant/colors";
+import { CharacterSkill } from "../../stores/Characters/api";
 import CharacterEquipment from "./CharacterEquipment";
 import CharacterModal from "./CharacterModal";
-import { COLORS } from "../../constant/colors";
+import CharacterModifiers from "./CharacterModifiers";
+import { characterStyles as styles } from "./styles";
 
 interface CharacterSecondaryProps {
     initiative: string;
@@ -15,6 +16,13 @@ interface CharacterSecondaryProps {
     hitDice: string;
     background: string;
     features: string;
+    strength: string;
+    dexterity: string;
+    intelligence: string;
+    wisdom: string;
+    charisma: string;
+    level: string;
+    skills: CharacterSkill[];
     onInitiativeChange: (value: string) => void;
     onArmorClassChange: (value: string) => void;
     onSpeedChange: (value: string) => void;
@@ -23,6 +31,7 @@ interface CharacterSecondaryProps {
     onHitDiceChange: (value: string) => void;
     onBackgroundChange: (value: string) => void;
     onFeaturesChange: (value: string) => void;
+    onSkillsChange: (skills: CharacterSkill[]) => void;
     dexterityMod: number;
 }
 
@@ -35,6 +44,13 @@ const CharacterSecondary = ({
     hitDice,
     background,
     features,
+    strength,
+    dexterity,
+    intelligence,
+    wisdom,
+    charisma,
+    level,
+    skills,
     onInitiativeChange,
     onArmorClassChange,
     onSpeedChange,
@@ -43,6 +59,7 @@ const CharacterSecondary = ({
     onHitDiceChange,
     onBackgroundChange,
     onFeaturesChange,
+    onSkillsChange,
     dexterityMod,
 }: CharacterSecondaryProps) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -70,7 +87,16 @@ const CharacterSecondary = ({
             <View style={styles.additionalRow}>
                 {/* Левая часть — модификаторы */}
                 <View style={styles.modifiersBlock}>
-                    <CharacterModifiers />
+                    <CharacterModifiers
+                        strength={strength}
+                        dexterity={dexterity}
+                        intelligence={intelligence}
+                        wisdom={wisdom}
+                        charisma={charisma}
+                        level={level}
+                        skills={skills}
+                        onSkillsChange={onSkillsChange}
+                    />
                 </View>
 
                 {/* Правая часть — характеристики и кнопки */}

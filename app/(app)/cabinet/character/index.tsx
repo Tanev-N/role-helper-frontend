@@ -3,6 +3,7 @@ import CharacterSecondary from "@/components/Character/CharacterSecondary";
 import { characterStyles as styles } from "@/components/Character/styles";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { CharacterSkill } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
@@ -35,6 +36,7 @@ const CharactersScreen = () => {
     const [hitDice, setHitDice] = useState("");
     const [background, setBackground] = useState("");
     const [features, setFeatures] = useState("");
+    const [skills, setSkills] = useState<CharacterSkill[]>([]);
 
     // Расчет модификатора ловкости для инициативы
     const dexterityMod = Math.floor(((parseInt(dexterity) || 0) - 10) / 2);
@@ -98,6 +100,7 @@ const CharactersScreen = () => {
                 hit_dice: hitDice.trim() || undefined,
                 features: features.trim() || undefined,
                 photo: photo.trim() || undefined,
+                skills: skills.length > 0 ? skills : undefined,
             });
 
             // Автоматический переход на предыдущую страницу после успешного создания
@@ -160,6 +163,13 @@ const CharactersScreen = () => {
                     hitDice={hitDice}
                     background={background}
                     features={features}
+                    strength={strength}
+                    dexterity={dexterity}
+                    intelligence={intelligence}
+                    wisdom={wisdom}
+                    charisma={charisma}
+                    level={level}
+                    skills={skills}
                     onInitiativeChange={setInitiative}
                     onArmorClassChange={setArmorClass}
                     onSpeedChange={setSpeed}
@@ -168,6 +178,7 @@ const CharactersScreen = () => {
                     onHitDiceChange={setHitDice}
                     onBackgroundChange={setBackground}
                     onFeaturesChange={setFeatures}
+                    onSkillsChange={setSkills}
                     dexterityMod={dexterityMod}
                 />
             </View>
