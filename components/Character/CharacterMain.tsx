@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { Pencil } from "lucide-react-native";
+import { ChevronDown, Pencil } from "lucide-react-native";
 import React, { useState } from "react";
 import {
     Image,
@@ -170,18 +170,31 @@ const CharacterMain = ({
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={race}
                                 onChangeText={onRaceChange}
-                                onFocus={() => setRaceModalVisible(true)}
                             />
-                            <TouchableOpacity
-                                onPress={() => setRaceModalVisible(true)}
-                                style={styles.iconButton}
-                            >
-                                {selectedRaceIcon ? (
-                                    <Image source={selectedRaceIcon} style={styles.inputIcon} />
+                            {race ? (
+                                selectedRaceIcon ? (
+                                    <TouchableOpacity
+                                        onPress={() => setRaceModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <Image source={selectedRaceIcon} style={styles.inputIcon} />
+                                    </TouchableOpacity>
                                 ) : (
-                                    <View style={styles.iconPlaceholder} />
-                                )}
-                            </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => setRaceModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <View style={styles.iconPlaceholder} />
+                                    </TouchableOpacity>
+                                )
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => setRaceModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <ChevronDown size={20} color={COLORS.textSecondary} />
+                                </TouchableOpacity>
+                            )}
                         </View>
                         <TextInput
                             style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
@@ -201,18 +214,31 @@ const CharacterMain = ({
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={className}
                                 onChangeText={onClassChange}
-                                onFocus={() => setClassModalVisible(true)}
                             />
-                            <TouchableOpacity
-                                onPress={() => setClassModalVisible(true)}
-                                style={styles.iconButton}
-                            >
-                                {selectedClassIcon ? (
-                                    <Image source={selectedClassIcon} style={styles.inputIcon} />
+                            {className ? (
+                                selectedClassIcon ? (
+                                    <TouchableOpacity
+                                        onPress={() => setClassModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <Image source={selectedClassIcon} style={styles.inputIcon} />
+                                    </TouchableOpacity>
                                 ) : (
-                                    <View style={styles.iconPlaceholder} />
-                                )}
-                            </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => setClassModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <View style={styles.iconPlaceholder} />
+                                    </TouchableOpacity>
+                                )
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => setClassModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <ChevronDown size={20} color={COLORS.textSecondary} />
+                                </TouchableOpacity>
+                            )}
                         </View>
                         <TextInput
                             style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
