@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { AuthStore } from "./Auth/AuthStore";
 import { CharactersStore } from "./Characters/CharactersStore";
-import { SessionStore } from "./Session/SessionStore";
 import { GamesStore } from "./Games/GamesStore";
+import { SessionStore } from "./Session/SessionStore";
 
 export class RootStore {
   readonly authStore: AuthStore;

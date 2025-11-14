@@ -105,6 +105,36 @@ export const characterStyles = StyleSheet.create({
         minWidth: 140,
     },
 
+    inputWithIcon: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: COLORS.backgroundSecondary,
+        borderRadius: 8,
+        paddingRight: 8,
+        gap: 8,
+        height: INPUT_HEIGHT,
+    },
+
+    iconButton: {
+        width: 32,
+        height: 32,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    inputIcon: {
+        width: 28,
+        height: 28,
+        resizeMode: "contain",
+    },
+
+    iconPlaceholder: {
+        width: 28,
+        height: 28,
+        borderRadius: 4,
+        backgroundColor: COLORS.textLowEmphasis,
+    },
+
     statsRow: {
         flexDirection: "row",
         justifyContent: "flex-start",
@@ -179,7 +209,8 @@ export const characterStyles = StyleSheet.create({
         flexGrow: 1,
         flexShrink: 1,
         minWidth: 300,
-        // maxWidth: 460,
+        maxWidth: 460,
+        flexBasis: "auto",
     },
 
     // Правая часть (инициатива, КД, скорость, хиты, кнопки)
@@ -221,6 +252,9 @@ export const characterStyles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         color: COLORS.textPrimary,
+        textAlign: "center",
+        width: 60,
+        maxWidth: 60,
     },
 
     smallStatLabel: {

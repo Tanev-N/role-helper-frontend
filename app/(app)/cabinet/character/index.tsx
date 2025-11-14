@@ -3,6 +3,7 @@ import CharacterSecondary from "@/components/Character/CharacterSecondary";
 import { characterStyles as styles } from "@/components/Character/styles";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { CharacterSkill } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
@@ -18,12 +19,12 @@ const CharactersScreen = () => {
     const [level, setLevel] = useState("");
     const [className, setClassName] = useState("");
     const [alignment, setAlignment] = useState("");
-    const [strength, setStrength] = useState("");
-    const [dexterity, setDexterity] = useState("");
-    const [constitution, setConstitution] = useState("");
-    const [intelligence, setIntelligence] = useState("");
-    const [wisdom, setWisdom] = useState("");
-    const [charisma, setCharisma] = useState("");
+    const [strength, setStrength] = useState("1");
+    const [dexterity, setDexterity] = useState("1");
+    const [constitution, setConstitution] = useState("1");
+    const [intelligence, setIntelligence] = useState("1");
+    const [wisdom, setWisdom] = useState("1");
+    const [charisma, setCharisma] = useState("1");
     const [photo, setPhoto] = useState("");
 
     // Дополнительная информация
@@ -35,6 +36,7 @@ const CharactersScreen = () => {
     const [hitDice, setHitDice] = useState("");
     const [background, setBackground] = useState("");
     const [features, setFeatures] = useState("");
+    const [skills, setSkills] = useState<CharacterSkill[]>([]);
 
     // Расчет модификатора ловкости для инициативы
     const dexterityMod = Math.floor(((parseInt(dexterity) || 0) - 10) / 2);
@@ -61,12 +63,12 @@ const CharactersScreen = () => {
 
         // Валидация характеристик
         const stats = {
-            strength: parseInt(strength) || 0,
-            dexterity: parseInt(dexterity) || 0,
-            constitution: parseInt(constitution) || 0,
-            intelligence: parseInt(intelligence) || 0,
-            wisdom: parseInt(wisdom) || 0,
-            charisma: parseInt(charisma) || 0,
+            strength: parseInt(strength) || 1,
+            dexterity: parseInt(dexterity) || 1,
+            constitution: parseInt(constitution) || 1,
+            intelligence: parseInt(intelligence) || 1,
+            wisdom: parseInt(wisdom) || 1,
+            charisma: parseInt(charisma) || 1,
         };
 
         if (Object.values(stats).some(stat => stat < 1 || stat > 30)) {
@@ -98,6 +100,7 @@ const CharactersScreen = () => {
                 hit_dice: hitDice.trim() || undefined,
                 features: features.trim() || undefined,
                 photo: photo.trim() || undefined,
+                skills: skills.length > 0 ? skills : undefined,
             });
 
             // Автоматический переход на предыдущую страницу после успешного создания
@@ -160,6 +163,13 @@ const CharactersScreen = () => {
                     hitDice={hitDice}
                     background={background}
                     features={features}
+                    strength={strength}
+                    dexterity={dexterity}
+                    intelligence={intelligence}
+                    wisdom={wisdom}
+                    charisma={charisma}
+                    level={level}
+                    skills={skills}
                     onInitiativeChange={setInitiative}
                     onArmorClassChange={setArmorClass}
                     onSpeedChange={setSpeed}
@@ -168,6 +178,7 @@ const CharactersScreen = () => {
                     onHitDiceChange={setHitDice}
                     onBackgroundChange={setBackground}
                     onFeaturesChange={setFeatures}
+                    onSkillsChange={setSkills}
                     dexterityMod={dexterityMod}
                 />
             </View>

@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
-import { Pencil } from "lucide-react-native";
-import React from "react";
+import { ChevronDown, Pencil } from "lucide-react-native";
+import React, { useState } from "react";
 import {
     Image,
     Text,
@@ -10,6 +10,8 @@ import {
     View,
 } from "react-native";
 import { COLORS } from "../../constant/colors";
+import { DND_CLASSES, DND_RACES } from "../../constant/dnd";
+import SelectionModal from "./SelectionModal";
 import { characterStyles as styles } from "./styles";
 
 interface CharacterMainProps {
@@ -67,6 +69,20 @@ const CharacterMain = ({
 }: CharacterMainProps) => {
     const { width } = useWindowDimensions();
     const isMobile = width < 768;
+
+    // Состояния для модальных окон
+    const [raceModalVisible, setRaceModalVisible] = useState(false);
+    const [classModalVisible, setClassModalVisible] = useState(false);
+
+    // Поиск иконки для выбранной расы (по русскому или английскому названию)
+    const selectedRaceIcon = DND_RACES.find(
+        (r) => r.name === race || r.nameEn === race
+    )?.icon;
+
+    // Поиск иконки для выбранного класса (по русскому или английскому названию)
+    const selectedClassIcon = DND_CLASSES.find(
+        (c) => c.name === className || c.nameEn === className
+    )?.icon;
 
     // === Выбор изображения ===
     const pickImage = async () => {
@@ -147,13 +163,30 @@ const CharacterMain = ({
                     </View>
 
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <TextInput
-                            style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                            placeholder="Раса"
-                            placeholderTextColor={COLORS.textSecondary}
-                            value={race}
-                            onChangeText={onRaceChange}
-                        />
+                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
+                            <TextInput
+                                style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
+                                placeholder="Раса"
+                                placeholderTextColor={COLORS.textSecondary}
+                                value={race}
+                                onChangeText={onRaceChange}
+                            />
+                            {selectedRaceIcon ? (
+                                <TouchableOpacity
+                                    onPress={() => setRaceModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <Image source={selectedRaceIcon} style={styles.inputIcon} />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => setRaceModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <ChevronDown size={20} color={COLORS.textSecondary} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                         <TextInput
                             style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
                             placeholder="Уровень"
@@ -165,13 +198,30 @@ const CharacterMain = ({
                     </View>
 
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <TextInput
-                            style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                            placeholder="Класс"
-                            placeholderTextColor={COLORS.textSecondary}
-                            value={className}
-                            onChangeText={onClassChange}
-                        />
+                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
+                            <TextInput
+                                style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
+                                placeholder="Класс"
+                                placeholderTextColor={COLORS.textSecondary}
+                                value={className}
+                                onChangeText={onClassChange}
+                            />
+                            {selectedClassIcon ? (
+                                <TouchableOpacity
+                                    onPress={() => setClassModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <Image source={selectedClassIcon} style={styles.inputIcon} />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => setClassModalVisible(true)}
+                                    style={styles.iconButton}
+                                >
+                                    <ChevronDown size={20} color={COLORS.textSecondary} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                         <TextInput
                             style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
                             placeholder="Мировоззрение"
@@ -206,6 +256,24 @@ const CharacterMain = ({
                     );
                 })}
             </View>
+
+            {/* Модальные окна для выбора */}
+            <SelectionModal
+                visible={raceModalVisible}
+                title="Выберите расу"
+                items={DND_RACES}
+                selectedValue={race}
+                onSelect={onRaceChange}
+                onClose={() => setRaceModalVisible(false)}
+            />
+            <SelectionModal
+                visible={classModalVisible}
+                title="Выберите класс"
+                items={DND_CLASSES}
+                selectedValue={className}
+                onSelect={onClassChange}
+                onClose={() => setClassModalVisible(false)}
+            />
         </View>
     );
 };

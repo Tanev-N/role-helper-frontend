@@ -1,9 +1,10 @@
 import { styles } from "@/components/Session/CreateSession";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
-import { Game } from "@/stores/Games/api";
+import { Game, Session } from "@/stores/Games/api";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
+import { Copy, Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -26,6 +27,7 @@ const CreateSessionScreen = () => {
 
     const [searchFilter, setSearchFilter] = useState("");
     const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+    const [createdSession, setCreatedSession] = useState<Session | null>(null);
 
     // Загружаем игры при монтировании
     useEffect(() => {
@@ -54,12 +56,25 @@ const CreateSessionScreen = () => {
         try {
             const session = await gamesStore.createSession(selectedGame.id);
             if (session) {
-                router.push(`/session/${session.id}`);
+                setCreatedSession(session);
             }
         } catch (error: any) {
             const errorMessage = gamesStore.getError || "Не удалось создать сессию";
             Alert.alert("Ошибка", errorMessage);
             console.error("Create session error:", error);
+        }
+    };
+
+    const handleCopyCode = async () => {
+        if (createdSession?.session_key) {
+            await Clipboard.setStringAsync(createdSession.session_key);
+            Alert.alert("Успешно", "Код сессии скопирован в буфер обмена");
+        }
+    };
+
+    const handleGoToSession = () => {
+        if (createdSession) {
+            router.push(`/session/${createdSession.id}`);
         }
     };
 
@@ -127,19 +142,72 @@ const CreateSessionScreen = () => {
                 )}
             </View>
 
+            {/* === БЛОК С КОДОМ СЕССИИ === */}
+            {createdSession && (
+                <View style={[styles.block, { width: containerWidth }]}>
+                    <Text style={styles.label}>Код сессии</Text>
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            backgroundColor: COLORS.backgroundPrimary,
+                            borderRadius: 11,
+                            paddingHorizontal: 16,
+                            paddingVertical: 12,
+                            marginBottom: 16,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                color: COLORS.textPrimary,
+                                fontFamily: "Roboto",
+                                fontSize: 24,
+                                fontWeight: "600",
+                                letterSpacing: 2,
+                            }}
+                        >
+                            {createdSession.session_key}
+                        </Text>
+                        <TouchableOpacity
+                            onPress={handleCopyCode}
+                            style={{
+                                padding: 8,
+                            }}
+                        >
+                            <Copy size={24} color={COLORS.primary} />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                        onPress={handleGoToSession}
+                        style={[
+                            styles.buttonCreateSession,
+                            {
+                                width: "100%",
+                                marginTop: 0,
+                            },
+                        ]}
+                    >
+                        <Text style={styles.buttonText}>Перейти в сессию</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {/* === КНОПКА СОЗДАНИЯ === */}
-            <TouchableOpacity
-                onPress={handleCreateSession}
-                style={[
-                    styles.buttonCreateSession,
-                    isButtonDisabled && { opacity: 0.5 },
-                ]}
-                disabled={isButtonDisabled}
-            >
-                <Text style={styles.buttonText}>
-                    {gamesStore.IsLoading ? "Создание..." : "Создать"}
-                </Text>
-            </TouchableOpacity>
+            {!createdSession && (
+                <TouchableOpacity
+                    onPress={handleCreateSession}
+                    style={[
+                        styles.buttonCreateSession,
+                        isButtonDisabled && { opacity: 0.5 },
+                    ]}
+                    disabled={isButtonDisabled}
+                >
+                    <Text style={styles.buttonText}>
+                        {gamesStore.IsLoading ? "Создание..." : "Создать"}
+                    </Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };

@@ -1,10 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import {
-    apiGames,
-    CreateSessionResponse,
-    Game,
-    GamePlayer,
-    Session,
+  apiGames,
+  CreateSessionResponse,
+  Game,
+  GamePlayer,
+  Session,
 } from "./api";
 
 export class GamesStore {
