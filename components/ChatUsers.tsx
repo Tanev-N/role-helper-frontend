@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { observer } from "mobx-react-lite";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-    View,
-    Text,
-    StyleSheet,
-    useWindowDimensions,
-    ScrollView,
     LayoutChangeEvent,
     Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
 } from "react-native";
-import { COLORS } from "@/constant/colors";
 
 type User = {
     id: number;
@@ -16,21 +18,77 @@ type User = {
     color: string;
 };
 
-const users: User[] = [
-    { id: 1, name: "Фирен", color: "#4caf50" },
-    { id: 2, name: "Элис", color: "#651717" },
-    { id: 3, name: "Гигачад", color: "#9c7a00" },
-    { id: 4, name: "Момо", color: "#e91e63" },
-    { id: 5, name: "Николя", color: "#0049d9" },
-    { id: 6, name: "Артур", color: "#6cb72b" },
-    { id: 7, name: "Динамо", color: "#9c7a00" },
-    { id: 8, name: "Люля", color: "#651717" },
+// Массив цветов для игроков
+const playerColors = [
+    "#4caf50",
+    "#651717",
+    "#9c7a00",
+    "#e91e63",
+    "#0049d9",
+    "#6cb72b",
+    "#9c7a00",
+    "#651717",
+    "#4caf50",
+    "#e91e63",
 ];
 
 const ChatUsers = () => {
     const { width } = useWindowDimensions();
     const [containerWidth, setContainerWidth] = useState(0);
+
     const isMobile = width < 1300;
+    const { gamesStore, charactersStore } = useStore();
+
+    // Загружаем персонажей при монтировании, если они еще не загружены
+    useEffect(() => {
+        if (charactersStore.getCharacters.length === 0) {
+            charactersStore.fetchCharacters();
+        }
+    }, [charactersStore]);
+
+    // Загружаем персонажей для игроков, если они еще не загружены
+    useEffect(() => {
+        const gamePlayers = gamesStore.getGamePlayers;
+        if (gamePlayers && gamePlayers.length > 0) {
+            gamePlayers.forEach((player) => {
+                const character = charactersStore.getCharacters && charactersStore.getCharacters.find(
+                    (char) => char.id === player.character_id
+                );
+                if (!character && !charactersStore.getCharacterById(player.character_id)) {
+                    // Загружаем персонажа, если он не найден
+                    charactersStore.fetchCharacterById(player.character_id);
+                }
+            });
+        }
+    }, [gamesStore.getGamePlayers, charactersStore]);
+
+    // Получаем игроков из store и преобразуем их в формат User
+    const users = useMemo(() => {
+        const gamePlayers = gamesStore.getGamePlayers;
+        if (!gamePlayers || gamePlayers.length === 0) {
+            return [];
+        }
+
+        return gamePlayers.map((player, index) => {
+            // Получаем информацию о персонаже
+            const character = charactersStore.getCharacters && charactersStore.getCharacters.find(
+                (char) => char.id === player.character_id
+            ) || charactersStore.getCharacterById(player.character_id);
+
+            // Используем имя персонажа или fallback
+            const name = character?.name || `Игрок ${player.id}`;
+
+            // Генерируем цвет на основе id игрока
+            const color = playerColors[index % playerColors.length];
+
+            return {
+                id: player.id,
+                name,
+                color,
+            } as User;
+        });
+    }, [gamesStore.getGamePlayers, charactersStore.getCharacters]);
+
 
     useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -122,7 +180,7 @@ const ChatUsers = () => {
     );
 };
 
-export default ChatUsers;
+export default observer(ChatUsers);
 
 const styles = StyleSheet.create({
     /** Десктоп */

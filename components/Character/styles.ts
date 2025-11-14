@@ -132,6 +132,8 @@ export const characterStyles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         lineHeight: 40,
+        width: 60,
+        maxWidth: 60,
     },
 
     statBonus: {
@@ -141,6 +143,7 @@ export const characterStyles = StyleSheet.create({
         position: "absolute",
         right: -26,
         top: -6,
+        
     },
 
     statLabel: {

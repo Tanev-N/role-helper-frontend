@@ -1,32 +1,26 @@
-import { apiCharacters } from "./api";
 import { makeAutoObservable, runInAction } from "mobx";
-import { Level } from "./api";
-
-interface Character {
-  id: number;
-  name: string;
-  class: string;
-  level: Level;
-  race: string;
-  strength: Level;
-  dexterity: Level;
-  constitution: Level;
-  intelligence: Level;
-  wisdom: Level;
-  charisma: Level;
-  photo: string;
-}
+import {
+  apiCharacters,
+  Character,
+  CharacterCreate,
+  CharacterShort,
+  CharacterUpdate,
+} from "./api";
 
 export class CharactersStore {
-  private characters: Character[] = [];
+  private characters: CharacterShort[] = [];
   private isLoading: boolean = false;
+  private characterDetails: Map<string, Character> = new Map();
+
   constructor() {
     makeAutoObservable(this);
   }
+
   public get getCharacters() {
     return this.characters;
   }
-  private setCharacters(characters: Character[]) {
+
+  private setCharacters(characters: CharacterShort[]) {
     this.characters = characters;
   }
 
@@ -38,9 +32,12 @@ export class CharactersStore {
     this.isLoading = isLoading;
   }
 
+  public getCharacterById(id: string): Character | undefined {
+    return this.characterDetails.get(id);
+  }
+
   public async fetchCharacters() {
     if (this.isLoading) return;
-    if (this.characters && this.characters.length > 0) return;
 
     this.setIsLoading(true);
     try {
@@ -59,12 +56,28 @@ export class CharactersStore {
     }
   }
 
-  public async deleteCharacter(id: number) {
+  public async fetchCharacterById(id: string) {
+    try {
+      const response = await apiCharacters.getCharacterById(id);
+      if (response.status === 200) {
+        runInAction(() => {
+          this.characterDetails.set(id, response.data);
+        });
+        return response.data;
+      }
+    } catch (e) {
+      console.warn("CharactersStore: fetchCharacterById error", e);
+    }
+    return undefined;
+  }
+
+  public async deleteCharacter(id: string) {
     try {
       const response = await apiCharacters.deleteCharacter(id);
       if (response.status === 204) {
         runInAction(() => {
           this.setCharacters(this.characters.filter((char) => char.id !== id));
+          this.characterDetails.delete(id);
         });
       }
     } catch (e) {
@@ -72,51 +85,46 @@ export class CharactersStore {
     }
   }
 
-  public async createCharacter(character: Character) {
+  public async createCharacter(character: CharacterCreate) {
     try {
-      const response = await apiCharacters.createCharacter(
-        character.name,
-        character.race,
-        character.class,
-        character.level,
-        character.strength,
-        character.dexterity,
-        character.constitution,
-        character.intelligence,
-        character.wisdom,
-        character.charisma
-      );
+      const response = await apiCharacters.createCharacter(character);
       if (response.status === 201) {
         runInAction(() => {
-          this.setCharacters([...this.characters, response.data]);
+          // Добавляем краткую версию в список
+          const characterShort: CharacterShort = {
+            id: response.data.id,
+            name: response.data.name,
+            photo: response.data.photo,
+          };
+          this.setCharacters([...this.characters, characterShort]);
+          // Сохраняем полную версию
+          this.characterDetails.set(response.data.id, response.data);
         });
       }
     } catch (e) {
       console.warn("CharactersStore: createCharacter error", e);
     }
   }
-  public async updateCharacter(character: Character) {
+
+  public async updateCharacter(id: string, character: CharacterUpdate) {
     try {
-      const response = await apiCharacters.updateCharacter(
-        character.id,
-        character.name,
-        character.race,
-        character.class,
-        character.level,
-        character.strength,
-        character.dexterity,
-        character.constitution,
-        character.intelligence,
-        character.wisdom,
-        character.charisma
-      );
+      const response = await apiCharacters.updateCharacter(id, character);
       if (response.status === 200) {
         runInAction(() => {
+          // Обновляем краткую версию в списке
           this.setCharacters(
             this.characters.map((char) =>
-              char.id === character.id ? response.data : char
+              char.id === id
+                ? {
+                    id: response.data.id,
+                    name: response.data.name,
+                    photo: response.data.photo,
+                  }
+                : char
             )
           );
+          // Обновляем полную версию
+          this.characterDetails.set(id, response.data);
         });
       }
     } catch (e) {

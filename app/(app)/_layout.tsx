@@ -19,10 +19,8 @@ function AppLayoutContent() {
     const pathname = usePathname();
     const router = useRouter();
     const { width } = useWindowDimensions();
-    const isMobile = width < 1300;
 
-    console.log("DEBUG_MODE =", DEBUG_MODE);
-    console.log("isAuth =", isAuth);
+    const isMobile = width < 1300;
 
     // Пропуск редиректа, если DEBUG_MODE включен
     if (!DEBUG_MODE) {
@@ -114,6 +112,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 4.65,
         elevation: 8,
+        transitionDuration: "200ms",
     },
 
     elementMenuSmall: {
