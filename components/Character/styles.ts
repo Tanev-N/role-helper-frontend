@@ -179,7 +179,8 @@ export const characterStyles = StyleSheet.create({
         flexGrow: 1,
         flexShrink: 1,
         minWidth: 300,
-        // maxWidth: 460,
+        maxWidth: 460,
+        flexBasis: "auto",
     },
 
     // Правая часть (инициатива, КД, скорость, хиты, кнопки)

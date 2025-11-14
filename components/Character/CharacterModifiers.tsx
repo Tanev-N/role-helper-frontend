@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constant/colors";
 import { CharacterSkill } from "../../stores/Characters/api";
@@ -90,6 +90,8 @@ const CharacterModifiers = ({
     const levelNum = parseInt(level) || 1;
     const proficiencyBonus = calculateProficiencyBonus(levelNum);
     const customSkillsRef = useRef<Set<string>>(new Set());
+    // Локальное состояние для временного хранения ввода (для поддержки ввода "-")
+    const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
     // Автоматически обновляем базовые значения навыков при изменении характеристик/уровня
     useEffect(() => {
@@ -195,7 +197,35 @@ const CharacterModifiers = ({
 
     // Обработка изменения значения навыка
     const handleModifierChange = (skillName: string, value: string) => {
-        const numValue = parseInt(value) || 0;
+        // Сохраняем текущий ввод в локальное состояние
+        setInputValues((prev) => ({ ...prev, [skillName]: value }));
+
+        // Убираем все кроме цифр и знака минуса в начале
+        let cleanText = value.replace(/[^0-9-]/g, "");
+
+        // Если есть минус не в начале, убираем его
+        if (cleanText.includes("-") && !cleanText.startsWith("-")) {
+            cleanText = cleanText.replace(/-/g, "");
+        }
+
+        // Если пусто или только минус, не обновляем значение (позволяем пользователю вводить)
+        if (cleanText === "" || cleanText === "-") {
+            return;
+        }
+
+        // Парсим значение, поддерживая отрицательные числа
+        const numValue = parseInt(cleanText, 10);
+        if (isNaN(numValue)) {
+            return;
+        }
+
+        // Очищаем локальное состояние после успешного парсинга
+        setInputValues((prev) => {
+            const newValues = { ...prev };
+            delete newValues[skillName];
+            return newValues;
+        });
+
         // Помечаем навык как отредактированный вручную
         customSkillsRef.current.add(skillName);
         updateSkill(skillName, { modifier: numValue });
@@ -220,9 +250,13 @@ const CharacterModifiers = ({
                     const ability = SKILL_ABILITY_MAP[skillName];
                     const abilityInfo = ABILITY_NAMES[ability];
                     const skill = getSkill(skillName);
-                    // Используем сохраненное значение
+                    // Используем локальное значение ввода, если оно есть, иначе сохраненное значение
                     const displayModifier = skill.modifier;
-                    const modifierText = displayModifier >= 0 ? `+${displayModifier}` : `${displayModifier}`;
+                    // Если есть локальное значение ввода (например, "-"), используем его
+                    const inputValue = inputValues[skillName];
+                    const modifierText = inputValue !== undefined
+                        ? inputValue
+                        : (displayModifier >= 0 ? `+${displayModifier}` : `${displayModifier}`);
 
                     return (
                         <View key={skillName} style={styles.row}>
@@ -237,12 +271,23 @@ const CharacterModifiers = ({
                                 style={[styles.valueInput, { color: abilityInfo.color }]}
                                 value={modifierText}
                                 onChangeText={(text) => {
-                                    // Убираем + и парсим, оставляем знак минуса
-                                    const cleanText = text.replace(/\+/g, "");
-                                    handleModifierChange(skillName, cleanText);
+                                    handleModifierChange(skillName, text);
                                 }}
-                                keyboardType="numeric"
+                                keyboardType="numbers-and-punctuation"
                                 selectTextOnFocus
+                                onBlur={() => {
+                                    // При потере фокуса очищаем локальное значение, если оно невалидно
+                                    if (inputValues[skillName] !== undefined) {
+                                        const cleanText = inputValues[skillName].replace(/[^0-9-]/g, "");
+                                        if (cleanText === "" || cleanText === "-") {
+                                            setInputValues((prev) => {
+                                                const newValues = { ...prev };
+                                                delete newValues[skillName];
+                                                return newValues;
+                                            });
+                                        }
+                                    }
+                                }}
                             />
                             <Text style={styles.name}>
                                 {skillName} (<Text style={{ color: abilityInfo.color }}>{abilityInfo.short}</Text>)
@@ -311,7 +356,8 @@ const styles = StyleSheet.create({
     valueInput: {
         fontSize: 24,
         fontWeight: "500",
-        minWidth: 50,
+        width: 60,
+        maxWidth: 60,
         textAlign: "center",
     },
 
