@@ -1,5 +1,6 @@
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Share2 } from "lucide-react-native";
@@ -29,13 +30,13 @@ const SessionScreen = () => {
     useEffect(() => {
         const pollPlayers = async () => {
             // Пытаемся получить gameId из currentSession
-            let gameId: number | undefined = gamesStore.getCurrentSession?.game_id;
+            let gameId: string | number | undefined = gamesStore.getCurrentSession?.game_id;
 
             // Если currentSession не установлен, пытаемся найти сессию в previousSessions
             if (!gameId) {
-                const sessionId = parseInt(id as string, 10);
+                const sessionId = id as string;
                 const previousSessions = gamesStore.getPreviousSessions;
-                const session = previousSessions.find(s => s.id === sessionId);
+                const session = previousSessions.find(s => String(s.id) === String(sessionId));
                 gameId = session?.game_id;
             }
 
@@ -60,57 +61,90 @@ const SessionScreen = () => {
 
     // Добавление кнопки копирования кода сессии
     useEffect(() => {
-        console.log("[SessionScreen] useEffect для кнопки запущен, id:", id);
+        const loadSessionKey = async () => {
+            console.log("[SessionScreen] useEffect для кнопки запущен, id:", id);
 
-        // Проверяем currentSession и previousSessions для поиска session_key
-        const currentSession = gamesStore.getCurrentSession;
-        console.log("[SessionScreen] currentSession:", currentSession);
-        let sessionKey = currentSession?.session_key;
-        console.log("[SessionScreen] sessionKey из currentSession:", sessionKey);
+            // Проверяем currentSession и previousSessions для поиска session_key
+            const currentSession = gamesStore.getCurrentSession;
+            console.log("[SessionScreen] currentSession:", currentSession);
+            let sessionKey = currentSession?.session_key;
+            console.log("[SessionScreen] sessionKey из currentSession:", sessionKey);
 
-        // Если session_key нет в currentSession, ищем в previousSessions
-        if (!sessionKey) {
-            const sessionId = id as string;
-            const previousSessions = gamesStore.getPreviousSessions ?? [];
-            console.log("[SessionScreen] previousSessions:", previousSessions);
-            console.log("[SessionScreen] Ищем сессию с id:", sessionId);
+            // Если session_key нет в currentSession, ищем в previousSessions
+            if (!sessionKey) {
+                const sessionId = id as string;
+                const previousSessions = gamesStore.getPreviousSessions ?? [];
+                console.log("[SessionScreen] previousSessions:", previousSessions);
+                console.log("[SessionScreen] previousSessions length:", previousSessions.length);
+                console.log("[SessionScreen] Ищем сессию с id:", sessionId);
 
-            // Ищем сессию по id - пробуем разные варианты сравнения
-            const session = previousSessions.find(s => {
-                const match = String(s.id) === String(sessionId);
-                if (match) {
-                    console.log("[SessionScreen] Найдена сессия:", s);
-                }
-                return match;
-            });
-            sessionKey = session?.session_key;
-            console.log("[SessionScreen] sessionKey из previousSessions:", sessionKey);
-        }
+                // Выводим все id из previousSessions для отладки
+                previousSessions.forEach((s, idx) => {
+                    console.log(`[SessionScreen] previousSessions[${idx}].id:`, s.id, "type:", typeof s.id);
+                });
 
-        // Если есть session_key, добавляем кнопку
-        if (sessionKey) {
-            console.log("[SessionScreen] sessionKey найден, добавляем кнопку:", sessionKey);
-            const handleCopySessionKey = async () => {
+                // Ищем сессию по id - сравниваем как строки
+                const session = previousSessions.find(s => {
+                    const sId = String(s.id);
+                    const targetId = String(sessionId);
+                    const match = sId === targetId;
+                    console.log(`[SessionScreen] Сравнение: "${sId}" === "${targetId}" = ${match}`);
+                    if (match) {
+                        console.log("[SessionScreen] Найдена сессия:", s);
+                    }
+                    return match;
+                });
+                sessionKey = session?.session_key;
+                console.log("[SessionScreen] sessionKey из previousSessions:", sessionKey);
+            }
+
+            // Если session_key все еще не найден, пробуем загрузить из localStorage
+            if (!sessionKey) {
                 try {
-                    await Clipboard.setStringAsync(sessionKey!);
-                    Alert.alert("Успешно", "Код сессии скопирован в буфер обмена");
+                    const storedKey = await AsyncStorage.getItem(`session_key_${id}`);
+                    if (storedKey) {
+                        sessionKey = storedKey;
+                        console.log("[SessionScreen] sessionKey загружен из localStorage:", sessionKey);
+                    }
                 } catch (error) {
-                    console.error("Ошибка при копировании:", error);
-                    Alert.alert("Ошибка", "Не удалось скопировать код сессии");
+                    console.error("[SessionScreen] Ошибка при загрузке из localStorage:", error);
                 }
-            };
+            }
 
-            rightButtonsStore.addButton({
-                id: "copy-session-key",
-                icon: Share2,
-                onPress: handleCopySessionKey,
-            });
-            console.log("[SessionScreen] Кнопка добавлена в стор. Всего кнопок:", rightButtonsStore.getButtons.length);
-        } else {
-            console.log("[SessionScreen] sessionKey не найден, удаляем кнопку");
-            // Если session_key нет, удаляем кнопку
-            rightButtonsStore.removeButton("copy-session-key");
-        }
+            // Если есть session_key, добавляем кнопку
+            if (sessionKey) {
+                console.log("[SessionScreen] sessionKey найден, добавляем кнопку:", sessionKey);
+                // Сохраняем в localStorage для следующей загрузки
+                try {
+                    await AsyncStorage.setItem(`session_key_${id}`, sessionKey);
+                } catch (error) {
+                    console.error("[SessionScreen] Ошибка при сохранении в localStorage:", error);
+                }
+
+                const handleCopySessionKey = async () => {
+                    try {
+                        await Clipboard.setStringAsync(sessionKey!);
+                        Alert.alert("Успешно", "Код сессии скопирован в буфер обмена");
+                    } catch (error) {
+                        console.error("Ошибка при копировании:", error);
+                        Alert.alert("Ошибка", "Не удалось скопировать код сессии");
+                    }
+                };
+
+                rightButtonsStore.addButton({
+                    id: "copy-session-key",
+                    icon: Share2,
+                    onPress: handleCopySessionKey,
+                });
+                console.log("[SessionScreen] Кнопка добавлена в стор. Всего кнопок:", rightButtonsStore.getButtons.length);
+            } else {
+                console.log("[SessionScreen] sessionKey не найден, удаляем кнопку");
+                // Если session_key нет, удаляем кнопку
+                rightButtonsStore.removeButton("copy-session-key");
+            }
+        };
+
+        loadSessionKey();
 
         // Очистка кнопки при размонтировании
         return () => {

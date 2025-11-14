@@ -2,6 +2,7 @@ import { styles } from "@/components/Session/CreateSession";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { Game } from "@/stores/Games/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
@@ -53,7 +54,14 @@ const CreateSessionScreen = () => {
 
         try {
             const session = await gamesStore.createSession(selectedGame.id);
-            if (session) {
+            if (session && session.session_key) {
+                // Сохраняем session_key в localStorage для использования после перезагрузки
+                try {
+                    await AsyncStorage.setItem(`session_key_${session.id}`, session.session_key);
+                    console.log("[CreateSession] session_key сохранен в localStorage:", session.session_key);
+                } catch (storageError) {
+                    console.error("[CreateSession] Ошибка при сохранении session_key:", storageError);
+                }
                 router.push(`/session/${session.id}`);
             }
         } catch (error: any) {

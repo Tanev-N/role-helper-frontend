@@ -187,7 +187,8 @@ export class GamesStore {
           this.setCurrentSession(session);
           if (session.game_id) {
             // Обновляем текущую игру, если она найдена в списке
-            const game = this.games.find((g) => g.id === session.game_id);
+            // game_id теперь UUID (string), но Game.id может быть number, поэтому сравниваем как строки
+            const game = this.games.find((g) => String(g.id) === String(session.game_id));
             if (game) {
               this.setCurrentGame(game);
             }
@@ -210,15 +211,15 @@ export class GamesStore {
     }
   }
 
-  public async finishSession(sessionId: number, summary?: string) {
+  public async finishSession(sessionId: string | number, summary?: string) {
     this.setError(null);
     this.setIsLoading(true);
     try {
-      const response = await apiGames.finishSession(sessionId, summary);
+      const response = await apiGames.finishSession(sessionId as number, summary);
       if (response.status === 200) {
         runInAction(() => {
           // Обновляем текущую сессию, если она была завершена
-          if (this.currentSession?.id === sessionId) {
+          if (this.currentSession && String(this.currentSession.id) === String(sessionId)) {
             this.setCurrentSession(null);
           }
         });
@@ -239,7 +240,7 @@ export class GamesStore {
     }
   }
 
-  public async fetchGamePlayers(gameId: number) {
+  public async fetchGamePlayers(gameId: string | number) {
     if (this.isLoading) return;
     this.setIsLoading(true);
     this.setError(null);

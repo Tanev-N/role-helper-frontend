@@ -8,8 +8,8 @@ export interface Game {
 }
 
 export interface Session {
-  id: number;
-  game_id: number;
+  id: string; // UUID
+  game_id: string; // UUID
   session_key: string;
   summary: string | null;
   created_at: string | null;
@@ -47,9 +47,9 @@ const apiGamesUrl = {
   gameById: (gameId: number) => createEndpoint(`/games/${gameId}`),
   gameSessions: (gameId: number) => createEndpoint(`/games/${gameId}/sessions`),
   enterSession: createEndpoint("/games/sessions/enter"),
-  finishSession: (sessionId: number) =>
+  finishSession: (sessionId: string | number) =>
     createEndpoint(`/games/sessions/${sessionId}/finish`),
-  gamePlayers: (gameId: number) =>
+  gamePlayers: (gameId: string | number) =>
     createEndpoint(`/games/${gameId}/players`),
 };
 
@@ -76,12 +76,12 @@ export const apiGames = {
     } as EnterSessionRequest);
   },
 
-  async finishSession(sessionId: number, summary?: string) {
+  async finishSession(sessionId: string | number, summary?: string) {
     const body: FinishSessionRequest = summary ? { summary } : {};
     return await axios.post(apiGamesUrl.finishSession(sessionId), body);
   },
 
-  async getGamePlayers(gameId: number) {
+  async getGamePlayers(gameId: string | number) {
     return await axios.get(apiGamesUrl.gamePlayers(gameId));
   },
 };
