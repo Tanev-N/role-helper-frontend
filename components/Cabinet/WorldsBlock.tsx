@@ -1,8 +1,9 @@
 import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { ArrowRight, Globe2, Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { styles } from "./styles";
 
@@ -24,6 +25,13 @@ const WorldsBlock = observer(() => {
   useEffect(() => {
     gamesStore.fetchGames();
   }, [gamesStore]);
+
+  // Обновляем данные при возврате на страницу
+  useFocusEffect(
+    useCallback(() => {
+      gamesStore.fetchGames();
+    }, [gamesStore])
+  );
 
   const games = gamesStore.getGames || [];
   const worldsPerRow = isMobile ? 2 : 4;

@@ -1,11 +1,13 @@
 import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { ArrowRight, Plus, Users2 } from "lucide-react-native";
-import React, { useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import React, { useCallback, useEffect } from "react";
 import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { styles } from "./styles";
 
-export default function CharactersBlock() {
+const CharactersBlock = observer(() => {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const blockWidth = Math.min(width * 0.95, 904);
@@ -23,6 +25,13 @@ export default function CharactersBlock() {
   useEffect(() => {
     charactersStore.fetchCharacters();
   }, [charactersStore]);
+
+  // Обновляем данные при возврате на страницу
+  useFocusEffect(
+    useCallback(() => {
+      charactersStore.fetchCharacters();
+    }, [charactersStore])
+  );
 
   const charsPerRow = isMobile ? 4 : 8;
   const characters = charactersStore.getCharacters || [];
@@ -49,9 +58,9 @@ export default function CharactersBlock() {
       <View style={styles.divider} />
 
       <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
-        {characters && characters.map((_, i) => (
+        {characters && characters.map((character, i) => (
           <Pressable
-            key={i}
+            key={character.id}
             style={({ pressed }) => [
               styles.characterSquare,
               {
@@ -61,6 +70,9 @@ export default function CharactersBlock() {
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
+            onPress={() => {
+              router.push(`/(app)/cabinet/character/${character.id}`);
+            }}
           />
         ))}
 
@@ -73,4 +85,6 @@ export default function CharactersBlock() {
       </View>
     </View>
   );
-}
+});
+
+export default CharactersBlock;
