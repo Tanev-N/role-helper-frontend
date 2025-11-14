@@ -26,6 +26,13 @@ function AppLayoutContent() {
     const rightButtons = rightButtonsStore.getButtons;
     console.log("[AppLayout] rightButtons count:", rightButtons.length);
     console.log("[AppLayout] rightButtons:", rightButtons.map(b => ({ id: b.id, hasIcon: !!b.icon })));
+    console.log("[AppLayout] rightButtons array:", Array.isArray(rightButtons) ? "да" : "нет");
+    console.log("[AppLayout] rightButtons type:", typeof rightButtons);
+    console.log("[AppLayout] rightButtons constructor:", rightButtons.constructor?.name);
+
+    // Преобразуем в обычный массив для надежности
+    const buttonsArray = Array.from(rightButtons || []);
+    console.log("[AppLayout] buttonsArray length:", buttonsArray.length);
 
     return (
         <View style={styles.container}>
@@ -34,8 +41,8 @@ function AppLayoutContent() {
                 {!("/cabinet" === pathname) && <ElementMenu icon={ICONS.profile} path="/(app)/cabinet" />}
 
                 {/* Динамические кнопки из стора */}
-                {rightButtons.map((button) => {
-                    console.log("[AppLayout] Рендерим кнопку:", button.id);
+                {buttonsArray.length > 0 && buttonsArray.map((button) => {
+                    console.log("[AppLayout] Рендерим кнопку:", button.id, "icon:", button.icon);
                     return (
                         <RightButtonElement
                             key={button.id}
