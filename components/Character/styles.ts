@@ -211,8 +211,8 @@ export const characterStyles = StyleSheet.create({
         justifyContent: "center",
         padding: 8,
         aspectRatio: 1,
-        minWidth: 30,
-        maxWidth: 40,
+        minWidth: 120,
+        maxWidth: 150,
         flexGrow: 1,
         flexBasis: "30%", // чтобы на мобилке помещалось 3 в ряд
     },
@@ -221,6 +221,9 @@ export const characterStyles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         color: COLORS.textPrimary,
+        textAlign: "center",
+        width: 60,
+        maxWidth: 60,
     },
 
     smallStatLabel: {
