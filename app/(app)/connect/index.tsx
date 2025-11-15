@@ -1,10 +1,11 @@
 import { connectStyles as styles } from "@/components/Session/ConnectSession";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
     Image,
@@ -31,6 +32,14 @@ const ConnectScreen = () => {
         charactersStore.fetchCharacters();
         gamesStore.clearError();
     }, [charactersStore, gamesStore]);
+
+    // Обновляем данные при возврате на страницу
+    useFocusEffect(
+        useCallback(() => {
+            charactersStore.fetchCharacters();
+            gamesStore.clearError();
+        }, [charactersStore, gamesStore])
+    );
 
     const filteredCharacters = (charactersStore.getCharacters || []).filter((character) =>
         character.name.toLowerCase().includes(characterNameFilter.toLowerCase())

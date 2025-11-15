@@ -2,11 +2,12 @@ import { styles } from "@/components/Session/CreateSession";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { Game, Session } from "@/stores/Games/api";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { Copy, Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -32,7 +33,14 @@ const CreateSessionScreen = () => {
     // Загружаем игры при монтировании
     useEffect(() => {
         gamesStore.fetchGames();
-    }, []);
+    }, [gamesStore]);
+
+    // Обновляем данные при возврате на страницу
+    useFocusEffect(
+        useCallback(() => {
+            gamesStore.fetchGames();
+        }, [gamesStore])
+    );
 
     // Фильтруем игры по поисковому запросу
     const filteredGames = useMemo(() => {
