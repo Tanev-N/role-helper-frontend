@@ -23,7 +23,7 @@ type Message = {
 
 const Chat = () => {
     const { width } = useWindowDimensions();
-    const isMobile = width < 768;
+    const isMobile = width < 1300;
     const { sessionStore } = useStore();
     const [text, setText] = useState("");
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -204,18 +204,12 @@ const Chat = () => {
 
     return (
         <View style={styles.fullscreen}>
-            <View style={[styles.page, isMobile && { flexDirection: "column" }]}>
+            <View style={[styles.page, isMobile && styles.pageMobile]}>
                 {/* Левая колонка */}
                 <View
                     style={[
                         styles.leftColumn,
-                        isMobile && {
-                            flexDirection: "column",
-                            width: "100%",
-                            paddingHorizontal: 24,
-                            paddingVertical: 24,
-                            justifyContent: "flex-end",
-                        },
+                        isMobile && styles.leftColumnMobile,
                     ]}
                 >
                     <ChatUsers />
@@ -225,7 +219,7 @@ const Chat = () => {
                 <View
                     style={[
                         styles.chatContainer,
-                        isMobile && { width: "100%", padding: 24 },
+                        isMobile && styles.chatContainerMobile,
                     ]}
                 >
                     <FlatList
@@ -266,17 +260,16 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
         backgroundColor: COLORS.backgroundPrimary,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
     },
     page: {
         flex: 1,
         flexDirection: "row",
         width: "100%",
         height: "100%",
+    },
+    pageMobile: {
+        flexDirection: "column",
+        padding: 12,
     },
     leftColumn: {
         flex: 3,
@@ -286,12 +279,25 @@ const styles = StyleSheet.create({
         paddingHorizontal: 72,
         paddingVertical: 66,
     },
+    leftColumnMobile: {
+        width: "100%",
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     chatContainer: {
         flex: 7,
         backgroundColor: "#18191A",
         borderRadius: 0,
         paddingHorizontal: 72,
         paddingVertical: 66,
+    },
+    chatContainerMobile: {
+        width: "100%",
+        paddingHorizontal: 24,
+        paddingVertical: 24,
+        borderRadius: 16,
     },
     history: {
         flex: 1,

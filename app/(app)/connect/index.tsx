@@ -19,8 +19,13 @@ import {
 const ConnectScreen = () => {
     const router = useRouter();
     const { width } = useWindowDimensions();
-    const isMobile = width < 768;
+    const isMobile = width < 1300;
     const isSmallScreen = width < 425;
+
+    const dynamicFont = width < 425 ? 20 : width < 768 ? 24 : 30;
+    const dynamicLogo = width < 425 ? 36 : width < 768 ? 48 : 64;
+    const dynamicBlockPadding = width < 425 ? 16 : 24;
+
     const containerWidth = isMobile ? "90%" : 723;
     const { charactersStore, gamesStore } = useStore();
 
@@ -71,12 +76,17 @@ const ConnectScreen = () => {
     return (
         <View style={[styles.container, isSmallScreen && { paddingTop: 120 }]}>
             {/* === ЛОГОТИП === */}
-            <Text style={styles.logo}>CriticalRoll</Text>
+            <Text style={[styles.logo, { fontSize: dynamicLogo }]}>Critical Roll</Text>
+            
 
             {/* === БЛОК 1: Код сессии === */}
-            <View style={[styles.block, { width: containerWidth }]}>
+            <View style={[
+                styles.block, 
+                { width: containerWidth, paddingHorizontal: dynamicBlockPadding, paddingVertical: dynamicBlockPadding }
+                ]}>
+                
                 <TextInput
-                    style={styles.inputCentered}
+                    style={[styles.inputCentered, { fontSize: dynamicFont }]}
                     placeholder="Вставьте код для встречи"
                     placeholderTextColor={COLORS.textSecondary}
                     value={sessionCode}
@@ -86,9 +96,12 @@ const ConnectScreen = () => {
             </View>
 
             {/* === БЛОК 2: Выбор персонажа === */}
-            <View style={[styles.block, { width: containerWidth }]}>
+            <View style={[
+                styles.block, 
+                { width: containerWidth, paddingHorizontal: dynamicBlockPadding, paddingVertical: dynamicBlockPadding }
+                ]}>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.inputCentered, { fontSize: dynamicFont }]}
                     placeholder="Введите имя персонажа"
                     placeholderTextColor={COLORS.textSecondary}
                     value={characterNameFilter}

@@ -116,7 +116,7 @@ const CharactersScreen = () => {
             style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}
             contentContainerStyle={{
                 alignItems: "center",
-                paddingTop: 40,
+                paddingTop: 80,
                 paddingBottom: 60,
             }}
         >

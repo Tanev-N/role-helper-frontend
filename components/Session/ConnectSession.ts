@@ -27,31 +27,48 @@ export const connectStyles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 24,
         marginBottom: 24,
+        width: "100%",
     },
 
     input: {
         color: COLORS.textPrimary,
         fontFamily: "Roboto",
-        fontSize: 30,
+        fontSize: 24,
         borderBottomWidth: 1,
         borderBottomColor: COLORS.textLowEmphasis,
         marginBottom: 24,
-        paddingVertical: 8,
+        paddingVertical: 6,
+        width: "100%",
+        flexShrink: 1,
     },
 
-    inputCentered: {
+        inputCentered: {
         color: COLORS.textPrimary,
         fontFamily: "Roboto",
-        fontSize: 30,
+        fontSize: 24,
         textAlign: "left",
+        width: "100%",
+        flexShrink: 1,
     },
 
     colorRow: {
+        width: "100%",
         flexDirection: "row",
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
         gap: 16,
-        marginTop: 8,
-        justifyContent: "space-between",
+        paddingVertical: 4,
+    },
+
+    scrollHorizontal: {
+        width: "100%",
+    },
+
+    scrollHorizontalContent: {
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        alignItems: "center",
+        gap: 16,
+        paddingRight: 8,
     },
 
     colorRect: {
