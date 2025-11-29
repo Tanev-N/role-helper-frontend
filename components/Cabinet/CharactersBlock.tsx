@@ -50,8 +50,11 @@ const CharactersBlock = observer(() => {
             <Text style={styles.sectionSubtitle}>Персонажей доступно {characters ? characters.length : 0}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.iconCircle}>
-          <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
+        <TouchableOpacity
+            style={styles.iconCircle}
+            onPress={() => router.push('/cabinet/characters')}
+        >
+            <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>
 
