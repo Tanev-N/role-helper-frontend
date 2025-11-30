@@ -37,6 +37,7 @@ function AppLayoutContent() {
     "/cabinet/worlds",     // список миров
     "/cabinet/worldgame",  // окно мира
     "/cabinet/session",    // окно конкретной сессии
+    "/cabinet/game",    // окно создания игры
   ];
 
   const backPrefixRoutes = [
