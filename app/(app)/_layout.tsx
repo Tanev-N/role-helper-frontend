@@ -38,6 +38,7 @@ function AppLayoutContent() {
     "/cabinet/worldgame",  // окно мира
     "/cabinet/session",    // окно конкретной сессии
     "/cabinet/game",    // окно создания игры
+    "/cabinet/armor",   //окно списка брони
   ];
 
   const backPrefixRoutes = [
