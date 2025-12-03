@@ -10,119 +10,121 @@ import {
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import { COLORS } from "@/constant/colors";
-import { armorStyles as styles } from "./styles";
+import { weaponStyles as styles } from "./styles";
 
-type ArmorModifier = {
+type WeaponModifier = {
   id: string;
   value: string;
   stat: string;
 };
 
-type ArmorItem = {
+type WeaponItem = {
   id: string;
   name: string;
   type: string;
-  ac: string;
+  damage: string;
+  damageModifier: string;
   cost: string;
   rarity: string;
-  stealthDisadvantage: string;
-  strengthRequirement: string;
+  grip: string;
+  range: string;
   weight: string;
   uniqueStats: string;
   charges: string;
-  modifiers: ArmorModifier[];
+  modifiers: WeaponModifier[];
 };
 
-const ArmorListScreen = observer(() => {
+const WeaponListScreen = observer(() => {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
 
   // ====== ТЕСТОВЫЕ ДАННЫЕ ======
-  const [armorList, setArmorList] = useState<ArmorItem[]>([
+  const [weaponList, setWeaponList] = useState<WeaponItem[]>([
     {
-      id: "armor-1",
-      name: "Кожаный доспех",
-      type: "лёгкий доспех",
-      ac: "11 + показатель ловкости",
+      id: "weapon-1",
+      name: "Боевая коса",
+      type: "простое рукопашное",
+      damage: "1к8",
+      damageModifier: "показат. ловкости",
       cost: "30 золотых",
       rarity: "Обычная",
-      stealthDisadvantage: "Нет",
-      strengthRequirement: "Нет",
+      grip: "Двуручное",
+      range: "2.5",
       weight: "5",
       uniqueStats: "Нет",
       charges: "Нет",
       modifiers: [],
     },
     {
-      id: "armor-2",
-      name: "Хороший кожаный доспех",
-      type: "лёгкий доспех",
-      ac: "11 + показатель ловкости",
-      cost: "60 золотых",
-      rarity: "Редкое",
-      stealthDisadvantage: "Нет",
-      strengthRequirement: "12",
+      id: "weapon-2",
+      name: "Боевая коса",
+      type: "простое рукопашное",
+      damage: "1к8",
+      damageModifier: "показат. ловкости",
+      cost: "30 золотых",
+      rarity: "Обычная",
+      grip: "Двуручное",
+      range: "2.5",
       weight: "5",
       uniqueStats: "Нет",
-      charges: "55 / 60",
-      modifiers: [
-        { id: "m1", value: "+1", stat: "Сила" },
-        { id: "m2", value: "+4", stat: "Ловкость" },
-      ],
+      charges: "Нет",
+      modifiers: [],
     },
   ]);
 
-  // ====== СОЗДАНИЕ БРОНИ (МОДАЛКА) ======
+  // ====== СОЗДАНИЕ ОРУЖИЯ (МОДАЛКА) ======
   const [createVisible, setCreateVisible] = useState(false);
+
   const [formName, setFormName] = useState("");
-  const [formType, setFormType] = useState("");         // тип предмета (заголовок)
-  const [formAC, setFormAC] = useState("");
-  const [formModifier, setFormModifier] = useState(""); // <-- отдельный стейт модификатора
+  const [formType, setFormType] = useState("");
+  const [formDamage, setFormDamage] = useState("");
+  const [formDamageMod, setFormDamageMod] = useState("");
   const [formCost, setFormCost] = useState("");
   const [formRarity, setFormRarity] = useState("");
-  const [formStealth, setFormStealth] = useState("Нет");
-  const [formStrengthReq, setFormStrengthReq] = useState("Нет");
+  const [formGrip, setFormGrip] = useState("");
+  const [formRange, setFormRange] = useState("");
   const [formWeight, setFormWeight] = useState("");
   const [formUnique, setFormUnique] = useState("Нет");
   const [formCharges, setFormCharges] = useState("Нет");
-  const [formModifiers, setFormModifiers] = useState<ArmorModifier[]>([]);
+  const [formModifiers, setFormModifiers] = useState<WeaponModifier[]>([]);
 
   const resetForm = () => {
     setFormName("");
     setFormType("");
-    setFormAC("");
-    setFormModifier("");            // сбрасываем модификатор отдельно
+    setFormDamage("");
+    setFormDamageMod("");
     setFormCost("");
     setFormRarity("");
-    setFormStealth("Нет");
-    setFormStrengthReq("Нет");
+    setFormGrip("");
+    setFormRange("");
     setFormWeight("");
     setFormUnique("Нет");
     setFormCharges("Нет");
     setFormModifiers([]);
   };
 
-  const handleAddArmor = () => {
+  const handleAddWeapon = () => {
     if (!formName.trim()) return;
 
-    const newArmor: ArmorItem = {
-      id: `armor-${Date.now()}`,
+    const newWeapon: WeaponItem = {
+      id: `weapon-${Date.now()}`,
       name: formName.trim(),
       type: formType.trim() || "тип предмета",
-      ac: formAC.trim() || "—",       
+      damage: formDamage.trim() || "—",
+      damageModifier: formDamageMod.trim(),
       cost: formCost.trim() || "—",
       rarity: formRarity.trim() || "Обычная",
-      stealthDisadvantage: formStealth.trim() || "Нет",
-      strengthRequirement: formStrengthReq.trim() || "Нет",
+      grip: formGrip.trim() || "—",
+      range: formRange.trim() || "—",
       weight: formWeight.trim() || "—",
       uniqueStats: formUnique.trim() || "Нет",
       charges: formCharges.trim() || "Нет",
       modifiers: formModifiers,
     };
 
-    setArmorList((prev) => [...prev, newArmor]);
+    setWeaponList((prev) => [...prev, newWeapon]);
     resetForm();
     setCreateVisible(false);
   };
@@ -144,46 +146,60 @@ const ArmorListScreen = observer(() => {
     );
   };
 
-  // ====== РЕНДЕР КАРТОЧКИ БРОНИ ======
-  const renderArmorCard = (armor: ArmorItem) => {
+  // ====== РЕНДЕР КАРТОЧКИ ОРУЖИЯ ======
+  const renderWeaponCard = (weapon: WeaponItem) => {
+    const damageText = weapon.damageModifier
+      ? `${weapon.damage} + ${weapon.damageModifier}`
+      : weapon.damage;
+
     return (
-      <View key={armor.id} style={styles.card}>
+      <View key={weapon.id} style={styles.card}>
+        {/* Заголовок карточки */}
         <Text style={styles.cardTitle}>
-          {armor.name} <Text style={styles.cardTitleType}>/ {armor.type}</Text>
+          {weapon.name}{" "}
+          <Text style={styles.cardTitleType}>/ {weapon.type}</Text>
         </Text>
 
         {/* Первая строка */}
         <View style={[styles.row, isMobile && styles.rowMobile]}>
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
-            <View style={styles.inlineStatRow}>
-              <Text style={styles.inlineStatLabel}>Класс доспеха:</Text>
-              <Text style={styles.inlineStatValue}>{armor.ac}</Text>
-            </View>
+            <Text style={styles.label}>Урон:</Text>
+            <Text
+              style={[
+                styles.valueHighlight,
+                { color: "#3FD452" }, // зелёный, как на макете
+              ]}
+            >
+              {damageText}
+            </Text>
           </View>
 
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
             <Text style={styles.label}>Стоимость:</Text>
-            <Text style={styles.valueGold}>{armor.cost}</Text>
+            <Text style={styles.valueGold}>{weapon.cost}</Text>
           </View>
+
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
-            <Text style={styles.label}>Редкость</Text>
-            <Text style={styles.valueBlue}>{armor.rarity}</Text>
+            <Text style={styles.label}>Редкость:</Text>
+            <Text style={styles.valueBlue}>{weapon.rarity}</Text>
           </View>
         </View>
 
         {/* Вторая строка */}
         <View style={[styles.row, isMobile && styles.rowMobile]}>
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
-            <Text style={styles.label}>Помеха при скрытности:</Text>
-            <Text style={styles.value}>{armor.stealthDisadvantage}</Text>
+            <Text style={styles.label}>Хват:</Text>
+            <Text style={styles.value}>{weapon.grip}</Text>
           </View>
+
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
-            <Text style={styles.label}>Требование к силе:</Text>
-            <Text style={styles.value}>{armor.strengthRequirement}</Text>
+            <Text style={styles.label}>Дальность (в метрах):</Text>
+            <Text style={styles.value}>{weapon.range}</Text>
           </View>
+
           <View style={[styles.infoBox, isMobile && styles.infoBoxMobile]}>
             <Text style={styles.label}>Вес (в кг):</Text>
-            <Text style={styles.value}>{armor.weight}</Text>
+            <Text style={styles.value}>{weapon.weight}</Text>
           </View>
         </View>
 
@@ -197,11 +213,11 @@ const ArmorListScreen = observer(() => {
             ]}
           >
             <Text style={styles.label}>Уникальные показатели:</Text>
-            <Text style={styles.value}>{armor.uniqueStats}</Text>
+            <Text style={styles.value}>{weapon.uniqueStats}</Text>
 
-            {armor.modifiers.length > 0 && (
+            {weapon.modifiers.length > 0 && (
               <View style={styles.modifiersRow}>
-                {armor.modifiers.map((m) => (
+                {weapon.modifiers.map((m) => (
                   <View key={m.id} style={styles.modifierBadge}>
                     <Text style={styles.modifierText}>
                       {m.value} {m.stat}
@@ -220,13 +236,14 @@ const ArmorListScreen = observer(() => {
             ]}
           >
             <Text style={styles.label}>Заряды:</Text>
-            <Text style={styles.value}>{armor.charges}</Text>
+            <Text style={styles.value}>{weapon.charges}</Text>
           </View>
         </View>
       </View>
     );
   };
 
+  // общий стиль для "лейбл + инпут в одну строку"
   const inlineLabelStyle = [
     styles.modalLabel,
     { marginBottom: 0, flexShrink: 0, width: 170 },
@@ -244,9 +261,10 @@ const ArmorListScreen = observer(() => {
         }}
       >
         <View style={{ width: containerWidth }}>
-          <Text style={styles.pageTitle}>СПИСОК БРОНИ</Text>
+          <Text style={styles.pageTitle}>СПИСОК ОРУЖИЯ</Text>
           <View style={styles.pageDivider} />
 
+          {/* Кнопка "Создать" */}
           <View style={styles.createButtonWrapper}>
             <TouchableOpacity
               style={styles.createButton}
@@ -256,11 +274,12 @@ const ArmorListScreen = observer(() => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.listWrapper}>{armorList.map(renderArmorCard)}</View>
+          {/* Список карточек */}
+          <View style={styles.listWrapper}>{weaponList.map(renderWeaponCard)}</View>
         </View>
       </ScrollView>
 
-      {/* Модалка создания */}
+      {/* Модалка создания оружия */}
       <Modal
         visible={createVisible}
         transparent
@@ -269,6 +288,7 @@ const ArmorListScreen = observer(() => {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { width: containerWidth }]}>
+            {/* Заголовок модалки: название / тип предмета */}
             <View style={styles.modalHeader}>
               <View style={styles.modalTitleRow}>
                 <TextInput
@@ -290,29 +310,32 @@ const ArmorListScreen = observer(() => {
             </View>
 
             <View style={styles.modalBody}>
+              {/* Урон + Модификатор */}
               <View style={styles.modalRow}>
                 <View style={styles.inlineStatRow}>
-                  <Text style={styles.inlineStatLabel}>Класс доспеха:</Text>
+                  <Text style={styles.inlineStatLabel}>Урон:</Text>
                   <TextInput
                     style={[styles.modalInput, { flex: 1 }]}
-                    value={formAC}
-                    onChangeText={setFormAC}
-                    placeholder="11"
+                    value={formDamage}
+                    onChangeText={setFormDamage}
+                    placeholder="1к8"
                     placeholderTextColor={COLORS.textLowEmphasis}
                   />
                 </View>
+
                 <View style={styles.inlineStatRow}>
                   <Text style={styles.inlineStatLabel}>Модификатор:</Text>
                   <TextInput
                     style={[styles.modalInput, { flex: 1 }]}
-                    value={formModifier}
-                    onChangeText={setFormModifier}
-                    placeholder="Ловк."
+                    value={formDamageMod}
+                    onChangeText={setFormDamageMod}
+                    placeholder="Сила / Ловк."
                     placeholderTextColor={COLORS.textLowEmphasis}
                   />
                 </View>
               </View>
 
+              {/* Стоимость */}
               <View style={styles.modalRow}>
                 <Text style={inlineLabelStyle}>Стоимость:</Text>
                 <TextInput
@@ -324,6 +347,7 @@ const ArmorListScreen = observer(() => {
                 />
               </View>
 
+              {/* Редкость */}
               <View style={styles.modalRow}>
                 <Text style={inlineLabelStyle}>Редкость:</Text>
                 <TextInput
@@ -335,26 +359,26 @@ const ArmorListScreen = observer(() => {
                 />
               </View>
 
-              {/* Помеха для скрытности */}
+              {/* Хват */}
               <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Помеха для скрытности:</Text>
+                <Text style={inlineLabelStyle}>Хват:</Text>
                 <TextInput
                   style={inlineInputStyle}
-                  value={formStealth}
-                  onChangeText={setFormStealth}
-                  placeholder="Нет"
+                  value={formGrip}
+                  onChangeText={setFormGrip}
+                  placeholder="Одноручное / Двуручное"
                   placeholderTextColor={COLORS.textLowEmphasis}
                 />
               </View>
 
-              {/* Требование к силе */}
+              {/* Дальность */}
               <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Требование к силе:</Text>
+                <Text style={inlineLabelStyle}>Дальность (в метрах):</Text>
                 <TextInput
                   style={inlineInputStyle}
-                  value={formStrengthReq}
-                  onChangeText={setFormStrengthReq}
-                  placeholder="Нет"
+                  value={formRange}
+                  onChangeText={setFormRange}
+                  placeholder="2.5"
                   placeholderTextColor={COLORS.textLowEmphasis}
                 />
               </View>
@@ -366,7 +390,7 @@ const ArmorListScreen = observer(() => {
                   style={inlineInputStyle}
                   value={formWeight}
                   onChangeText={setFormWeight}
-                  placeholder="3"
+                  placeholder="5"
                   placeholderTextColor={COLORS.textLowEmphasis}
                 />
               </View>
@@ -434,6 +458,7 @@ const ArmorListScreen = observer(() => {
               </View>
             </View>
 
+            {/* Футер модалки */}
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={[styles.footerButton, styles.footerButtonSecondary]}
@@ -446,7 +471,7 @@ const ArmorListScreen = observer(() => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.footerButton, styles.footerButtonPrimary]}
-                onPress={handleAddArmor}
+                onPress={handleAddWeapon}
               >
                 <Text style={styles.footerButtonPrimaryText}>Добавить</Text>
               </TouchableOpacity>
@@ -458,4 +483,4 @@ const ArmorListScreen = observer(() => {
   );
 });
 
-export default ArmorListScreen;
+export default WeaponListScreen;

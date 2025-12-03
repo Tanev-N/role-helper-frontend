@@ -70,19 +70,37 @@ export const armorStyles = StyleSheet.create({
 
   infoBox: {
     flex: 1,
-    backgroundColor: "#2C2C31",
-    borderRadius: 8,
+    backgroundColor: "#202124", 
+    borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)", 
   },
-  infoBoxMobile: {
-    width: "100%",
-  },
+
+  
   infoBoxWide: {
     flex: 2,
+    backgroundColor: "#202124",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
+
   infoBoxNarrow: {
     flex: 1,
+    backgroundColor: "#202124",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+
+  infoBoxMobile: {
+    width: "100%",
   },
 
   label: {
@@ -98,12 +116,14 @@ export const armorStyles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textPrimary,
   },
+
   valueHighlight: {
     fontFamily: "Roboto",
     fontWeight: "400",
     fontSize: 16,
-    color: COLORS.textPrimary,
+    color: COLORS.textPrimary, 
   },
+
   valueGold: {
     fontFamily: "Roboto",
     fontWeight: "400",
@@ -170,9 +190,6 @@ export const armorStyles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  modalBody: {
-    gap: 10,
-  },
 
   modalRow: {
     flexDirection: "row",
@@ -186,6 +203,27 @@ export const armorStyles = StyleSheet.create({
     flex: 1,
   },
 
+    inlineStatRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    },
+    inlineStatLabel: {
+    
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    },
+    inlineStatValue: {
+    
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    },
+
+
   modalLabel: {
     fontFamily: "Roboto",
     fontWeight: "400",
@@ -193,7 +231,7 @@ export const armorStyles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
-  modalInput: {
+    modalInput: {
     backgroundColor: "#18191A",
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -203,6 +241,7 @@ export const armorStyles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textPrimary,
   },
+
   modalInputWide: {
     backgroundColor: "#18191A",
     borderRadius: 8,
@@ -214,9 +253,108 @@ export const armorStyles = StyleSheet.create({
     color: COLORS.textPrimary,
     marginBottom: 8,
   },
+
   modalUniqueBlock: {
     marginTop: 4,
   },
+
+  modalBody: {
+    gap: 8,
+  },
+
+  modalLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18, 
+    marginBottom: 8,
+  },
+
+  modalLineFirst: {
+    marginTop: 4,
+    marginBottom: 12,
+  },
+
+  modalLineLabel: {
+    width: 171,
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+
+  modalLineModifierLabel: {
+    marginLeft: 42,
+    width: "auto",
+  },
+
+  modalInputInline: {
+    flexGrow: 0,
+    flexShrink: 0,
+    width: 467,
+    backgroundColor: "#18191A",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 16,
+    color: COLORS.textPrimary,
+  },
+
+  modalInputAC: {
+    width: 94,
+  },
+
+  modalInputModifier: {
+    width: 124,
+  },
+
+  modalUniqueRight: {
+    flexGrow: 0,
+    flexShrink: 0,
+    width: 467,
+  },
+
+  // псевдо-инпут (для редкости, да/нет и т.п.)
+  modalInputFake: {
+    flexGrow: 0,
+    flexShrink: 0,
+    width: 280,
+    backgroundColor: "#18191A",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    justifyContent: "center",
+  },
+  modalInputFakeText: {
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    textAlign: "center",
+  },
+
+  // контейнер селектора (стрелки + псевдо-инпут)
+  modalSelectContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  modalSelectArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#18191A",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalSelectArrowText: {
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 18,
+    color: COLORS.textSecondary,
+  },
+
   modalModsGrid: {
     marginTop: 8,
     gap: 6,
@@ -272,7 +410,7 @@ export const armorStyles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
 
-    modalTitleRow: {
+  modalTitleRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -298,6 +436,19 @@ export const armorStyles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 18,
     color: COLORS.textSecondary,
+  },
+
+
+  modalSelectValue: {
+    flex: 1,
+    textAlign: "center",
+    fontFamily: "Roboto",
+    fontWeight: "400",
+    fontSize: 16,
+    color: COLORS.textPrimary,
+  },
+  modalSelectBox: {
+    justifyContent: "center",
   },
 
 });

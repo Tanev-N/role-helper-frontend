@@ -177,6 +177,29 @@ const CharactersScreen = () => {
     const visibleColorCount = Math.max(0, maxSlotsInRow - 1);
     const visibleColors = colors.slice(0, visibleColorCount);
 
+ const renderEquipmentCard = (
+      title: string,
+      colors: string[],
+      onPress?: () => void
+    ) => (
+      <View style={styles.equipmentCard}>
+        <View style={styles.equipmentHeader}>
+          <Text style={styles.equipmentTitle}>{title}</Text>
+
+          <TouchableOpacity
+            style={styles.equipmentArrowButton}
+            onPress={onPress}
+          >
+            <ChevronRight size={20} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* тут будут слоты экипировки */}
+      </View>
+    );
+
+    
+
     return (
       <View style={styles.equipmentCard}>
         <View style={styles.equipmentHeader}>
@@ -217,7 +240,7 @@ const CharactersScreen = () => {
       </View>
     );
   };
-
+ 
 
 
   return (
@@ -304,8 +327,14 @@ const CharactersScreen = () => {
         {renderEquipmentCard("Ваша броня", armorColors, () =>
           router.push("/(app)/cabinet/armor")
         )}
-        {renderEquipmentCard("Ваше оружие", weaponColors)}
-        {renderEquipmentCard("Ваши заклинания", spellColors)}
+
+        {renderEquipmentCard("Ваше оружие", weaponColors, () =>
+          router.push("/(app)/cabinet/weapon")
+        )}
+
+        {renderEquipmentCard("Ваши заклинания", spellColors, () =>
+          router.push("/(app)/cabinet/spells")
+        )}
       </View>
 
 
