@@ -1,3 +1,5 @@
+import { useNavigationHistory } from '@/hooks/useNavigationHistory';
+
 import { Stack, Redirect, useRouter, usePathname } from "expo-router";
 import { observer } from "mobx-react-lite";
 import useStore from "@/hooks/store";
@@ -39,6 +41,7 @@ function AppLayoutContent() {
     "/cabinet/session",    // окно конкретной сессии
     "/cabinet/game",    // окно создания игры
     "/cabinet/armor",   //окно списка брони
+    "/cabinet/weapon", //окно списка оружия
   ];
 
   const backPrefixRoutes = [
@@ -199,12 +202,28 @@ const ElementMenu = ({
 const BackButton = ({ small = false }: { small?: boolean }) => {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const { getPreviousRoute, goBack, getDefaultRoute } = useNavigationHistory();
+
+  const handleBack = () => {
+    const previousRoute = getPreviousRoute();
+    
+    if (previousRoute) {
+      // Есть история - переходим на предыдущий маршрут
+      goBack(); // Удаляем текущую страницу из истории
+      router.push(previousRoute as any);
+    } else {
+      // Нет истории - идем на дефолтный маршрут
+      const defaultRoute = getDefaultRoute(pathname);
+      router.push(defaultRoute as any);
+    }
+  };
 
   return (
     <Pressable
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
-      onPress={() => router.back()}
+      onPress={handleBack}
       style={[
         styles.elementMenu,
         small && styles.elementMenuSmall,
