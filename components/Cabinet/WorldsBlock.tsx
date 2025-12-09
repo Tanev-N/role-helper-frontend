@@ -1,10 +1,10 @@
 import useStore from "@/hooks/store";
-import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { ArrowRight, Globe2, Plus } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect } from "react";
-import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { ImageBackground, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { styles } from "./styles";
 
 const WorldsBlock = observer(() => {
@@ -13,14 +13,6 @@ const WorldsBlock = observer(() => {
   const blockWidth = Math.min(width * 0.95, 904);
   const router = useRouter();
   const { gamesStore } = useStore();
-
-  const colors = [
-    "rgba(73,124,0,1)",
-    "rgba(151,0,136,1)",
-    "rgba(0,60,179,1)",
-    "rgba(138,113,0,1)",
-    "rgba(92,15,0,1)",
-  ];
 
   useEffect(() => {
     gamesStore.fetchGames();
@@ -66,28 +58,36 @@ const WorldsBlock = observer(() => {
             style={({ pressed }) => [
               styles.worldRect,
               {
-                backgroundColor: colors[i % colors.length],
                 width: worldCardWidth,
                 height: 88,
                 opacity: pressed ? 0.8 : 1,
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 8,
               },
             ]}
           >
-            <Text
+            <ImageBackground
+              source={{ uri: game.photo }}
               style={{
-                color: "rgba(255,255,255,1)",
-                fontFamily: "Roboto",
-                fontWeight: "600",
-                fontSize: 14,
-                textAlign: "center",
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 8,
               }}
-              numberOfLines={2}
+              resizeMode="cover"
             >
-              {game.name}
-            </Text>
+              <Text
+                style={{
+                  color: "rgba(255,255,255,1)",
+                  fontFamily: "Roboto",
+                  fontWeight: "600",
+                  fontSize: 14,
+                  textAlign: "center",
+                }}
+                numberOfLines={2}
+              >
+                {game.name}
+              </Text>
+            </ImageBackground>
           </Pressable>
         ))}
 

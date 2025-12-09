@@ -5,6 +5,8 @@ export interface Game {
   id: number;
   name: string;
   master_id: number;
+  description: string;
+  photo: string;
 }
 
 export interface Session {
@@ -49,8 +51,7 @@ const apiGamesUrl = {
   enterSession: createEndpoint("/games/sessions/enter"),
   finishSession: (sessionId: number) =>
     createEndpoint(`/games/sessions/${sessionId}/finish`),
-  gamePlayers: (gameId: number) =>
-    createEndpoint(`/games/${gameId}/players`),
+  gamePlayers: (gameId: number) => createEndpoint(`/games/${gameId}/players`),
 };
 
 export const apiGames = {
@@ -58,10 +59,11 @@ export const apiGames = {
     return await axios.get(apiGamesUrl.games);
   },
 
-  async createGame(name: string, description: string) {
+  async createGame(name: string, description: string, photo: string) {
     return await axios.post(apiGamesUrl.games, {
       name,
       description,
+      photo,
     } as CreateGameRequest);
   },
 

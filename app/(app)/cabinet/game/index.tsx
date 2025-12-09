@@ -1,4 +1,6 @@
+import { createEndpointImage } from "@/api/api";
 import { COLORS } from "@/constant/colors";
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
@@ -7,7 +9,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, useWindowDi
 
 const CreateGameScreen = observer(() => {
     const router = useRouter();
-    const { gamesStore } = useStore();
+    const { gamesStore, imageStore } = useStore();
     const { width } = useWindowDimensions();
     const blockWidth = Math.min(width * 0.95, 904);
 
@@ -16,7 +18,18 @@ const CreateGameScreen = observer(() => {
 
     const handleCreateGame = async () => {
         try {
-            await gamesStore.createGame(name.trim(), description.trim() || "");
+            let imageUrl = "";
+            const imageRawUrl = await imageStore.generateWorldImage(
+                name,
+                description || "Фентези мир для ролевой игры"
+            );
+            if (imageRawUrl) {
+                imageUrl = createEndpointImage(imageRawUrl);
+            }
+            else {
+                imageUrl = imagesUrlDefault.worldsUrl;
+            }
+            await gamesStore.createGame(name.trim(), description.trim() || "", imageUrl);
         } catch (error: any) {
             const errorMessage = gamesStore.getError || "Не удалось создать игру";
             Alert.alert("Ошибка", errorMessage);

@@ -104,11 +104,11 @@ export class GamesStore {
     }
   }
 
-  public async createGame(name: string, description: string) {
+  public async createGame(name: string, description: string, photoUrl: string) {
     this.setError(null);
     this.setIsLoading(true);
     try {
-      const response = await apiGames.createGame(name, description);
+      const response = await apiGames.createGame(name, description, photoUrl);
       if (response.status === 201) {
         const newGame = response.data as Game;
         runInAction(() => {
@@ -120,9 +120,7 @@ export class GamesStore {
     } catch (e: any) {
       console.warn("GamesStore: createGame error", e);
       runInAction(() => {
-        this.setError(
-          e.response?.data?.error || "Ошибка при создании игры"
-        );
+        this.setError(e.response?.data?.error || "Ошибка при создании игры");
       });
       throw e;
     } finally {
@@ -159,9 +157,7 @@ export class GamesStore {
     } catch (e: any) {
       console.warn("GamesStore: createSession error", e);
       runInAction(() => {
-        this.setError(
-          e.response?.data?.error || "Ошибка при создании сессии"
-        );
+        this.setError(e.response?.data?.error || "Ошибка при создании сессии");
       });
       throw e;
     } finally {
@@ -248,9 +244,7 @@ export class GamesStore {
     } catch (e: any) {
       console.warn("GamesStore: fetchGamePlayers error", e);
       runInAction(() => {
-        this.setError(
-          e.response?.data?.error || "Ошибка при загрузке игроков"
-        );
+        this.setError(e.response?.data?.error || "Ошибка при загрузке игроков");
       });
     } finally {
       runInAction(() => {
