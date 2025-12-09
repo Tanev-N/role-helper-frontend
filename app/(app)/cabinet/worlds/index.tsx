@@ -1,19 +1,20 @@
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
+import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  useWindowDimensions,
-  Pressable,
   Image,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
 } from "react-native";
-import { observer } from "mobx-react-lite";
-import { useFocusEffect } from "@react-navigation/native";
-import { ChevronRight } from "lucide-react-native";
-import { useRouter } from "expo-router";
 
-import useStore from "@/hooks/store";
 import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { Game } from "@/stores/Games/api";
 import { worldsStyles as styles } from "./styles";
 
 const WorldsListScreen = observer(() => {
@@ -46,31 +47,15 @@ const WorldsListScreen = observer(() => {
     }, [gamesStore])
   );
 
-  const games = gamesStore.getGames || [];
+  const worlds: Game[] = gamesStore.getGames || [];
 
-  /** ===== ТЕСТОВЫЕ МИРЫ  ===== */
-  const testWorlds = [
-    {
-      id: "test-world-1",
-      name: "Название мира",
-      image: require("@/assets/images/worlds_ex1.png"),
-    },
-    {
-      id: "test-world-2",
-      name: "Название мира",
-      image: require("@/assets/images/worlds_ex1.png"),
-    },
-  ];
-
-  // Сделано для демонстрации
-  const worlds: any[] = games.length === 0 ? testWorlds : (games as any[]);
-
-  const colors = [
-    "rgba(73,124,0,1)",
-    "rgba(151,0,136,1)",
-    "rgba(0,60,179,1)",
-    "rgba(138,113,0,1)",
-    "rgba(92,15,0,1)",
+  // Fallback цвета для фона, если изображения нет
+  const fallbackColors = [
+    COLORS.primary,
+    COLORS.intelligence,
+    COLORS.wisdom,
+    COLORS.charisma,
+    COLORS.strength,
   ];
 
   const titleSize = isSmallMobile ? 22 : 24;
@@ -93,8 +78,8 @@ const WorldsListScreen = observer(() => {
       {/* Список карточек миров */}
       <View style={[styles.list, { width: containerWidth }]}>
         {worlds.map((world, index) => {
-          const bgColor = colors[index % colors.length];
-          const imageSrc = (world as any).image;
+          const bgColor = fallbackColors[index % fallbackColors.length];
+          const imageSrc = world.photo;
 
           const arrowTop = imageHeight * (115 / 273);
           const arrowRight = cardWidth * (50 / 904);
@@ -119,17 +104,13 @@ const WorldsListScreen = observer(() => {
                   },
                 ]}
               >
-                {imageSrc && (
+                {imageSrc ? (
                   <Image
-                    source={
-                      typeof imageSrc === "number"
-                        ? imageSrc
-                        : { uri: imageSrc }
-                    }
+                    source={{ uri: imageSrc }}
                     style={styles.worldImage}
                     resizeMode="cover"
                   />
-                )}
+                ) : null}
 
                 <Pressable
                   style={[
@@ -141,10 +122,10 @@ const WorldsListScreen = observer(() => {
                       right: arrowRight,
                     },
                   ]}
-                onPress={() => {
+                  onPress={() => {
                     router.push("/(app)/cabinet/worldgame" as any);
 
-                }}
+                  }}
 
                 >
                   <ChevronRight size={32} color={COLORS.textPrimary} />
