@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     useWindowDimensions,
     View,
+    ScrollView,
 } from "react-native";
 
 const CreateSessionScreen = () => {
@@ -102,7 +103,12 @@ const CreateSessionScreen = () => {
                         <ActivityIndicator size="large" color={COLORS.primary} />
                     </View>
                 ) : (
-                    <View style={styles.colorRow}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={true}
+                        style={styles.scrollHorizontal}
+                        contentContainerStyle={styles.scrollHorizontalContent}
+                    >
                         {filteredGames && filteredGames.map((game, index) => (
                             <TouchableOpacity
                                 key={game.id}
@@ -138,7 +144,7 @@ const CreateSessionScreen = () => {
                         >
                             <Plus size={36} color={COLORS.textSecondary} />
                         </TouchableOpacity>
-                    </View>
+                    </ScrollView>
                 )}
             </View>
 

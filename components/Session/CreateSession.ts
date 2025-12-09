@@ -27,6 +27,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 24,
         marginBottom: 24,
+        maxWidth: "100%",
     },
 
     label: {
@@ -47,23 +48,35 @@ export const styles = StyleSheet.create({
         width: "100%",
     },
 
+    // Обновленный стиль для горизонтального скролла
     scrollHorizontal: {
         width: "100%",
+        maxHeight: 120,
     },
 
     scrollHorizontalContent: {
         flexDirection: "row",
-        flexWrap: "nowrap",
         alignItems: "center",
         gap: 16,
-        paddingVertical: 4,
-        paddingRight: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 4,
+    },
+
+    // Удаляем colorRow и заменяем на стиль для контейнера скролла
+    colorRow: {
+        width: "100%",
+        height: 110, // Высота для карточек + отступы
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
     },
 
     colorRect: {
-        width: 92,
-        height: 92,
+        width: 160,
+        height: 90,
         borderRadius: 11,
+        justifyContent: "center",
+        alignItems: "center",
     },
 
     colorSelected: {
@@ -72,8 +85,8 @@ export const styles = StyleSheet.create({
     },
 
     addRect: {
-        width: 92,
-        height: 92,
+        width: 160,
+        height: 90,
         borderRadius: 11,
         borderWidth: 2,
         borderColor: COLORS.textSecondary,
