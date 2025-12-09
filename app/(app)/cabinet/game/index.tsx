@@ -31,7 +31,7 @@ const CreateGameScreen = observer(() => {
             }
             await gamesStore.createGame(name.trim(), description.trim() || "", imageUrl);
         } catch (error: any) {
-            const errorMessage = gamesStore.getError || "Не удалось создать игру";
+            const errorMessage = gamesStore.getError || "Не удалось создать мир";
             Alert.alert("Ошибка", errorMessage);
             console.error("Create game error:", error);
         }
@@ -64,7 +64,7 @@ const CreateGameScreen = observer(() => {
                     color: COLORS.textPrimary,
                     marginBottom: 24,
                 }}>
-                    Создать игру
+                    Создать мир
                 </Text>
 
                 <View style={{ marginBottom: 20 }}>
@@ -75,10 +75,10 @@ const CreateGameScreen = observer(() => {
                         color: COLORS.textPrimary,
                         marginBottom: 8,
                     }}>
-                        Название игры *
+                        Название мира *
                     </Text>
                     <TextInput
-                        placeholder="Введите название игры"
+                        placeholder="Введите название мира"
                         placeholderTextColor={COLORS.textLowEmphasis}
                         value={name}
                         onChangeText={setName}
@@ -107,7 +107,7 @@ const CreateGameScreen = observer(() => {
                         Описание
                     </Text>
                     <TextInput
-                        placeholder="Введите описание игры (необязательно)"
+                        placeholder="Введите описание мира (необязательно)"
                         placeholderTextColor={COLORS.textLowEmphasis}
                         value={description}
                         onChangeText={setDescription}
