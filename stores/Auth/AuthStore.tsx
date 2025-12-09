@@ -1,5 +1,5 @@
-import { makeAutoObservable, runInAction } from "mobx";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { makeAutoObservable, runInAction } from "mobx";
 import { apiAuth } from "./api";
 
 // Тип пользователя
