@@ -39,30 +39,29 @@ export const styles = StyleSheet.create({
     input: {
         color: COLORS.textPrimary,
         fontFamily: "Roboto",
-        fontSize: 30,
+        fontSize: 24,
         borderBottomWidth: 1,
         borderBottomColor: COLORS.textLowEmphasis,
         marginBottom: 24,
-        paddingVertical: 8,
+        paddingVertical: 6,
+        width: "100%",
     },
 
-    inputCentered: {
-        color: COLORS.textPrimary,
-        fontFamily: "Roboto",
-        fontSize: 30,
-        textAlign: "left",
+    scrollHorizontal: {
+        width: "100%",
     },
 
-    colorRow: {
+    scrollHorizontalContent: {
         flexDirection: "row",
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
+        alignItems: "center",
         gap: 16,
-        marginTop: 8,
-        justifyContent: "space-between",
+        paddingVertical: 4,
+        paddingRight: 8,
     },
 
     colorRect: {
-        width: 202,
+        width: 92,
         height: 92,
         borderRadius: 11,
     },
@@ -73,7 +72,7 @@ export const styles = StyleSheet.create({
     },
 
     addRect: {
-        width: 202,
+        width: 92,
         height: 92,
         borderRadius: 11,
         borderWidth: 2,

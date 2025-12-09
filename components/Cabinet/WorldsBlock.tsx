@@ -49,7 +49,10 @@ const WorldsBlock = observer(() => {
             <Text style={styles.sectionSubtitle}>Доступно {games.length} {games.length === 1 ? 'мир' : games.length < 5 ? 'мира' : 'миров'}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.iconCircle}>
+        <TouchableOpacity
+          style={styles.iconCircle}
+          onPress={() => router.push("/cabinet/worlds")}
+        >
           <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>

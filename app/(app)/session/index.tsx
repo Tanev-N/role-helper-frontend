@@ -93,7 +93,7 @@ const CreateSessionScreen = () => {
     return (
         <View style={[styles.container, isSmallScreen && { paddingTop: 120 }]}>
             {/* === ЛОГОТИП === */}
-            <Text style={styles.logo}>CriticalRoll</Text>
+            <Text style={styles.logo}>Critical Roll</Text>
 
             {/* === БЛОК 1: Выбор мира === */}
             <View style={[styles.block, { width: containerWidth }]}>

@@ -90,10 +90,12 @@ export const characterStyles = StyleSheet.create({
         fontFamily: "Roboto",
         fontWeight: "400",
         fontSize: INPUT_FONT_SIZE,
-        lineHeight: INPUT_FONT_SIZE, // 100%
+        lineHeight: INPUT_FONT_SIZE,
         letterSpacing: 0,
         paddingHorizontal: 16,
         height: INPUT_HEIGHT,
+        flex: 1,
+        paddingVertical: 6,
     },
 
     inputWide: {
@@ -110,14 +112,26 @@ export const characterStyles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: COLORS.backgroundSecondary,
         borderRadius: 8,
-        paddingRight: 8,
-        gap: 8,
         height: INPUT_HEIGHT,
+        paddingLeft: 16,
+        paddingRight: 40,
+        position: "relative",
+    },
+
+
+    inputContainer: {
+        backgroundColor: COLORS.backgroundSecondary,
+        borderRadius: 8,
+        height: INPUT_HEIGHT,
+        paddingHorizontal: 16,
+        justifyContent: "center",
     },
 
     iconButton: {
-        width: 32,
-        height: 32,
+        position: "absolute",
+        right: 8,
+        width: 28,
+        height: 28,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -173,7 +187,7 @@ export const characterStyles = StyleSheet.create({
         position: "absolute",
         right: -26,
         top: -6,
-        
+
     },
 
     statLabel: {
@@ -198,7 +212,7 @@ export const characterStyles = StyleSheet.create({
     additionalRow: {
         flexDirection: "row",
         alignItems: "flex-start",
-        justifyContent: "space-between",
+        justifyContent: "center",
         flexWrap: "wrap",
         width: "100%",
         gap: 16,
@@ -208,27 +222,28 @@ export const characterStyles = StyleSheet.create({
     modifiersBlock: {
         flexGrow: 1,
         flexShrink: 1,
-        minWidth: 300,
-        maxWidth: 460,
-        flexBasis: "auto",
+        minWidth: 360,
+        maxWidth: 560, 
+        flexBasis: "55%",
     },
 
     // Правая часть (инициатива, КД, скорость, хиты, кнопки)
     rightColumn: {
-        flexGrow: 0,
-        flexShrink: 0,
+        flexGrow: 1,
+        flexShrink: 1,
         minWidth: 260,
         maxWidth: 320,
         flexDirection: "column",
         alignItems: "flex-start",
         gap: 12,
+        flexBasis: "35%",
     },
 
     // сетка квадратных карточек
     statsGrid: {
         flexDirection: "row",
         flexWrap: "wrap",
-        justifyContent: "center", // центрирование на мобилке
+        justifyContent: "center",
         alignItems: "center",
         gap: 12,
         width: "100%",
@@ -245,7 +260,7 @@ export const characterStyles = StyleSheet.create({
         minWidth: 120,
         maxWidth: 150,
         flexGrow: 1,
-        flexBasis: "30%", // чтобы на мобилке помещалось 3 в ряд
+        flexBasis: "30%",
     },
 
     smallStatValue: {
@@ -282,5 +297,75 @@ export const characterStyles = StyleSheet.create({
         color: COLORS.textPrimary,
         fontSize: 24,
         fontWeight: "500",
+    },
+
+    // ==================== БРОНЯ / ОРУЖИЕ / ЗАКЛИНАНИЯ ====================
+
+    equipmentCard: {
+        width: "100%",
+        backgroundColor: COLORS.backgroundSecondary,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.1)",
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        marginBottom: 16,
+    },
+
+    equipmentHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 12,
+        position: "relative",
+    },
+
+    equipmentTitle: {
+        fontFamily: "Roboto",
+        fontWeight: "400",
+        fontSize: 20,
+        color: COLORS.textSecondary,
+        textAlign: "center",
+    },
+
+    equipmentArrowButton: {
+        position: "absolute",
+        right: 0,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    equipmentRow: {
+        flexDirection: "row",
+        flexWrap: "nowrap",           // одна строка
+        alignItems: "center",
+        justifyContent: "flex-start",
+        columnGap: 12,
+    },
+
+    // базовый стиль слота — размеры задаём из компонента
+    equipmentSlot: {
+        borderRadius: 8,
+    },
+
+    equipmentAddSlot: {
+        borderRadius: 8,
+        backgroundColor: COLORS.backgroundPrimary,
+        borderWidth: 1,
+        borderColor: COLORS.textLowEmphasis,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    equipmentAddText: {
+        fontFamily: "Roboto",
+        fontWeight: "400",
+        fontSize: 32,
+        lineHeight: 32,
+        color: COLORS.textSecondary,
+        textAlign: "center",
     },
 });
