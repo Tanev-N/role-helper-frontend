@@ -332,9 +332,9 @@ const CharactersScreen = () => {
           router.push("/(app)/cabinet/weapon")
         )}
 
-        {renderEquipmentCard("Ваши заклинания", spellColors, () =>
+        {/* {renderEquipmentCard("Ваши заклинания", spellColors, () =>
           router.push("/(app)/cabinet/spells")
-        )}
+        )} */}
       </View>
 
 
