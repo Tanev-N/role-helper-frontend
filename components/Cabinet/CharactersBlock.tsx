@@ -80,7 +80,7 @@ const CharactersBlock = observer(() => {
                 },
               ]}
               onPress={() => {
-                router.push(`/(app)/cabinet/character/${character.id}`);
+                // router.push(`/(app)/cabinet/character/${character.id}`); TODO: replace on Updatr Characters Screen
               }}
             >
               <ImageBackground
