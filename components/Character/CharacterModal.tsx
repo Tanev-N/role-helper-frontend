@@ -1,7 +1,5 @@
-import { observer } from "mobx-react-lite";
 import React from "react";
 import {
-    ActivityIndicator,
     Modal,
     ScrollView,
     StyleSheet,
@@ -11,23 +9,18 @@ import {
 } from "react-native";
 import { COLORS } from "../../constant/colors";
 
-
 interface CharacterModalProps {
     visible: boolean;
     onClose: () => void;
     title: string;
     children?: React.ReactNode;
-    loading?: boolean;
-    placeholderText?: string;
 }
 
-const CharacterModal: React.FC<CharacterModalProps> = observer(({
+const CharacterModal: React.FC<CharacterModalProps> = ({
     visible,
     onClose,
     title,
     children,
-    loading = false,
-    placeholderText,
 }) => {
     return (
         <Modal
@@ -47,16 +40,9 @@ const CharacterModal: React.FC<CharacterModalProps> = observer(({
                         contentContainerStyle={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                     >
-                        {children ? (
-                            children
-                        ) : loading ? (
-                            <View style={styles.loadingWrapper}>
-                                <ActivityIndicator size="large" color={COLORS.primary} />
-                                <Text style={styles.placeholder}>Загрузка...</Text>
-                            </View>
-                        ) : (
+                        {children || (
                             <Text style={styles.placeholder}>
-                                {placeholderText || `Здесь будет контент: ${title.toLowerCase()}`}
+                                Здесь будет контент: {title.toLowerCase()}
                             </Text>
                         )}
                     </ScrollView>
@@ -69,7 +55,7 @@ const CharacterModal: React.FC<CharacterModalProps> = observer(({
             </View>
         </Modal>
     );
-});
+};
 
 export default CharacterModal;
 
@@ -112,11 +98,6 @@ const styles = StyleSheet.create({
         color: COLORS.textSecondary,
         fontSize: 16,
         textAlign: "center",
-    },
-    loadingWrapper: {
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
     },
     closeButton: {
         backgroundColor: COLORS.primary,

@@ -4,8 +4,9 @@ import useStore from "@/hooks/store";
 import { Character } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+    ActivityIndicator,
     ImageBackground,
     LayoutChangeEvent,
     Platform,
@@ -14,7 +15,7 @@ import {
     StyleSheet,
     Text,
     useWindowDimensions,
-    View,
+    View
 } from "react-native";
 import CharacterModal from "./Character/CharacterModal";
 
@@ -48,24 +49,26 @@ const ChatUsers = () => {
         if (!gamePlayers || gamePlayers.length === 0) return;
 
         gamePlayers.forEach((player) => {
+            const charId = String(player.character_id);
             // если нет полной карточки в кэше — подгружаем
-            if (!charactersStore.getCharacterById(player.character_id)) {
-                charactersStore.fetchCharacterById(player.character_id);
+            if (!charactersStore.getCharacterById(charId)) {
+                charactersStore.fetchCharacterById(charId);
             }
         });
     }, [gamesStore.getGamePlayers, charactersStore]);
 
     // Получаем игроков из store и преобразуем их в формат User
-    const users = (() => {
+    const users = useMemo(() => {
         const gamePlayers = gamesStore.getGamePlayers;
         if (!gamePlayers || gamePlayers.length === 0) {
             return [];
         }
 
         return gamePlayers.map((player) => {
-            const fullCharacter = charactersStore.getCharacterById(String(player.character_id));
+            const charId = String(player.character_id);
+            const fullCharacter = charactersStore.getCharacterById(charId);
             const shortCharacter =
-                charactersStore.getCharacters?.find((char) => char.id === player.character_id) || null;
+                charactersStore.getCharacters?.find((char) => char.id === charId) || null;
 
             const name = fullCharacter?.name || shortCharacter?.name || `Игрок ${player.id}`;
             const photo = fullCharacter?.photo || shortCharacter?.photo;
@@ -73,27 +76,16 @@ const ChatUsers = () => {
             return {
                 id: player.id,
                 name,
-                characterId: player.character_id,
+                characterId: charId,
                 photo,
             };
         });
-    })();
+    }, [gamesStore.getGamePlayers, charactersStore.getCharacters, charactersStore]);
 
-    const [modalLoading, setModalLoading] = useState(false);
     useEffect(() => {
-        if (!modalActiveCharacterId) return;
-        if (charactersStore.getCharacterById(modalActiveCharacterId)) {
-            setModalLoading(false);
-            return;
+        if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {
+            charactersStore.fetchCharacterById(modalActiveCharacterId);
         }
-        let cancelled = false;
-        setModalLoading(true);
-        charactersStore.fetchCharacterById(modalActiveCharacterId).finally(() => {
-            if (!cancelled) setModalLoading(false);
-        });
-        return () => {
-            cancelled = true;
-        };
     }, [modalActiveCharacterId, charactersStore]);
 
     const modalCharacter =
@@ -101,8 +93,7 @@ const ChatUsers = () => {
             charactersStore.getCharacterById(modalActiveCharacterId)) ||
         null;
 
-    const isModalLoading =
-        modalActiveCharacterId !== null && (modalLoading || !modalCharacter);
+    const isModalLoading = modalActiveCharacterId !== null && !modalCharacter;
 
     const toggleDeathSave = (characterId: string, index: number) => {
         setDeathSaves((prev) => {
@@ -156,6 +147,29 @@ const ChatUsers = () => {
         }
     }, []);
 
+    const modalBody = isModalLoading ? (
+        <View style={styles.modalLoading}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.modalLoadingText}>Загрузка персонажа…</Text>
+        </View>
+    ) : modalCharacter ? (
+        <StatsContent
+            character={modalCharacter}
+            passivePerception={passivePerception}
+            acrobatics={acrobatics}
+            deathSaves={deathSaves}
+            onToggleDeathSave={toggleDeathSave}
+            onOpenCharacter={() => {
+                router.push(`/(app)/cabinet/character/${modalCharacter.id}`);
+                setModalActiveCharacterId(null);
+            }}
+        />
+    ) : (
+        <View style={styles.modalLoading}>
+            <Text style={styles.modalLoadingText}>Персонаж не найден</Text>
+        </View>
+    );
+
     if (isMobile) {
         return (
             <>
@@ -197,22 +211,9 @@ const ChatUsers = () => {
                 <CharacterModal
                     visible={modalActiveCharacterId !== null}
                     onClose={() => setModalActiveCharacterId(null)}
-                    title={modalCharacter?.name || "Персонаж"}
-                    loading={isModalLoading}
+                    title={modalCharacter?.name || (isModalLoading ? "Загрузка…" : "Персонаж")}
                 >
-                    {modalCharacter && (
-                        <StatsContent
-                            character={modalCharacter}
-                            passivePerception={passivePerception}
-                            acrobatics={acrobatics}
-                            deathSaves={deathSaves}
-                            onToggleDeathSave={toggleDeathSave}
-                            onOpenCharacter={() => {
-                                router.push(`/(app)/cabinet/character/${modalCharacter.id}`);
-                                setModalActiveCharacterId(null);
-                            }}
-                        />
-                    )}
+                    {modalBody}
                 </CharacterModal>
             </>
         );
@@ -274,22 +275,9 @@ const ChatUsers = () => {
             <CharacterModal
                 visible={modalActiveCharacterId !== null}
                 onClose={() => setModalActiveCharacterId(null)}
-                title={modalCharacter?.name || "Персонаж"}
-                loading={isModalLoading}
+                title={modalCharacter?.name || (isModalLoading ? "Загрузка…" : "Персонаж")}
             >
-                {modalCharacter && (
-                    <StatsContent
-                        character={modalCharacter}
-                        passivePerception={passivePerception}
-                        acrobatics={acrobatics}
-                        deathSaves={deathSaves}
-                        onToggleDeathSave={toggleDeathSave}
-                        onOpenCharacter={() => {
-                            router.push(`/(app)/cabinet/character/${modalCharacter.id}`);
-                            setModalActiveCharacterId(null);
-                        }}
-                    />
-                )}
+                {modalBody}
             </CharacterModal>
         </>
     );
@@ -416,6 +404,17 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.3)",
         borderRadius: 8,
+    },
+    modalLoading: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 20,
+        gap: 12,
+    },
+    modalLoadingText: {
+        color: COLORS.textSecondary,
+        fontFamily: "Roboto",
+        fontSize: 16,
     },
     /** Modal */
     modalWrapper: {
