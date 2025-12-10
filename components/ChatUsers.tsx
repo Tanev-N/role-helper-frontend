@@ -60,12 +60,7 @@ const ChatUsers = () => {
         }
 
         return gamePlayers.map((player) => {
-            const characterShort =
-                (charactersStore.getCharacters &&
-                    charactersStore.getCharacters.find(
-                        (char) => char.id === player.character_id
-                    )) ||
-                null;
+            const characterShort = player.character;
 
             const name = characterShort?.name || `Игрок ${player.id}`;
             const photo = characterShort?.photo;
