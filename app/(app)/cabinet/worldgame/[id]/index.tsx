@@ -31,9 +31,9 @@ const WorldGameScreen = observer(() => {
   const imageHeight = cardWidth * CARD_RATIO_IMAGE;
   const nameHeight = cardWidth * CARD_RATIO_NAME;
 
-  const world = gamesStore.getGames.find((game) => game.id === parseInt(id as string));
+  const world = gamesStore.getGames.find((game) => game.id === id as any);
 
-  // const sessions = gamesStore.getPreviousSessions.filter((session) => session.game_id === parseInt(id as string));
+  //const sessions = gamesStore.getPreviousSessions.filter((session) => session.game_id === id as any);
 
   return (
     <ScrollView
