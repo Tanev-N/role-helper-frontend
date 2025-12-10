@@ -56,17 +56,34 @@ export class CharactersStore {
     }
   }
 
-  public async fetchCharacterById(id: string) {
+  public async fetchCharacterById(id: string, isMaster: boolean = false) {
+    this.setIsLoading(true);
     try {
       const response = await apiCharacters.getCharacterById(id);
       if (response.status === 200) {
         runInAction(() => {
           this.characterDetails.set(id, response.data);
+          // Добавляем краткую версию, если ее еще нет в списке
+          const exists = this.characters.some((char) => char.id === id);
+          if (!exists) {
+            this.setCharacters([
+              ...this.characters,
+              {
+                id: response.data.id,
+                name: response.data.name,
+                photo: response.data.photo,
+              },
+            ]);
+          }
         });
         return response.data;
       }
     } catch (e) {
       console.warn("CharactersStore: fetchCharacterById error", e);
+    } finally {
+      runInAction(() => {
+        this.setIsLoading(false);
+      });
     }
     return undefined;
   }

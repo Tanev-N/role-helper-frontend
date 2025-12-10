@@ -13,6 +13,8 @@ export class GamesStore {
   private currentSession: Session | null = null;
   private gamePlayers: GamePlayer[] = [];
   private previousSessions: Session[] = [];
+  private sessionRole: "master" | "player" | null = null;
+  private playerCharacterId: string | null = null;
   private isLoading: boolean = false;
   private error: string | null = null;
 
@@ -39,6 +41,14 @@ export class GamesStore {
 
   public get getPreviousSessions(): Session[] {
     return this.previousSessions;
+  }
+
+  public get getSessionRole(): "master" | "player" | null {
+    return this.sessionRole;
+  }
+
+  public get getPlayerCharacterId(): string | null {
+    return this.playerCharacterId;
   }
 
   public get IsLoading(): boolean {
@@ -68,6 +78,14 @@ export class GamesStore {
 
   private setPreviousSessions(sessions: Session[]) {
     this.previousSessions = sessions;
+  }
+
+  private setSessionRole(role: "master" | "player" | null) {
+    this.sessionRole = role;
+  }
+
+  private setPlayerCharacterId(characterId: string | null) {
+    this.playerCharacterId = characterId;
   }
 
   private setIsLoading(isLoading: boolean) {
@@ -148,6 +166,8 @@ export class GamesStore {
         const data = response.data as CreateSessionResponse;
         runInAction(() => {
           this.setCurrentSession(data.session);
+          this.setSessionRole("master");
+          this.setPlayerCharacterId(null);
           if (data.previous_sessions) {
             this.setPreviousSessions(data.previous_sessions);
           }
@@ -177,6 +197,8 @@ export class GamesStore {
         const session = response.data as Session;
         runInAction(() => {
           this.setCurrentSession(session);
+          this.setSessionRole("player");
+          this.setPlayerCharacterId(characterId);
           if (session.game_id) {
             // Обновляем текущую игру, если она найдена в списке
             const game = (this.games ?? []).find((g) => g.id === session.game_id);
@@ -264,6 +286,8 @@ export class GamesStore {
     this.setCurrentSession(null);
     this.setGamePlayers([]);
     this.setPreviousSessions([]);
+    this.setSessionRole(null);
+    this.setPlayerCharacterId(null);
     this.setError(null);
   }
 }

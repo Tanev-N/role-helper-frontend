@@ -1,18 +1,20 @@
+import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { useRouter } from "expo-router";
+import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    View,
+    ActivityIndicator,
+    FlatList,
+    Platform,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    FlatList,
-    StyleSheet,
-    Platform,
     useWindowDimensions,
+    View,
 } from "react-native";
-import { observer } from "mobx-react-lite";
-import useStore from "@/hooks/store";
-import { COLORS } from "@/constant/colors";
-import ChatUsers from "./ChatUsers";
+import ChatUsers, { StatsContent } from "./ChatUsers";
 
 type Message = {
     id: string;
@@ -24,12 +26,16 @@ type Message = {
 const Chat = () => {
     const { width } = useWindowDimensions();
     const isMobile = width < 1300;
-    const { sessionStore } = useStore();
+    const router = useRouter();
+    const { sessionStore, gamesStore, charactersStore } = useStore();
+    const role = gamesStore.getSessionRole ?? "master";
+    const playerCharacterId = gamesStore.getPlayerCharacterId;
     const [text, setText] = useState("");
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
     const [recording, setRecording] = useState(false);
     const mediaRecorderRef = useRef<any>(null);
     const chunksRef = useRef<any[]>([]);
+    const [deathSaves, setDeathSaves] = useState<Record<string, boolean[]>>({});
 
     useEffect(() => {
         if (!sessionStore) return;
@@ -46,6 +52,47 @@ const Chat = () => {
         setLocalMessages(msgs);
     }, [sessionStore, sessionStore?.history.length]);
 
+    // Подтягиваем карточку выбранного персонажа для роли игрока
+    useEffect(() => {
+        if (role !== "player" || !playerCharacterId) return;
+        const existing = charactersStore.getCharacterById(playerCharacterId);
+        if (!existing) {
+            charactersStore.fetchCharacterById(playerCharacterId, true);
+        }
+    }, [role, playerCharacterId, charactersStore]);
+
+    const playerCharacter = playerCharacterId
+        ? charactersStore.getCharacterById(playerCharacterId)
+        : null;
+
+    const calcMod = (ability?: number | null) => {
+        if (ability === undefined || ability === null) return null;
+        return Math.floor((ability - 10) / 2);
+    };
+
+    const getSkillValue = (name: string) => {
+        const skill = playerCharacter?.skills?.find((s) => s.name === name);
+        if (!skill) return null;
+        return skill.modifier ?? 0;
+    };
+
+    const playerAcrobatics = getSkillValue("Акробатика") ?? calcMod(playerCharacter?.dexterity);
+    const playerPassivePerception =
+        getSkillValue("Внимательность") !== null
+            ? 10 + (getSkillValue("Внимательность") ?? 0)
+            : playerCharacter?.wisdom
+                ? 10 + calcMod(playerCharacter.wisdom)!
+                : null;
+
+    const toggleDeathSave = (characterId: string, index: number) => {
+        setDeathSaves((prev) => {
+            const current = prev[characterId] || [false, false, false];
+            const updated = [...current];
+            updated[index] = !updated[index];
+            return { ...prev, [characterId]: updated };
+        });
+    };
+
     // --- отправка текста ---
     const sendText = async () => {
         if (!sessionStore || !text.trim()) return;
@@ -58,7 +105,7 @@ const Chat = () => {
     };
 
     // --- запись аудио ---
-    
+
     // Web MediaRecorder recorder — try to record as MP3, otherwise record and convert
     const startRecordingWeb = async () => {
         if (!(navigator && (navigator as any).mediaDevices)) return alert("Recording not supported");
@@ -215,38 +262,71 @@ const Chat = () => {
                     <ChatUsers />
                 </View>
 
-                {/* Правая колонка — чат */}
-                <View
-                    style={[
-                        styles.chatContainer,
-                        isMobile && styles.chatContainerMobile,
-                    ]}
-                >
-                    <FlatList
-                        data={localMessages}
-                        keyExtractor={(i) => i.id}
-                        renderItem={renderItem}
-                        style={styles.history}
-                    />
-
-                    <View style={styles.composer}>
-                        <TextInput
-                            placeholder="Введите текст"
-                            placeholderTextColor={COLORS.textLowEmphasis}
-                            value={text}
-                            onChangeText={setText}
-                            style={[styles.input, { fontSize: 24, fontFamily: "Roboto" }]}
+                {/* Правая колонка — чат для мастера или карточка персонажа для игрока */}
+                {role === "player" ? (
+                    <View
+                        style={[
+                            styles.chatContainer,
+                            isMobile && styles.chatContainerMobile,
+                        ]}
+                    >
+                        {playerCharacterId ? (
+                            playerCharacter ? (
+                                <StatsContent
+                                    character={playerCharacter}
+                                    passivePerception={playerPassivePerception}
+                                    acrobatics={playerAcrobatics}
+                                    deathSaves={deathSaves}
+                                    onToggleDeathSave={toggleDeathSave}
+                                    onOpenCharacter={() => {
+                                        router.push(`/(app)/cabinet/character/${playerCharacter.id}`);
+                                    }}
+                                />
+                            ) : (
+                                <View style={styles.loadingBox}>
+                                    <ActivityIndicator size="large" color={COLORS.primary} />
+                                    <Text style={styles.loadingText}>Загружаем персонажа…</Text>
+                                </View>
+                            )
+                        ) : (
+                            <View style={styles.loadingBox}>
+                                <Text style={styles.loadingText}>Персонаж не выбран</Text>
+                            </View>
+                        )}
+                    </View>
+                ) : (
+                    <View
+                        style={[
+                            styles.chatContainer,
+                            isMobile && styles.chatContainerMobile,
+                        ]}
+                    >
+                        <FlatList
+                            data={localMessages}
+                            keyExtractor={(i) => i.id}
+                            renderItem={renderItem}
+                            style={styles.history}
                         />
 
-                        <TouchableOpacity onPress={sendText} style={styles.sendButton}>
-                            <Text style={styles.sendText}>Send</Text>
-                        </TouchableOpacity>
+                        <View style={styles.composer}>
+                            <TextInput
+                                placeholder="Введите текст"
+                                placeholderTextColor={COLORS.textLowEmphasis}
+                                value={text}
+                                onChangeText={setText}
+                                style={[styles.input, { fontSize: 24, fontFamily: "Roboto" }]}
+                            />
 
-                        <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
-                            <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={sendText} style={styles.sendButton}>
+                                <Text style={styles.sendText}>Send</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
+                                <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
+                )}
             </View>
         </View>
     );
@@ -318,6 +398,17 @@ const styles = StyleSheet.create({
         fontSize: 24,
         lineHeight: 24,
         color: COLORS.textPrimary,
+    },
+    loadingBox: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 12,
+    },
+    loadingText: {
+        color: COLORS.textSecondary,
+        fontFamily: "Roboto",
+        fontSize: 18,
     },
     composer: {
         flexDirection: "row",

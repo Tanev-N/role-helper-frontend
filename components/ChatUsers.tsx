@@ -283,7 +283,7 @@ const ChatUsers = () => {
     );
 };
 
-const StatsContent = ({
+export const StatsContent = ({
     character,
     passivePerception,
     acrobatics,
