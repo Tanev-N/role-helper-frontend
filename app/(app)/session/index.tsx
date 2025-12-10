@@ -11,12 +11,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    ImageBackground,
+    ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     useWindowDimensions,
     View,
-    ScrollView,
 } from "react-native";
 
 const CreateSessionScreen = () => {
@@ -117,35 +118,47 @@ const CreateSessionScreen = () => {
                         style={styles.scrollHorizontal}
                         contentContainerStyle={styles.scrollHorizontalContent}
                     >
-                        {filteredGames && filteredGames.map((game, index) => (
-                            <TouchableOpacity
-                                key={game.id}
-                                onPress={() => setSelectedGame(game)}
-                                style={[
-                                    styles.colorRect,
-                                    {
-                                        backgroundColor:
-                                            colors[index % colors.length],
-                                    },
-                                    selectedGame?.id === game.id &&
-                                    styles.colorSelected,
-                                ]}
-                            >
-                                <Text
-                                    style={{
-                                        color: COLORS.textPrimary,
-                                        fontFamily: "Roboto",
-                                        fontSize: 18,
-                                        fontWeight: "600",
-                                        textAlign: "center",
-                                        paddingHorizontal: 8,
-                                    }}
-                                    numberOfLines={2}
+                        {filteredGames && filteredGames.map((game, index) => {
+                            const bgColor = colors[index % colors.length];
+                            return (
+                                <TouchableOpacity
+                                    key={game.id}
+                                    onPress={() => setSelectedGame(game)}
+                                    style={[
+                                        styles.colorRect,
+                                        selectedGame?.id === game.id &&
+                                        styles.colorSelected,
+                                    ]}
                                 >
-                                    {game.name}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                                    <ImageBackground
+                                        source={game.photo ? { uri: game.photo } : undefined}
+                                        style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            borderRadius: 11,
+                                            backgroundColor: bgColor,
+                                        }}
+                                        resizeMode="cover"
+                                    >
+                                        <Text
+                                            style={{
+                                                color: COLORS.textPrimary,
+                                                fontFamily: "Roboto",
+                                                fontSize: 18,
+                                                fontWeight: "600",
+                                                textAlign: "center",
+                                                paddingHorizontal: 8,
+                                            }}
+                                            numberOfLines={2}
+                                        >
+                                            {game.name}
+                                        </Text>
+                                    </ImageBackground>
+                                </TouchableOpacity>
+                            );
+                        })}
                         <TouchableOpacity
                             style={styles.addRect}
                             onPress={handleCreateGame}

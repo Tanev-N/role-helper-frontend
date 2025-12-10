@@ -63,6 +63,7 @@ const WorldsBlock = observer(() => {
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
+            onPress={() => router.push("/(app)/cabinet/worldgame/" + game.id as any)}
           >
             <ImageBackground
               source={{ uri: game.photo }}

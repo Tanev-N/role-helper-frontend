@@ -123,7 +123,7 @@ const WorldsListScreen = observer(() => {
                     },
                   ]}
                   onPress={() => {
-                    router.push("/(app)/cabinet/worldgame" as any);
+                    router.push("/(app)/cabinet/worldgame/" + world.id as any);
 
                   }}
 

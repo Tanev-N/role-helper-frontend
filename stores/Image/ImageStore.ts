@@ -30,12 +30,8 @@ export class ImageStore {
     }
   }
 
-  async generateItemImage(
-    itemName: string,
-    ItemDescription: string,
-    itemType: ItemType
-  ) {
-    const prompt = `Создай средневековый предмет '${itemType}'. Название предмета '${itemType}': ${itemName}. Описание предмета '${itemType}': ${ItemDescription}. На изображении должно быть только предмет '${itemType}'. NO HUMAN`;
+  async generateItemImage(itemName: string, itemType: ItemType) {
+    const prompt = `Создай средневековый предмет '${itemType}'. Название предмета '${itemType}': ${itemName}. Данный предмет из фентези мира, с красивым свечением и без фона. На изображении должно быть только предмет '${itemType}'. NO HUMAN`;
     const response = await apiImage.generateImage(prompt);
     if (response.status === 200) {
       return response.data.img_path;

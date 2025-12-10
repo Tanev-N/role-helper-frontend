@@ -1,23 +1,23 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import {
-  ScrollView,
-  View,
-  Text,
   Image,
-  Pressable,
+  ScrollView,
+  Text,
   useWindowDimensions,
+  View
 } from "react-native";
-import { observer } from "mobx-react-lite";
-import { ChevronRight } from "lucide-react-native";
-import { useRouter } from "expo-router";
 
-import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
 import { worldGameStyles as styles } from "./styles";
 
 const WorldGameScreen = observer(() => {
+  const { gamesStore } = useStore();
+  const { id } = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-  const router = useRouter();        
+  const router = useRouter();
 
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
@@ -31,31 +31,9 @@ const WorldGameScreen = observer(() => {
   const imageHeight = cardWidth * CARD_RATIO_IMAGE;
   const nameHeight = cardWidth * CARD_RATIO_NAME;
 
-  const world = {
-    id: "world-1",
-    name: "Название мира",
-    image: require("@/assets/images/worlds_ex1.png"),
-    story:
-      "В далеком далеком царстве, в пятом государстве, жил был король Псих. " +
-      "Он уничтожал свое королевство каждый день и никто не мог ему помешать. " +
-      "В его подчинении огромное войско бездумных солдат. Мирные жители страдают. " +
-      "Ваша задача состоит в спасении этого умершего королевства.",
-  };
+  const world = gamesStore.getGames.find((game) => game.id === parseInt(id as string));
 
-  const sessions = [
-    {
-      id: "session-1",
-      title: "СЕССИЯ 1",
-      preview:
-        "Герои встретили героев прошлого и научились у них ремеслу. Герой Теодор одолел злого колдуна и повысил свой уровень на 1. Были выполнены цели первого этапа...",
-    },
-    {
-      id: "session-2",
-      title: "СЕССИЯ 2",
-      preview:
-        "Герои исследовали руины древнего храма и нашли таинственный артефакт. Старые враги вернулись, но теперь у отряда больше опыта и снаряжения...",
-    },
-  ];
+  // const sessions = gamesStore.getPreviousSessions.filter((session) => session.game_id === parseInt(id as string));
 
   return (
     <ScrollView
@@ -70,14 +48,14 @@ const WorldGameScreen = observer(() => {
         <View style={[styles.worldCard, { width: cardWidth, height: cardHeight }]}>
           <View style={[styles.worldImageContainer, { height: imageHeight }]}>
             <Image
-              source={world.image}
+              source={world && world.photo ? { uri: world.photo } : undefined}
               style={styles.worldImage}
               resizeMode="cover"
             />
           </View>
 
           <View style={[styles.worldNameContainer, { height: nameHeight }]}>
-            <Text style={styles.worldNameText}>{world.name}</Text>
+            <Text style={styles.worldNameText}>{world && world.name}</Text>
           </View>
         </View>
 
@@ -87,7 +65,7 @@ const WorldGameScreen = observer(() => {
         </Text>
 
         <View style={styles.worldStoryCard}>
-          <Text style={styles.worldStoryText}>{world.story}</Text>
+          <Text style={styles.worldStoryText}>{world && world.description}</Text>
         </View>
 
         {/* === ВАШИ СЕССИИ === */}
@@ -95,7 +73,7 @@ const WorldGameScreen = observer(() => {
           ВАШИ СЕССИИ
         </Text>
         <View style={styles.sectionDivider} />
-
+        {/* 
         {sessions.map((session) => (
           <View key={session.id} style={styles.sessionCard}>
             <Text style={styles.sessionTitle}>{session.title}</Text>
@@ -108,14 +86,14 @@ const WorldGameScreen = observer(() => {
               <Pressable
                 style={styles.sessionArrowHitbox}
                 onPress={() => {
-                  router.push("/cabinet/session" as any);
+                  router.push("/(app)/cabinet/worldgame/" + id + "/session/" + session.id as any);
                 }}
               >
                 <ChevronRight size={24} color={COLORS.textPrimary} />
               </Pressable>
             </View>
           </View>
-        ))}
+        ))} */}
       </View>
     </ScrollView>
   );

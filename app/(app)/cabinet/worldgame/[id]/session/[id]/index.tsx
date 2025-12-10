@@ -1,9 +1,8 @@
-import React from "react";
-import { ScrollView, View, Text, useWindowDimensions } from "react-native";
 import { observer } from "mobx-react-lite";
+import React from "react";
+import { ScrollView, Text, useWindowDimensions, View } from "react-native";
 
 import { sessionDetailsStyles as styles } from "./styles";
-import { COLORS } from "@/constant/colors";
 
 const SessionDetailsScreen = observer(() => {
   const { width } = useWindowDimensions();
@@ -69,41 +68,41 @@ const SessionDetailsScreen = observer(() => {
           <Text style={styles.infoCardText}>{session.npcs}</Text>
         </View>
 
-{/* === ЧАТ === */}
-<View style={styles.chatCard}>
-    
-    <View style={styles.chatHeader}>
-        <Text style={styles.chatHeaderText}>Чат</Text>
-    </View>
+        {/* === ЧАТ === */}
+        <View style={styles.chatCard}>
 
-    <View style={styles.chatInnerWrapper}>
-        <View style={styles.chatInner}>
-            {chatMessages.map((msg) => (
+          <View style={styles.chatHeader}>
+            <Text style={styles.chatHeaderText}>Чат</Text>
+          </View>
+
+          <View style={styles.chatInnerWrapper}>
+            <View style={styles.chatInner}>
+              {chatMessages.map((msg) => (
                 <View
-                    key={msg.id}
-                    style={[
-                        styles.chatBubbleWrapper,
-                        msg.side === "right"
-                            ? { alignItems: "flex-end" }
-                            : { alignItems: "flex-start" },
-                    ]}
+                  key={msg.id}
+                  style={[
+                    styles.chatBubbleWrapper,
+                    msg.side === "right"
+                      ? { alignItems: "flex-end" }
+                      : { alignItems: "flex-start" },
+                  ]}
                 >
-                    <View
-                        style={[
-                            styles.chatBubble,
-                            msg.side === "right"
-                                ? styles.chatBubbleRight
-                                : styles.chatBubbleLeft,
-                        ]}
-                    >
-                        <Text style={styles.chatBubbleText}>{msg.text}</Text>
-                    </View>
+                  <View
+                    style={[
+                      styles.chatBubble,
+                      msg.side === "right"
+                        ? styles.chatBubbleRight
+                        : styles.chatBubbleLeft,
+                    ]}
+                  >
+                    <Text style={styles.chatBubbleText}>{msg.text}</Text>
+                  </View>
                 </View>
-            ))}
-        </View>
-    </View>
+              ))}
+            </View>
+          </View>
 
-</View>
+        </View>
 
 
       </View>
