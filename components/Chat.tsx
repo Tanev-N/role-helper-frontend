@@ -1,3 +1,4 @@
+import CharactersScreen from "@/app/(app)/cabinet/character";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
@@ -14,7 +15,7 @@ import {
     useWindowDimensions,
     View,
 } from "react-native";
-import ChatUsers, { StatsContent } from "./ChatUsers";
+import ChatUsers from "./ChatUsers";
 
 type Message = {
     id: string;
@@ -35,7 +36,6 @@ const Chat = () => {
     const [recording, setRecording] = useState(false);
     const mediaRecorderRef = useRef<any>(null);
     const chunksRef = useRef<any[]>([]);
-    const [deathSaves, setDeathSaves] = useState<Record<string, boolean[]>>({});
 
     useEffect(() => {
         if (!sessionStore) return;
@@ -64,34 +64,6 @@ const Chat = () => {
     const playerCharacter = playerCharacterId
         ? charactersStore.getCharacterById(playerCharacterId)
         : null;
-
-    const calcMod = (ability?: number | null) => {
-        if (ability === undefined || ability === null) return null;
-        return Math.floor((ability - 10) / 2);
-    };
-
-    const getSkillValue = (name: string) => {
-        const skill = playerCharacter?.skills?.find((s) => s.name === name);
-        if (!skill) return null;
-        return skill.modifier ?? 0;
-    };
-
-    const playerAcrobatics = getSkillValue("Акробатика") ?? calcMod(playerCharacter?.dexterity);
-    const playerPassivePerception =
-        getSkillValue("Внимательность") !== null
-            ? 10 + (getSkillValue("Внимательность") ?? 0)
-            : playerCharacter?.wisdom
-                ? 10 + calcMod(playerCharacter.wisdom)!
-                : null;
-
-    const toggleDeathSave = (characterId: string, index: number) => {
-        setDeathSaves((prev) => {
-            const current = prev[characterId] || [false, false, false];
-            const updated = [...current];
-            updated[index] = !updated[index];
-            return { ...prev, [characterId]: updated };
-        });
-    };
 
     // --- отправка текста ---
     const sendText = async () => {
@@ -272,14 +244,12 @@ const Chat = () => {
                     >
                         {playerCharacterId ? (
                             playerCharacter ? (
-                                <StatsContent
-                                    character={playerCharacter}
-                                    passivePerception={playerPassivePerception}
-                                    acrobatics={playerAcrobatics}
-                                    deathSaves={deathSaves}
-                                    onToggleDeathSave={toggleDeathSave}
-                                    onOpenCharacter={() => {
-                                        router.push(`/(app)/cabinet/character/${playerCharacter.id}`);
+                                <CharactersScreen
+                                    characterId={playerCharacter.id}
+                                    mode="edit"
+                                    onUpdated={() => {
+                                        // Refresh data after save if needed
+                                        charactersStore.fetchCharacterById(playerCharacter.id, true);
                                     }}
                                 />
                             ) : (

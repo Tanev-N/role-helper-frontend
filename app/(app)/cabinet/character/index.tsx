@@ -23,11 +23,22 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-const CharactersScreen = () => {
+type CharactersScreenProps = {
+  characterId?: string;
+  mode?: "create" | "edit";
+  onUpdated?: () => void;
+};
+
+const CharactersScreen = ({
+  characterId,
+  mode = "create",
+  onUpdated,
+}: CharactersScreenProps) => {
   const router = useRouter();
   const { charactersStore, imageStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
+  const isEditMode = mode === "edit";
 
   // Состояние валидации формы
   const [isFormValid, setIsFormValid] = useState(false);
@@ -129,6 +140,49 @@ const CharactersScreen = () => {
     setIsFormValid(isValid);
   }, [name, race, className, level, strength, dexterity, constitution, intelligence, wisdom, charisma]);
 
+  // Применяем данные персонажа в форму
+  const applyCharacterToForm = (c: any) => {
+    setName(c?.name ?? "");
+    setRace(c?.race ?? "");
+    setLevel(String(c?.level ?? ""));
+    setClassName(c?.class ?? "");
+    setAlignment(c?.alignment ?? "");
+    setStrength(String(c?.strength ?? 1));
+    setDexterity(String(c?.dexterity ?? 1));
+    setConstitution(String(c?.constitution ?? 1));
+    setIntelligence(String(c?.intelligence ?? 1));
+    setWisdom(String(c?.wisdom ?? 1));
+    setCharisma(String(c?.charisma ?? 1));
+    setPhoto(c?.photo ?? "");
+    setInitiative(c?.initiative ? String(c.initiative) : "");
+    setArmorClass(c?.armor_class ? String(c.armor_class) : "");
+    setSpeed(c?.speed ? String(c.speed) : "");
+    setHitPoints(c?.hit_points ? String(c.hit_points) : "");
+    setTempHitPoints(c?.temp_hit_points ? String(c.temp_hit_points) : "");
+    setHitDice(c?.hit_dice ?? "");
+    setBackground(c?.background ?? "");
+    setFeatures(c?.features ?? "");
+    setSkills(c?.skills ?? []);
+  };
+
+  // Загружаем персонажа для редактирования
+  useEffect(() => {
+    if (!isEditMode || !characterId) return;
+    const existing = charactersStore.getCharacterById(characterId);
+    if (existing) {
+      applyCharacterToForm(existing);
+      setIsFormValid(true);
+      return;
+    }
+    (async () => {
+      const loaded = await charactersStore.fetchCharacterById(characterId, true);
+      if (loaded) {
+        applyCharacterToForm(loaded);
+        setIsFormValid(true);
+      }
+    })();
+  }, [isEditMode, characterId, charactersStore]);
+
   const handleCreateCharacter = async () => {
     // Дополнительная проверка перед отправкой
     if (!isFormValid) {
@@ -207,46 +261,47 @@ const CharactersScreen = () => {
     }
 
     try {
-      let photo = "";
+      let nextPhoto = photo;
 
-      // Показываем заставку генерации изображения
-      setIsGeneratingImage(true);
+      if (!isEditMode) {
+        // Показываем заставку генерации изображения
+        setIsGeneratingImage(true);
 
-      // Запускаем анимацию пульсации
-      animationRef.current = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.2,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      animationRef.current.start();
+        // Запускаем анимацию пульсации
+        animationRef.current = Animated.loop(
+          Animated.sequence([
+            Animated.timing(pulseAnim, {
+              toValue: 1.2,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(pulseAnim, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ])
+        );
+        animationRef.current.start();
 
-      const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name, background, features);
+        const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name, background, features);
 
-      // Скрываем заставку после генерации
-      setIsGeneratingImage(false);
-      if (animationRef.current) {
-        animationRef.current.stop();
-        animationRef.current = null;
+        // Скрываем заставку после генерации
+        setIsGeneratingImage(false);
+        if (animationRef.current) {
+          animationRef.current.stop();
+          animationRef.current = null;
+        }
+        pulseAnim.setValue(1);
+
+        if (imageUrlRaw) {
+          nextPhoto = createEndpointImage(imageUrlRaw);
+        } else {
+          nextPhoto = imagesUrlDefault.charactersUrl;
+        }
       }
-      pulseAnim.setValue(1);
 
-      if (imageUrlRaw) {
-        photo = createEndpointImage(imageUrlRaw);
-      }
-      else {
-        photo = imagesUrlDefault.charactersUrl;
-      }
-
-      await charactersStore.createCharacter({
+      const payload = {
         name: name.trim(),
         race: race.trim(),
         class: className.trim(),
@@ -268,13 +323,25 @@ const CharactersScreen = () => {
         temp_hit_points: tempHitPoints ? parseInt(tempHitPoints) : undefined,
         hit_dice: hitDice.trim() || undefined,
         features: features.trim() || undefined,
-        photo: photo.trim() || undefined,
+        photo: nextPhoto.trim() || undefined,
         skills: skills.length > 0 ? skills : undefined,
-      });
+      };
 
-      // Автоматический переход на предыдущую страницу после успешного создания
-      router.back();
-
+      if (isEditMode && characterId) {
+        await charactersStore.updateCharacter(characterId, payload);
+        Toast.show({
+          type: "success",
+          text1: "Сохранено",
+          text2: "Персонаж обновлен",
+          position: "top",
+          visibilityTime: 2000,
+        });
+        onUpdated?.();
+      } else {
+        await charactersStore.createCharacter(payload as any);
+        // Автоматический переход на предыдущую страницу после успешного создания
+        router.back();
+      }
     } catch (error) {
       setIsGeneratingImage(false);
       if (animationRef.current) {
@@ -282,8 +349,8 @@ const CharactersScreen = () => {
         animationRef.current = null;
       }
       pulseAnim.setValue(1);
-      Alert.alert("Ошибка", "Не удалось создать персонажа");
-      console.error("Create character error:", error);
+      Alert.alert("Ошибка", isEditMode ? "Не удалось обновить персонажа" : "Не удалось создать персонажа");
+      console.error("Character submit error:", error);
     }
   };
 
@@ -356,7 +423,9 @@ const CharactersScreen = () => {
       >
         {/* === ОСНОВНАЯ ИНФОРМАЦИЯ === */}
         <View style={styles.block}>
-          <Text style={styles.sectionTitle}>ОСНОВНАЯ ИНФОРМАЦИЯ</Text>
+          <Text style={styles.sectionTitle}>
+            {isEditMode ? "РЕДАКТИРОВАНИЕ ПЕРСОНАЖА" : "ОСНОВНАЯ ИНФОРМАЦИЯ"}
+          </Text>
           <CharacterMain
             name={name}
             race={race}
@@ -470,7 +539,9 @@ const CharactersScreen = () => {
                 fontFamily: "Roboto",
               }}
             >
-              {charactersStore.IsLoading ? "Создание..." : "Создать персонажа"}
+              {charactersStore.IsLoading
+                ? isEditMode ? "Сохранение..." : "Создание..."
+                : isEditMode ? "Сохранить" : "Создать персонажа"}
             </Text>
           </TouchableOpacity>
 
@@ -481,7 +552,9 @@ const CharactersScreen = () => {
               textAlign: 'center',
               marginTop: 8,
             }}>
-              Заполните все обязательные поля корректно
+              {isEditMode
+                ? "Проверьте корректность обязательных полей"
+                : "Заполните все обязательные поля корректно"}
             </Text>
           )}
         </View>
