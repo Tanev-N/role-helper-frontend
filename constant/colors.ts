@@ -13,4 +13,7 @@ export const COLORS = {
   vitality: "#91571D",
   strength: "#FF3B30",    // Сила
   constitution: "#FF9500",// Телосложение
+  error: '#FF3B30',
+  disabled: '#CCCCCC',
+
 };

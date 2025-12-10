@@ -6,7 +6,7 @@ import useStore from "@/hooks/store";
 import { CharacterSkill } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   ScrollView,
@@ -16,6 +16,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { ChevronRight } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 
 const CharactersScreen = () => {
   const router = useRouter();
@@ -23,20 +24,34 @@ const CharactersScreen = () => {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
-  // ширина контейнера для расчёта количества слотов
-  const DESKTOP_MAX_WIDTH = 904;
-  const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
+  // Состояние валидации формы
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  // размеры слотов
-  const slotSize = isMobile ? 70 : 91;
-  const slotGap = 12;
-  // внутренняя ширина (equipmentCard имеет paddingHorizontal: 24)
-  const innerWidth = containerWidth - 48;
-  // максимальное число слотов (включая "+"), которое помещается в одну строку
-  const maxSlotsInRow = Math.max(
-    1,
-    Math.floor((innerWidth + slotGap) / (slotSize + slotGap))
-  );
+
+  const armorColors = [
+    "#8B4513",
+    "#B87333",
+    "#1E90FF",
+    "#228B22",
+    "#8B008B",
+    "#DAA520",
+  ];
+  const weaponColors = [
+    "#006400",
+    "#000000",
+    "#1E90FF",
+    "#228B22",
+    "#8B008B",
+    "#DAA520",
+  ];
+  const spellColors = [
+    "#4169E1",
+    "#FF8C00",
+    "#1E90FF",
+    "#228B22",
+    "#8B008B",
+    "#DAA520",
+  ];
 
   // Основная информация
   const [name, setName] = useState("");
@@ -65,23 +80,23 @@ const CharactersScreen = () => {
 
   const dexterityMod = Math.floor(((parseInt(dexterity) || 0) - 10) / 2);
 
-  const handleCreateCharacter = async () => {
+  // Функция для проверки всех обязательных полей
+  const validateAllFields = (): boolean => {
+    // Проверка обязательных текстовых полей
     if (!name.trim()) {
-      Alert.alert("Ошибка", "Введите имя персонажа");
-      return;
+      return false;
     }
     if (!race.trim()) {
-      Alert.alert("Ошибка", "Введите расу персонажа");
-      return;
+      return false;
     }
     if (!className.trim()) {
-      Alert.alert("Ошибка", "Введите класс персонажа");
-      return;
+      return false;
     }
+
+    // Проверка уровня
     const levelNum = parseInt(level);
     if (!levelNum || levelNum < 1 || levelNum > 20) {
-      Alert.alert("Ошибка", "Введите корректный уровень (1-20)");
-      return;
+      return false;
     }
 
     const stats = {
@@ -94,8 +109,93 @@ const CharactersScreen = () => {
     };
 
     if (Object.values(stats).some((stat) => stat < 1 || stat > 30)) {
-      Alert.alert("Ошибка", "Характеристики должны быть в диапазоне 1-30");
-      return;
+      return false;
+    }
+
+    return true;
+  };
+
+  // Эффект для проверки валидности формы при изменении полей
+  useEffect(() => {
+    const isValid = validateAllFields();
+    setIsFormValid(isValid);
+  }, [name, race, className, level, strength, dexterity, constitution, intelligence, wisdom, charisma]);
+
+  const handleCreateCharacter = async () => {
+    // Дополнительная проверка перед отправкой
+    if (!isFormValid) {
+      // Находим конкретную ошибку для показа пользователю
+      if (!name.trim()) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ошибка',
+          text2: 'Введите имя персонажа',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+        return;
+      }
+      if (!race.trim()) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ошибка',
+          text2: 'Введите расу персонажа',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+        return;
+      }
+      if (!className.trim()) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ошибка',
+          text2: 'Введите класс персонажа',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+        return;
+      }
+      
+      const levelNum = parseInt(level);
+      if (!levelNum || levelNum < 1 || levelNum > 20) {
+        Toast.show({
+          type: 'error',
+          text1: 'Ошибка',
+          text2: 'Введите корректный уровень (1-20)',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+        return;
+      }
+
+      const stats = {
+        strength: parseInt(strength) || 1,
+        dexterity: parseInt(dexterity) || 1,
+        constitution: parseInt(constitution) || 1,
+        intelligence: parseInt(intelligence) || 1,
+        wisdom: parseInt(wisdom) || 1,
+        charisma: parseInt(charisma) || 1,
+      };
+
+      const invalidStat = Object.entries(stats).find(([key, value]) => value < 1 || value > 30);
+      if (invalidStat) {
+        const statLabels: Record<string, string> = {
+          strength: 'Сила',
+          dexterity: 'Ловкость',
+          constitution: 'Телосложение',
+          intelligence: 'Интеллект',
+          wisdom: 'Мудрость',
+          charisma: 'Харизма'
+        };
+        Toast.show({
+          type: 'error',
+          text1: 'Ошибка',
+          text2: `Характеристика "${statLabels[invalidStat[0]]}" должна быть в диапазоне 1-30`,
+          position: 'top',
+          visibilityTime: 3000,
+        });
+        return;
+      }
     }
 
     try {
@@ -103,15 +203,15 @@ const CharactersScreen = () => {
         name: name.trim(),
         race: race.trim(),
         class: className.trim(),
-        level: levelNum,
+        level: parseInt(level),
         alignment: alignment.trim() || undefined,
         background: background.trim() || undefined,
-        strength: stats.strength,
-        dexterity: stats.dexterity,
-        constitution: stats.constitution,
-        intelligence: stats.intelligence,
-        wisdom: stats.wisdom,
-        charisma: stats.charisma,
+        strength: parseInt(strength),
+        dexterity: parseInt(dexterity),
+        constitution: parseInt(constitution),
+        intelligence: parseInt(intelligence),
+        wisdom: parseInt(wisdom),
+        charisma: parseInt(charisma),
         proficiency_bonus: 0, // Автоматический расчет
         initiative: initiative ? parseInt(initiative) : 0, // 0 для авторасчета
         armor_class: armorClass ? parseInt(armorClass) : undefined,
@@ -125,7 +225,8 @@ const CharactersScreen = () => {
         skills: skills.length > 0 ? skills : undefined,
       });
       
-      // Автоматический переход на предыдущую страницу после успешного создания      router.back();
+      // Автоматический переход на предыдущую страницу после успешного создания
+      router.back();
 
     } catch (error) {
       Alert.alert("Ошибка", "Не удалось создать персонажа");
@@ -133,39 +234,11 @@ const CharactersScreen = () => {
     }
   };
 
-  // временные цвета слотов
-  const armorColors = [
-    "#8B4513",
-    "#B87333",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
-  const weaponColors = [
-    "#006400",
-    "#000000",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
-  const spellColors = [
-    "#4169E1",
-    "#FF8C00",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
-
-     const renderEquipmentCard = (
+  const renderEquipmentCard = (
     title: string,
     colors: string[],
     onArrowPress?: () => void
   ) => {
-   
-
     const slotSize = isMobile ? 70 : 91;
     const slotGap = 12;
     const containerWidth = 904; 
@@ -176,29 +249,6 @@ const CharactersScreen = () => {
     );
     const visibleColorCount = Math.max(0, maxSlotsInRow - 1);
     const visibleColors = colors.slice(0, visibleColorCount);
-
- const renderEquipmentCard = (
-      title: string,
-      colors: string[],
-      onPress?: () => void
-    ) => (
-      <View style={styles.equipmentCard}>
-        <View style={styles.equipmentHeader}>
-          <Text style={styles.equipmentTitle}>{title}</Text>
-
-          <TouchableOpacity
-            style={styles.equipmentArrowButton}
-            onPress={onPress}
-          >
-            <ChevronRight size={20} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* тут будут слоты экипировки */}
-      </View>
-    );
-
-    
 
     return (
       <View style={styles.equipmentCard}>
@@ -240,8 +290,6 @@ const CharactersScreen = () => {
       </View>
     );
   };
- 
-
 
   return (
     <ScrollView
@@ -280,6 +328,7 @@ const CharactersScreen = () => {
           onWisdomChange={setWisdom}
           onCharismaChange={setCharisma}
           onPhotoChange={setPhoto}
+          onValidationChange={setIsFormValid}
         />
       </View>
 
@@ -337,8 +386,6 @@ const CharactersScreen = () => {
         )} */}
       </View>
 
-
-
       {/* === КНОПКА СОЗДАНИЯ === */}
       <View
         style={{
@@ -350,9 +397,9 @@ const CharactersScreen = () => {
       >
         <TouchableOpacity
           onPress={handleCreateCharacter}
-          disabled={charactersStore.IsLoading}
+          disabled={charactersStore.IsLoading || !isFormValid}
           style={{
-            backgroundColor: COLORS.primary,
+            backgroundColor: isFormValid ? COLORS.primary : COLORS.disabled,
             borderRadius: 16,
             paddingVertical: 16,
             paddingHorizontal: 32,
@@ -363,7 +410,7 @@ const CharactersScreen = () => {
         >
           <Text
             style={{
-              color: COLORS.textPrimary,
+              color: isFormValid ? COLORS.textPrimary : COLORS.textSecondary,
               fontSize: 24,
               fontWeight: "600",
               fontFamily: "Roboto",
@@ -372,6 +419,17 @@ const CharactersScreen = () => {
             {charactersStore.IsLoading ? "Создание..." : "Создать персонажа"}
           </Text>
         </TouchableOpacity>
+        
+        {!isFormValid && !charactersStore.IsLoading && (
+          <Text style={{
+            color: COLORS.error,
+            fontSize: 14,
+            textAlign: 'center',
+            marginTop: 8,
+          }}>
+            Заполните все обязательные поля корректно
+          </Text>
+        )}
       </View>
     </ScrollView>
   );

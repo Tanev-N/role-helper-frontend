@@ -148,7 +148,7 @@ const CreateGameScreen = observer(() => {
                         fontWeight: "600",
                         fontFamily: "Roboto",
                     }}>
-                        {gamesStore.IsLoading ? "Создание..." : "Создать игру"}
+                        {gamesStore.IsLoading ? "Создание..." : "Создать мир"}
                     </Text>
                 </TouchableOpacity>
             </View>
