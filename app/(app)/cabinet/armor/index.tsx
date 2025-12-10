@@ -1,9 +1,12 @@
+import { createEndpointImage } from "@/api/api";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { Armor } from "@/stores/Item/api";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Animated,
   Modal,
   ScrollView,
   Text,
@@ -33,10 +36,11 @@ type ArmorItem = {
   uniqueStats: string;
   charges: string;
   modifiers: ArmorModifier[];
+  photo?: string;
 };
 
 const ArmorListScreen = observer(() => {
-  const { itemStore } = useStore();
+  const { itemStore, imageStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const DESKTOP_MAX_WIDTH = 904;
@@ -60,6 +64,9 @@ const ArmorListScreen = observer(() => {
   const [formUnique, setFormUnique] = useState("Нет");
   const [formCharges, setFormCharges] = useState("Нет");
   const [formModifiers, setFormModifiers] = useState<ArmorModifier[]>([]);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [pulseAnim] = useState(new Animated.Value(1));
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const resetForm = () => {
     setFormName("");
@@ -78,6 +85,44 @@ const ArmorListScreen = observer(() => {
 
   const handleAddArmor = async () => {
     if (!formName.trim()) return;
+
+    let photo: string | undefined;
+
+    try {
+      setIsGeneratingImage(true);
+      animationRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      animationRef.current.start();
+
+      const imagePath = await imageStore.generateItemImage(
+        formName.trim(),
+        "Броня"
+      );
+      if (imagePath) {
+        photo = createEndpointImage(imagePath);
+      }
+    } catch (e) {
+      console.warn("armor image generation failed", e);
+    } finally {
+      setIsGeneratingImage(false);
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+      pulseAnim.setValue(1);
+    }
 
     const payload = {
       name: formName.trim(),
@@ -98,6 +143,7 @@ const ArmorListScreen = observer(() => {
             .filter(Boolean)
             .join(", ")
           : undefined,
+      photo,
     };
 
     await itemStore.createArmor(payload);
@@ -150,6 +196,7 @@ const ArmorListScreen = observer(() => {
       uniqueStats: armor.unique_stats ?? "Нет",
       charges: armor.charges ?? "Нет",
       modifiers: modifiersArr,
+      photo: armor.photo,
     };
   };
 
@@ -162,6 +209,32 @@ const ArmorListScreen = observer(() => {
   const renderArmorCard = (armor: ArmorItem) => {
     return (
       <View key={armor.id} style={styles.card}>
+        {/* Превью изображения, если есть */}
+        {armor.photo && (
+          <View style={{ marginBottom: 12, alignItems: "center" }}>
+            <Text style={styles.label}>Изображение:</Text>
+            <View
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                overflow: "hidden",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.08)",
+              }}
+            >
+              <Text
+                style={{
+                  color: COLORS.textLowEmphasis,
+                  textAlign: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 4,
+                }}
+              >
+                {armor.photo}
+              </Text>
+            </View>
+          </View>
+        )}
         <Text style={styles.cardTitle}>
           {armor.name} <Text style={styles.cardTitleType}>/ {armor.type}</Text>
         </Text>
@@ -465,6 +538,74 @@ const ArmorListScreen = observer(() => {
                 <Text style={styles.footerButtonPrimaryText}>Добавить</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Модалка генерации изображения */}
+      <Modal visible={isGeneratingImage} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: COLORS.backgroundSecondary,
+              borderRadius: 24,
+              padding: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.1)",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Animated.View
+              style={{
+                transform: [{ scale: pulseAnim }],
+                marginBottom: 24,
+              }}
+            >
+              <ActivityIndicator
+                size="large"
+                color={COLORS.primary}
+                style={{ marginBottom: 8 }}
+              />
+            </Animated.View>
+
+            <Text
+              style={{
+                fontFamily: "Roboto",
+                fontWeight: "600",
+                fontSize: 20,
+                color: COLORS.textPrimary,
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
+              Генерация с помощью AI
+            </Text>
+
+            <Text
+              style={{
+                fontFamily: "Roboto",
+                fontWeight: "400",
+                fontSize: 14,
+                color: COLORS.textSecondary,
+                textAlign: "center",
+                marginTop: 8,
+              }}
+            >
+              Создаём изображение предмета...
+            </Text>
           </View>
         </View>
       </Modal>

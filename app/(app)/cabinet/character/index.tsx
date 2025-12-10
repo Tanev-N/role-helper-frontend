@@ -35,7 +35,7 @@ const CharactersScreen = ({
   onUpdated,
 }: CharactersScreenProps) => {
   const router = useRouter();
-  const { charactersStore, imageStore } = useStore();
+  const { charactersStore, imageStore, itemStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const isEditMode = mode === "edit";
@@ -47,22 +47,7 @@ const CharactersScreen = ({
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
 
-  const armorColors = [
-    "#8B4513",
-    "#B87333",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
-  const weaponColors = [
-    "#006400",
-    "#000000",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
+
   // const spellColors = [
   //   "#4169E1",
   //   "#FF8C00",
@@ -96,6 +81,8 @@ const CharactersScreen = ({
   const [background, setBackground] = useState("");
   const [features, setFeatures] = useState("");
   const [skills, setSkills] = useState<CharacterSkill[]>([]);
+  const [selectedArmorId, setSelectedArmorId] = useState<string | null>(null);
+  const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null);
 
   const dexterityMod = Math.floor(((parseInt(dexterity) || 0) - 10) / 2);
 
@@ -163,6 +150,16 @@ const CharactersScreen = ({
     setBackground(c?.background ?? "");
     setFeatures(c?.features ?? "");
     setSkills(c?.skills ?? []);
+    setSelectedArmorId(
+      c?.armor_id !== undefined && c?.armor_id !== null
+        ? String(c.armor_id)
+        : null
+    );
+    setSelectedWeaponId(
+      c?.weapon_id !== undefined && c?.weapon_id !== null
+        ? String(c.weapon_id)
+        : null
+    );
   };
 
   // Загружаем персонажа для редактирования
@@ -182,6 +179,12 @@ const CharactersScreen = ({
       }
     })();
   }, [isEditMode, characterId, charactersStore]);
+
+  // Загружаем списки брони/оружия для выбора
+  useEffect(() => {
+    itemStore.fetchArmors();
+    itemStore.fetchWeapons();
+  }, [itemStore]);
 
   const handleCreateCharacter = async () => {
     // Дополнительная проверка перед отправкой
@@ -325,6 +328,8 @@ const CharactersScreen = ({
         features: features.trim() || undefined,
         photo: nextPhoto.trim() || undefined,
         skills: skills.length > 0 ? skills : undefined,
+        armor_id: selectedArmorId ? parseInt(selectedArmorId) : undefined,
+        weapon_id: selectedWeaponId ? parseInt(selectedWeaponId) : undefined,
       };
 
       if (isEditMode && characterId) {
@@ -356,8 +361,10 @@ const CharactersScreen = ({
 
   const renderEquipmentCard = (
     title: string,
-    colors: string[],
-    onArrowPress?: () => void
+    items: { id: number; name: string; photo?: string }[],
+    onAddPress: () => void,
+    selectedId: string | null,
+    onSelect: (id: string) => void
   ) => {
     const slotSize = isMobile ? 70 : 91;
     const slotGap = 12;
@@ -367,8 +374,7 @@ const CharactersScreen = ({
       1,
       Math.floor((innerWidth + slotGap) / (slotSize + slotGap))
     );
-    const visibleColorCount = Math.max(0, maxSlotsInRow - 1);
-    const visibleColors = colors.slice(0, visibleColorCount);
+    const visibleItems = items.slice(0, Math.max(0, maxSlotsInRow - 1));
 
     return (
       <View style={styles.equipmentCard}>
@@ -376,35 +382,58 @@ const CharactersScreen = ({
           <Text style={styles.equipmentTitle}>{title}</Text>
           <TouchableOpacity
             style={styles.equipmentArrowButton}
-            onPress={onArrowPress}
+            onPress={onAddPress}
           >
             <ChevronRight size={20} color={COLORS.textPrimary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.equipmentRow}>
-          {/* первый слот — "+" */}
           <TouchableOpacity
             style={[
               styles.equipmentAddSlot,
               { width: slotSize, height: slotSize },
             ]}
-            onPress={() => {
-              // позже создания предмета
-            }}
+            onPress={onAddPress}
           >
             <Text style={styles.equipmentAddText}>+</Text>
           </TouchableOpacity>
 
-          {/* цветные слоты */}
-          {visibleColors.map((c, idx) => (
-            <View
-              key={`${title}-${idx}`}
+          {visibleItems.map((item) => (
+            <TouchableOpacity
+              key={`${title}-${item.id}`}
               style={[
                 styles.equipmentSlot,
-                { width: slotSize, height: slotSize, backgroundColor: c },
+                {
+                  width: slotSize,
+                  height: slotSize,
+                  borderColor:
+                    selectedId === String(item.id)
+                      ? COLORS.primary
+                      : "rgba(255,255,255,0.1)",
+                  borderWidth: selectedId === String(item.id) ? 2 : 1,
+                  backgroundColor: "#18191A",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 6,
+                },
               ]}
-            />
+              onPress={() => onSelect(String(item.id))}
+            >
+              <Text
+                style={{
+                  color:
+                    selectedId === String(item.id)
+                      ? COLORS.primary
+                      : COLORS.textPrimary,
+                  fontSize: 12,
+                  textAlign: "center",
+                }}
+                numberOfLines={2}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
@@ -496,12 +525,20 @@ const CharactersScreen = ({
             marginTop: 24,
           }}
         >
-          {renderEquipmentCard("Ваша броня", armorColors, () =>
-            router.push("/(app)/cabinet/armor" as any)
+          {renderEquipmentCard(
+            "Ваша броня",
+            itemStore.getArmors,
+            () => router.push("/(app)/cabinet/armor" as any),
+            selectedArmorId,
+            (id) => setSelectedArmorId(id)
           )}
 
-          {renderEquipmentCard("Ваше оружие", weaponColors, () =>
-            router.push("/(app)/cabinet/weapon" as any)
+          {renderEquipmentCard(
+            "Ваше оружие",
+            itemStore.getWeapons,
+            () => router.push("/(app)/cabinet/weapon" as any),
+            selectedWeaponId,
+            (id) => setSelectedWeaponId(id)
           )}
 
           {/* {renderEquipmentCard("Ваши заклинания", spellColors, () =>
