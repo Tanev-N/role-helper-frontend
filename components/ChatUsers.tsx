@@ -35,25 +35,19 @@ const ChatUsers = () => {
     const { gamesStore, charactersStore } = useStore();
     const router = useRouter();
 
-    // Загружаем персонажей при монтировании, если они еще не загружены
-    useEffect(() => {
-        if (charactersStore.getCharacters.length === 0) {
-            charactersStore.fetchCharacters();
-        }
-    }, [charactersStore]);
+    // // Загружаем персонажей при монтировании, если они еще не загружены
+    // useEffect(() => {
+    //     if (charactersStore.getCharacters.length === 0) {
+    //         charactersStore.fetchCharacters();
+    //     }
+    // }, [charactersStore]);
 
     // Загружаем персонажей для игроков, если они еще не загружены
     useEffect(() => {
         const gamePlayers = gamesStore.getGamePlayers;
         if (gamePlayers && gamePlayers.length > 0) {
             gamePlayers.forEach((player) => {
-                const character = charactersStore.getCharacters && charactersStore.getCharacters.find(
-                    (char) => char.id === player.character_id
-                );
-                if (!character && !charactersStore.getCharacterById(player.character_id)) {
-                    // Загружаем персонажа, если он не найден
-                    charactersStore.fetchCharacterById(player.character_id);
-                }
+                player.character = charactersStore.fetchCharacterById(player.character_id);
             });
         }
     }, [gamesStore.getGamePlayers, charactersStore]);

@@ -42,6 +42,7 @@ export interface GamePlayer {
   game_id: number;
   user_id: number;
   character_id: string;
+  character: any;
 }
 
 const apiGamesUrl = {
