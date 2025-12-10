@@ -1,19 +1,18 @@
-import React, { useCallback, useEffect } from "react";
-import {
-    ScrollView,
-    View,
-    Text,
-    Pressable,
-    Image,
-    StyleSheet,
-    useWindowDimensions,
-} from "react-native";
-import { observer } from "mobx-react-lite";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { observer } from "mobx-react-lite";
+import React, { useCallback, useEffect } from "react";
+import {
+    ImageBackground,
+    Pressable,
+    ScrollView,
+    Text,
+    useWindowDimensions,
+    View
+} from "react-native";
 
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
-import { COLORS } from "@/constant/colors";
 import { styles } from "./styles";
 
 const CharactersListScreen = observer(() => {
@@ -109,7 +108,12 @@ const CharactersListScreen = observer(() => {
                                 },
                             ]}
                         >
-                            <View
+                            <ImageBackground
+                                source={
+                                    photo
+                                        ? { uri: photo }
+                                        : { uri: imagesUrlDefault.charactersUrl }
+                                }
                                 style={[
                                     styles.avatarContainer,
                                     {
@@ -117,17 +121,8 @@ const CharactersListScreen = observer(() => {
                                         backgroundColor: bgColor,
                                     },
                                 ]}
-                            >
-                                {photo ? (
-                                    <Image
-                                        source={
-                                            typeof photo === "number" ? photo : { uri: photo }
-                                        }
-                                        style={styles.avatarImage}
-                                        resizeMode="cover"
-                                    />
-                                ) : null}
-                            </View>
+                                resizeMode="cover"
+                            />
 
                             <View style={[styles.nameContainer, { height: nameHeight }]}>
                                 <Text style={styles.nameText} numberOfLines={2}>

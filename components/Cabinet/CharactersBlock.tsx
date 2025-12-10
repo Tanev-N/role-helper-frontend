@@ -1,10 +1,12 @@
+import { COLORS } from "@/constant/colors";
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
-import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { ArrowRight, Plus, Users2 } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect } from "react";
-import { Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { ImageBackground, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { styles } from "./styles";
 
 const CharactersBlock = observer(() => {
@@ -13,14 +15,6 @@ const CharactersBlock = observer(() => {
   const blockWidth = Math.min(width * 0.95, 904);
   const router = useRouter();
   const { charactersStore } = useStore();
-
-  const colors = [
-    "rgba(73,124,0,1)",
-    "rgba(151,0,136,1)",
-    "rgba(0,60,179,1)",
-    "rgba(138,113,0,1)",
-    "rgba(92,15,0,1)",
-  ];
 
   useEffect(() => {
     charactersStore.fetchCharacters();
@@ -36,6 +30,17 @@ const CharactersBlock = observer(() => {
   const charsPerRow = isMobile ? 4 : 8;
   const characters = charactersStore.getCharacters || [];
 
+  // Fallback цвета для фона, если изображения нет
+  const fallbackColors = [
+    COLORS.primary,
+    COLORS.intelligence,
+    COLORS.wisdom,
+    COLORS.charisma,
+    COLORS.strength,
+    COLORS.dexterity,
+    COLORS.vitality,
+    COLORS.constitution,
+  ];
 
   const charCardSize =
     (blockWidth - 35 * 2 - (charsPerRow - 1) * 8) / charsPerRow;
@@ -51,33 +56,46 @@ const CharactersBlock = observer(() => {
           </View>
         </View>
         <TouchableOpacity
-            style={styles.iconCircle}
-            onPress={() => router.push('/cabinet/characters')}
+          style={styles.iconCircle}
+          onPress={() => router.push('/cabinet/characters')}
         >
-            <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
+          <ArrowRight size={20} color={"rgba(227,227,227,1)"} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.divider} />
 
       <View style={[styles.itemsGrid, { gap: 18, paddingHorizontal: 35 }]}>
-        {characters && characters.map((character, i) => (
-          <Pressable
-            key={character.id}
-            style={({ pressed }) => [
-              styles.characterSquare,
-              {
-                backgroundColor: colors[i % colors.length],
-                width: charCardSize,
-                height: charCardSize,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-            onPress={() => {
-              router.push(`/(app)/cabinet/character/${character.id}`);
-            }}
-          />
-        ))}
+        {characters && characters.map((character, i) => {
+          const bgColor = fallbackColors[i % fallbackColors.length];
+          return (
+            <Pressable
+              key={character.id}
+              style={({ pressed }) => [
+                styles.characterSquare,
+                {
+                  width: charCardSize,
+                  height: charCardSize,
+                  opacity: pressed ? 0.8 : 1,
+                },
+              ]}
+              onPress={() => {
+                router.push(`/(app)/cabinet/character/${character.id}`);
+              }}
+            >
+              <ImageBackground
+                source={character.photo ? { uri: character.photo } : { uri: imagesUrlDefault.charactersUrl }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 8,
+                  backgroundColor: bgColor,
+                }}
+                resizeMode="cover"
+              />
+            </Pressable>
+          );
+        })}
 
         <TouchableOpacity
           style={[styles.addSquare, { width: charCardSize, height: charCardSize }]}

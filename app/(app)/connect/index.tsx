@@ -1,5 +1,6 @@
 import { connectStyles as styles } from "@/components/Session/ConnectSession";
 import { COLORS } from "@/constant/colors";
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -77,14 +78,14 @@ const ConnectScreen = () => {
         <View style={[styles.container, isSmallScreen && { paddingTop: 120 }]}>
             {/* === ЛОГОТИП === */}
             <Text style={[styles.logo, { fontSize: dynamicLogo }]}>Critical Roll</Text>
-            
+
 
             {/* === БЛОК 1: Код сессии === */}
             <View style={[
-                styles.block, 
+                styles.block,
                 { width: containerWidth, paddingHorizontal: dynamicBlockPadding, paddingVertical: dynamicBlockPadding }
-                ]}>
-                
+            ]}>
+
                 <TextInput
                     style={[styles.inputCentered, { fontSize: dynamicFont }]}
                     placeholder="Вставьте код для встречи"
@@ -97,9 +98,9 @@ const ConnectScreen = () => {
 
             {/* === БЛОК 2: Выбор персонажа === */}
             <View style={[
-                styles.block, 
+                styles.block,
                 { width: containerWidth, paddingHorizontal: dynamicBlockPadding, paddingVertical: dynamicBlockPadding }
-                ]}>
+            ]}>
                 <TextInput
                     style={[styles.inputCentered, { fontSize: dynamicFont }]}
                     placeholder="Введите имя персонажа"
@@ -120,7 +121,7 @@ const ConnectScreen = () => {
                         >
                             {character.photo ? (
                                 <Image
-                                    source={{ uri: character.photo }}
+                                    source={character.photo ? { uri: character.photo } : { uri: imagesUrlDefault.charactersUrl }}
                                     style={{
                                         width: "100%",
                                         height: "100%",
