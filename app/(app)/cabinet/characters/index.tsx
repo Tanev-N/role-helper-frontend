@@ -96,8 +96,8 @@ const CharactersListScreen = observer(() => {
                     return (
                         <Pressable
                             key={character.id}
-                            onPress={() =>
-                                router.push(`/(app)/cabinet/character/${character.id}`)
+                            onPress={() => { }
+                                // router.push(`/(app)/cabinet/character/${character.id}`)
                             }
                             style={({ pressed }) => [
                                 styles.cardWrapper,
