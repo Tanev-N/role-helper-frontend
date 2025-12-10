@@ -45,11 +45,14 @@ const ChatUsers = () => {
     // Загружаем персонажей для игроков, если они еще не загружены
     useEffect(() => {
         const gamePlayers = gamesStore.getGamePlayers;
-        if (gamePlayers && gamePlayers.length > 0) {
-            gamePlayers.forEach((player) => {
-                player.character = charactersStore.fetchCharacterById(player.character_id);
-            });
-        }
+        if (!gamePlayers || gamePlayers.length === 0) return;
+
+        gamePlayers.forEach((player) => {
+            // если нет полной карточки в кэше — подгружаем
+            if (!charactersStore.getCharacterById(player.character_id)) {
+                charactersStore.fetchCharacterById(player.character_id);
+            }
+        });
     }, [gamesStore.getGamePlayers, charactersStore]);
 
     // Получаем игроков из store и преобразуем их в формат User
@@ -60,10 +63,12 @@ const ChatUsers = () => {
         }
 
         return gamePlayers.map((player) => {
-            const characterShort = player.character;
+            const fullCharacter = charactersStore.getCharacterById(player.character_id);
+            const shortCharacter =
+                charactersStore.getCharacters?.find((char) => char.id === player.character_id) || null;
 
-            const name = characterShort?.name || `Игрок ${player.id}`;
-            const photo = characterShort?.photo;
+            const name = fullCharacter?.name || shortCharacter?.name || `Игрок ${player.id}`;
+            const photo = fullCharacter?.photo || shortCharacter?.photo;
 
             return {
                 id: player.id,
@@ -72,7 +77,7 @@ const ChatUsers = () => {
                 photo,
             };
         });
-    }, [gamesStore.getGamePlayers, charactersStore.getCharacters]);
+    }, [gamesStore.getGamePlayers, charactersStore.getCharacters, charactersStore]);
 
     useEffect(() => {
         if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {
