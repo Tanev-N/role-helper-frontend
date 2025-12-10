@@ -25,8 +25,8 @@ const CabinetScreen = observer(() => {
       contentContainerStyle={{ alignItems: "center", paddingVertical: 24, justifyContent: "center", height: "100%" }}
     >
       <CabinetHeader authStore={authStore} router={router} blockWidth={blockWidth} />
-      <CharactersBlock blockWidth={blockWidth} isMobile={isMobile} />
-      <WorldsBlock blockWidth={blockWidth} isMobile={isMobile} />
+      <CharactersBlock />
+      <WorldsBlock />
     </ScrollView>
   );
 });

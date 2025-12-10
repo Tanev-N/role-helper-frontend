@@ -229,7 +229,7 @@ const CharactersScreen = () => {
       );
       animationRef.current.start();
 
-      const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name);
+      const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name, background, features);
 
       // Скрываем заставку после генерации
       setIsGeneratingImage(false);
@@ -428,11 +428,11 @@ const CharactersScreen = () => {
           }}
         >
           {renderEquipmentCard("Ваша броня", armorColors, () =>
-            router.push("/(app)/cabinet/armor")
+            router.push("/(app)/cabinet/armor" as any)
           )}
 
           {renderEquipmentCard("Ваше оружие", weaponColors, () =>
-            router.push("/(app)/cabinet/weapon")
+            router.push("/(app)/cabinet/weapon" as any)
           )}
 
           {/* {renderEquipmentCard("Ваши заклинания", spellColors, () =>
