@@ -213,11 +213,12 @@ const ArmorListScreen = observer(() => {
       <View key={armor.id} style={styles.card}>
         {/* Превью изображения, если есть */}
         {armor.photo && (
-          <View style={{ marginBottom: 12, alignItems: "center" }}>
+          <View style={{ marginBottom: 12, alignItems: "flex-start", flexDirection: "row" }}>
             <Text style={styles.label}>Изображение:</Text>
             <View
               style={{
-                width: "100%",
+                width: 100,
+                height: 100,
                 borderRadius: 12,
                 overflow: "hidden",
                 borderWidth: 1,
