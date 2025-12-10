@@ -3,7 +3,7 @@ import useStore from "@/hooks/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 import { useEffect, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import Chat from "../../../../components/Chat";
 
 
@@ -62,7 +62,6 @@ const SessionScreen = () => {
                 height: "100%",
                 width: "100%",
                 backgroundColor: COLORS.backgroundPrimary,
-                borderRadius: 16,
                 paddingHorizontal: 72,
                 paddingVertical: 66,
             }}
@@ -75,11 +74,3 @@ const SessionScreen = () => {
 
 export default observer(SessionScreen);
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: COLORS.backgroundPrimary,
-    }
-});

@@ -1,3 +1,4 @@
+import { observer } from "mobx-react-lite";
 import React from "react";
 import {
     ActivityIndicator,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import { COLORS } from "../../constant/colors";
 
+
 interface CharacterModalProps {
     visible: boolean;
     onClose: () => void;
@@ -19,7 +21,7 @@ interface CharacterModalProps {
     placeholderText?: string;
 }
 
-const CharacterModal: React.FC<CharacterModalProps> = ({
+const CharacterModal: React.FC<CharacterModalProps> = observer(({
     visible,
     onClose,
     title,
@@ -67,7 +69,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({
             </View>
         </Modal>
     );
-};
+});
 
 export default CharacterModal;
 

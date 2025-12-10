@@ -4,7 +4,7 @@ import useStore from "@/hooks/store";
 import { Character } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     ImageBackground,
     LayoutChangeEvent,
@@ -56,14 +56,14 @@ const ChatUsers = () => {
     }, [gamesStore.getGamePlayers, charactersStore]);
 
     // Получаем игроков из store и преобразуем их в формат User
-    const users = useMemo(() => {
+    const users = (() => {
         const gamePlayers = gamesStore.getGamePlayers;
         if (!gamePlayers || gamePlayers.length === 0) {
             return [];
         }
 
         return gamePlayers.map((player) => {
-            const fullCharacter = charactersStore.getCharacterById(player.character_id);
+            const fullCharacter = charactersStore.getCharacterById(String(player.character_id));
             const shortCharacter =
                 charactersStore.getCharacters?.find((char) => char.id === player.character_id) || null;
 
@@ -77,12 +77,23 @@ const ChatUsers = () => {
                 photo,
             };
         });
-    }, [gamesStore.getGamePlayers, charactersStore.getCharacters, charactersStore]);
+    })();
 
+    const [modalLoading, setModalLoading] = useState(false);
     useEffect(() => {
-        if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {
-            charactersStore.fetchCharacterById(modalActiveCharacterId);
+        if (!modalActiveCharacterId) return;
+        if (charactersStore.getCharacterById(modalActiveCharacterId)) {
+            setModalLoading(false);
+            return;
         }
+        let cancelled = false;
+        setModalLoading(true);
+        charactersStore.fetchCharacterById(modalActiveCharacterId).finally(() => {
+            if (!cancelled) setModalLoading(false);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [modalActiveCharacterId, charactersStore]);
 
     const modalCharacter =
@@ -90,7 +101,8 @@ const ChatUsers = () => {
             charactersStore.getCharacterById(modalActiveCharacterId)) ||
         null;
 
-    const isModalLoading = modalActiveCharacterId !== null && !modalCharacter;
+    const isModalLoading =
+        modalActiveCharacterId !== null && (modalLoading || !modalCharacter);
 
     const toggleDeathSave = (characterId: string, index: number) => {
         setDeathSaves((prev) => {
