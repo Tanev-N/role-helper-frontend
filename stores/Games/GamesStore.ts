@@ -50,8 +50,8 @@ export class GamesStore {
   }
 
   // === Сеттеры ===
-  private setGames(games: Game[]) {
-    this.games = games;
+  private setGames(games: Game[] | null | undefined) {
+    this.games = games ?? [];
   }
 
   private setCurrentGame(game: Game | null) {
@@ -179,7 +179,7 @@ export class GamesStore {
           this.setCurrentSession(session);
           if (session.game_id) {
             // Обновляем текущую игру, если она найдена в списке
-            const game = this.games.find((g) => g.id === session.game_id);
+            const game = (this.games ?? []).find((g) => g.id === session.game_id);
             if (game) {
               this.setCurrentGame(game);
             }
