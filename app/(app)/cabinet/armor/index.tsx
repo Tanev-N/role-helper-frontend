@@ -1,5 +1,6 @@
 import { createEndpointImage } from "@/api/api";
 import { COLORS } from "@/constant/colors";
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
 import { Armor } from "@/stores/Item/api";
 import { observer } from "mobx-react-lite";
@@ -7,6 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  ImageBackground,
   Modal,
   ScrollView,
   Text,
@@ -222,16 +224,16 @@ const ArmorListScreen = observer(() => {
                 borderColor: "rgba(255,255,255,0.08)",
               }}
             >
-              <Text
+              <ImageBackground
+                source={armor.photo ? { uri: armor.photo } : { uri: imagesUrlDefault.itemsUrl }}
                 style={{
-                  color: COLORS.textLowEmphasis,
-                  textAlign: "center",
-                  paddingVertical: 8,
-                  paddingHorizontal: 4,
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 8,
+                  alignContent: "center",
                 }}
-              >
-                {armor.photo}
-              </Text>
+                resizeMode="cover"
+              />
             </View>
           </View>
         )}

@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  ImageBackground,
   Modal,
   ScrollView,
   Text,
@@ -420,19 +421,15 @@ const CharactersScreen = ({
               ]}
               onPress={() => onSelect(String(item.id))}
             >
-              <Text
+              <ImageBackground
+                source={item.photo ? { uri: item.photo } : { uri: imagesUrlDefault.itemsUrl }}
                 style={{
-                  color:
-                    selectedId === String(item.id)
-                      ? COLORS.primary
-                      : COLORS.textPrimary,
-                  fontSize: 12,
-                  textAlign: "center",
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 8,
                 }}
-                numberOfLines={2}
-              >
-                {item.name}
-              </Text>
+                resizeMode="cover"
+              />
             </TouchableOpacity>
           ))}
         </View>
