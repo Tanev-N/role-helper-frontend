@@ -167,7 +167,8 @@ export class GamesStore {
     }
   }
 
-  public async enterSession(sessionKey: string, characterId: string) {
+  // Стрелочная функция, чтобы не терять контекст this при деструктурировании
+  public enterSession = async (sessionKey: string, characterId: string) => {
     this.setError(null);
     this.setIsLoading(true);
     try {
@@ -199,7 +200,7 @@ export class GamesStore {
         this.setIsLoading(false);
       });
     }
-  }
+  };
 
   public async finishSession(sessionId: number, summary?: string) {
     this.setError(null);
