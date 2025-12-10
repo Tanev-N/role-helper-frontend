@@ -1,31 +1,39 @@
+import { createEndpointImage } from "@/api/api";
 import CharacterMain from "@/components/Character/CharacterMain";
 import CharacterSecondary from "@/components/Character/CharacterSecondary";
 import { characterStyles as styles } from "@/components/Character/styles";
 import { COLORS } from "@/constant/colors";
+import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
 import { CharacterSkill } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Animated,
+  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
-import { ChevronRight } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 
 const CharactersScreen = () => {
   const router = useRouter();
-  const { charactersStore } = useStore();
+  const { charactersStore, imageStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
   // Состояние валидации формы
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [pulseAnim] = useState(new Animated.Value(1));
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
 
   const armorColors = [
@@ -44,14 +52,14 @@ const CharactersScreen = () => {
     "#8B008B",
     "#DAA520",
   ];
-  const spellColors = [
-    "#4169E1",
-    "#FF8C00",
-    "#1E90FF",
-    "#228B22",
-    "#8B008B",
-    "#DAA520",
-  ];
+  // const spellColors = [
+  //   "#4169E1",
+  //   "#FF8C00",
+  //   "#1E90FF",
+  //   "#228B22",
+  //   "#8B008B",
+  //   "#DAA520",
+  // ];
 
   // Основная информация
   const [name, setName] = useState("");
@@ -155,7 +163,7 @@ const CharactersScreen = () => {
         });
         return;
       }
-      
+
       const levelNum = parseInt(level);
       if (!levelNum || levelNum < 1 || levelNum > 20) {
         Toast.show({
@@ -199,6 +207,45 @@ const CharactersScreen = () => {
     }
 
     try {
+      let photo = "";
+
+      // Показываем заставку генерации изображения
+      setIsGeneratingImage(true);
+
+      // Запускаем анимацию пульсации
+      animationRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      animationRef.current.start();
+
+      const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name);
+
+      // Скрываем заставку после генерации
+      setIsGeneratingImage(false);
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+      pulseAnim.setValue(1);
+
+      if (imageUrlRaw) {
+        photo = createEndpointImage(imageUrlRaw);
+      }
+      else {
+        photo = imagesUrlDefault.charactersUrl;
+      }
+
       await charactersStore.createCharacter({
         name: name.trim(),
         race: race.trim(),
@@ -224,11 +271,17 @@ const CharactersScreen = () => {
         photo: photo.trim() || undefined,
         skills: skills.length > 0 ? skills : undefined,
       });
-      
+
       // Автоматический переход на предыдущую страницу после успешного создания
       router.back();
 
     } catch (error) {
+      setIsGeneratingImage(false);
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+      pulseAnim.setValue(1);
       Alert.alert("Ошибка", "Не удалось создать персонажа");
       console.error("Create character error:", error);
     }
@@ -241,7 +294,7 @@ const CharactersScreen = () => {
   ) => {
     const slotSize = isMobile ? 70 : 91;
     const slotGap = 12;
-    const containerWidth = 904; 
+    const containerWidth = 904;
     const innerWidth = containerWidth - 48;
     const maxSlotsInRow = Math.max(
       1,
@@ -292,146 +345,209 @@ const CharactersScreen = () => {
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}
-      contentContainerStyle={{
-        alignItems: "center",
-        paddingTop: 80,
-        paddingBottom: 60,
-      }}
-    >
-      {/* === ОСНОВНАЯ ИНФОРМАЦИЯ === */}
-      <View style={styles.block}>
-        <Text style={styles.sectionTitle}>ОСНОВНАЯ ИНФОРМАЦИЯ</Text>
-        <CharacterMain
-          name={name}
-          race={race}
-          level={level}
-          className={className}
-          alignment={alignment}
-          strength={strength}
-          dexterity={dexterity}
-          constitution={constitution}
-          intelligence={intelligence}
-          wisdom={wisdom}
-          charisma={charisma}
-          photo={photo}
-          onNameChange={setName}
-          onRaceChange={setRace}
-          onLevelChange={setLevel}
-          onClassChange={setClassName}
-          onAlignmentChange={setAlignment}
-          onStrengthChange={setStrength}
-          onDexterityChange={setDexterity}
-          onConstitutionChange={setConstitution}
-          onIntelligenceChange={setIntelligence}
-          onWisdomChange={setWisdom}
-          onCharismaChange={setCharisma}
-          onPhotoChange={setPhoto}
-          onValidationChange={setIsFormValid}
-        />
-      </View>
-
-      {/* === ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ === */}
-      <View style={styles.block}>
-        <Text style={styles.sectionTitle}>ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ</Text>
-        <CharacterSecondary
-          initiative={initiative}
-          armorClass={armorClass}
-          speed={speed}
-          hitPoints={hitPoints}
-          tempHitPoints={tempHitPoints}
-          hitDice={hitDice}
-          background={background}
-          features={features}
-          strength={strength}
-          dexterity={dexterity}
-          intelligence={intelligence}
-          wisdom={wisdom}
-          charisma={charisma}
-          level={level}
-          skills={skills}
-          onInitiativeChange={setInitiative}
-          onArmorClassChange={setArmorClass}
-          onSpeedChange={setSpeed}
-          onHitPointsChange={setHitPoints}
-          onTempHitPointsChange={setTempHitPoints}
-          onHitDiceChange={setHitDice}
-          onBackgroundChange={setBackground}
-          onFeaturesChange={setFeatures}
-          onSkillsChange={setSkills}
-          dexterityMod={dexterityMod}
-        />
-      </View>
-
-      {/* === БРОНЯ / ОРУЖИЕ / ЗАКЛИНАНИЯ === */}
-      <View
-        style={{
-          width: "100%",
-          maxWidth: 904,
-          paddingHorizontal: 20,
-          marginTop: 24,
+    <>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}
+        contentContainerStyle={{
+          alignItems: "center",
+          paddingTop: 80,
+          paddingBottom: 60,
         }}
       >
-        {renderEquipmentCard("Ваша броня", armorColors, () =>
-          router.push("/(app)/cabinet/armor")
-        )}
+        {/* === ОСНОВНАЯ ИНФОРМАЦИЯ === */}
+        <View style={styles.block}>
+          <Text style={styles.sectionTitle}>ОСНОВНАЯ ИНФОРМАЦИЯ</Text>
+          <CharacterMain
+            name={name}
+            race={race}
+            level={level}
+            className={className}
+            alignment={alignment}
+            strength={strength}
+            dexterity={dexterity}
+            constitution={constitution}
+            intelligence={intelligence}
+            wisdom={wisdom}
+            charisma={charisma}
+            photo={photo}
+            onNameChange={setName}
+            onRaceChange={setRace}
+            onLevelChange={setLevel}
+            onClassChange={setClassName}
+            onAlignmentChange={setAlignment}
+            onStrengthChange={setStrength}
+            onDexterityChange={setDexterity}
+            onConstitutionChange={setConstitution}
+            onIntelligenceChange={setIntelligence}
+            onWisdomChange={setWisdom}
+            onCharismaChange={setCharisma}
+            onPhotoChange={setPhoto}
+            onValidationChange={setIsFormValid}
+          />
+        </View>
 
-        {renderEquipmentCard("Ваше оружие", weaponColors, () =>
-          router.push("/(app)/cabinet/weapon")
-        )}
+        {/* === ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ === */}
+        <View style={styles.block}>
+          <Text style={styles.sectionTitle}>ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ</Text>
+          <CharacterSecondary
+            initiative={initiative}
+            armorClass={armorClass}
+            speed={speed}
+            hitPoints={hitPoints}
+            tempHitPoints={tempHitPoints}
+            hitDice={hitDice}
+            background={background}
+            features={features}
+            strength={strength}
+            dexterity={dexterity}
+            intelligence={intelligence}
+            wisdom={wisdom}
+            charisma={charisma}
+            level={level}
+            skills={skills}
+            onInitiativeChange={setInitiative}
+            onArmorClassChange={setArmorClass}
+            onSpeedChange={setSpeed}
+            onHitPointsChange={setHitPoints}
+            onTempHitPointsChange={setTempHitPoints}
+            onHitDiceChange={setHitDice}
+            onBackgroundChange={setBackground}
+            onFeaturesChange={setFeatures}
+            onSkillsChange={setSkills}
+            dexterityMod={dexterityMod}
+          />
+        </View>
 
-        {/* {renderEquipmentCard("Ваши заклинания", spellColors, () =>
-          router.push("/(app)/cabinet/spells")
-        )} */}
-      </View>
-
-      {/* === КНОПКА СОЗДАНИЯ === */}
-      <View
-        style={{
-          width: "100%",
-          maxWidth: 904,
-          paddingHorizontal: 20,
-          marginTop: 24,
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleCreateCharacter}
-          disabled={charactersStore.IsLoading || !isFormValid}
+        {/* === БРОНЯ / ОРУЖИЕ / ЗАКЛИНАНИЯ === */}
+        <View
           style={{
-            backgroundColor: isFormValid ? COLORS.primary : COLORS.disabled,
-            borderRadius: 16,
-            paddingVertical: 16,
-            paddingHorizontal: 32,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: charactersStore.IsLoading ? 0.5 : 1,
+            width: "100%",
+            maxWidth: 904,
+            paddingHorizontal: 20,
+            marginTop: 24,
           }}
         >
-          <Text
+          {renderEquipmentCard("Ваша броня", armorColors, () =>
+            router.push("/(app)/cabinet/armor")
+          )}
+
+          {renderEquipmentCard("Ваше оружие", weaponColors, () =>
+            router.push("/(app)/cabinet/weapon")
+          )}
+
+          {/* {renderEquipmentCard("Ваши заклинания", spellColors, () =>
+          router.push("/(app)/cabinet/spells")
+        )} */}
+        </View>
+
+        {/* === КНОПКА СОЗДАНИЯ === */}
+        <View
+          style={{
+            width: "100%",
+            maxWidth: 904,
+            paddingHorizontal: 20,
+            marginTop: 24,
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleCreateCharacter}
+            disabled={charactersStore.IsLoading || !isFormValid}
             style={{
-              color: isFormValid ? COLORS.textPrimary : COLORS.textSecondary,
-              fontSize: 24,
-              fontWeight: "600",
-              fontFamily: "Roboto",
+              backgroundColor: isFormValid ? COLORS.primary : COLORS.disabled,
+              borderRadius: 16,
+              paddingVertical: 16,
+              paddingHorizontal: 32,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: charactersStore.IsLoading ? 0.5 : 1,
             }}
           >
-            {charactersStore.IsLoading ? "Создание..." : "Создать персонажа"}
-          </Text>
-        </TouchableOpacity>
-        
-        {!isFormValid && !charactersStore.IsLoading && (
-          <Text style={{
-            color: COLORS.error,
-            fontSize: 14,
-            textAlign: 'center',
-            marginTop: 8,
+            <Text
+              style={{
+                color: isFormValid ? COLORS.textPrimary : COLORS.textSecondary,
+                fontSize: 24,
+                fontWeight: "600",
+                fontFamily: "Roboto",
+              }}
+            >
+              {charactersStore.IsLoading ? "Создание..." : "Создать персонажа"}
+            </Text>
+          </TouchableOpacity>
+
+          {!isFormValid && !charactersStore.IsLoading && (
+            <Text style={{
+              color: COLORS.error,
+              fontSize: 14,
+              textAlign: 'center',
+              marginTop: 8,
+            }}>
+              Заполните все обязательные поля корректно
+            </Text>
+          )}
+        </View>
+      </ScrollView>
+
+      <Modal
+        visible={isGeneratingImage}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          justifyContent: "center",
+          alignItems: "center",
+        }}>
+          <View style={{
+            backgroundColor: COLORS.backgroundSecondary,
+            borderRadius: 24,
+            padding: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.1)",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
           }}>
-            Заполните все обязательные поля корректно
-          </Text>
-        )}
-      </View>
-    </ScrollView>
+            <Animated.View style={{
+              transform: [{ scale: pulseAnim }],
+              marginBottom: 24,
+            }}>
+              <ActivityIndicator
+                size="large"
+                color={COLORS.primary}
+                style={{ marginBottom: 8 }}
+              />
+            </Animated.View>
+
+            <Text style={{
+              fontFamily: "Roboto",
+              fontWeight: "600",
+              fontSize: 20,
+              color: COLORS.textPrimary,
+              marginBottom: 8,
+              textAlign: "center",
+            }}>
+              Генерация с помощью AI
+            </Text>
+
+            <Text style={{
+              fontFamily: "Roboto",
+              fontWeight: "400",
+              fontSize: 14,
+              color: COLORS.textSecondary,
+              textAlign: "center",
+              marginTop: 8,
+            }}>
+              Создаём изображение персонажа...
+            </Text>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 

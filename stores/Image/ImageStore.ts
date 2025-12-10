@@ -9,9 +9,11 @@ export class ImageStore {
   async generateCharacterImage(
     characterRace: string,
     characterClass: string,
-    characterDescription: string
+    characterName: string,
+    characterBackground: string,
+    characterFeatures: string
   ) {
-    const prompt = `Создай фентези персонажа. Расса: ${characterRace} Класс: ${characterClass}. Описание персонажа: ${characterDescription}`;
+    const prompt = `Создай фентези персонажа. Расса: ${characterRace} Класс: ${characterClass}. Имя персонажа: ${characterName}. Прошлое персонажа: ${characterBackground}. Особенности персонажа: ${characterFeatures}`;
     const response = await apiImage.generateImage(prompt);
     if (response.status === 200) {
       return response.data.img_path;
