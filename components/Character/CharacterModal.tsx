@@ -1,11 +1,12 @@
 import React from "react";
 import {
+    ActivityIndicator,
     Modal,
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
     ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { COLORS } from "../../constant/colors";
 
@@ -14,6 +15,8 @@ interface CharacterModalProps {
     onClose: () => void;
     title: string;
     children?: React.ReactNode;
+    loading?: boolean;
+    placeholderText?: string;
 }
 
 const CharacterModal: React.FC<CharacterModalProps> = ({
@@ -21,6 +24,8 @@ const CharacterModal: React.FC<CharacterModalProps> = ({
     onClose,
     title,
     children,
+    loading = false,
+    placeholderText,
 }) => {
     return (
         <Modal
@@ -40,9 +45,16 @@ const CharacterModal: React.FC<CharacterModalProps> = ({
                         contentContainerStyle={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                     >
-                        {children || (
+                        {children ? (
+                            children
+                        ) : loading ? (
+                            <View style={styles.loadingWrapper}>
+                                <ActivityIndicator size="large" color={COLORS.primary} />
+                                <Text style={styles.placeholder}>Загрузка...</Text>
+                            </View>
+                        ) : (
                             <Text style={styles.placeholder}>
-                                Здесь будет контент: {title.toLowerCase()}
+                                {placeholderText || `Здесь будет контент: ${title.toLowerCase()}`}
                             </Text>
                         )}
                     </ScrollView>
@@ -98,6 +110,11 @@ const styles = StyleSheet.create({
         color: COLORS.textSecondary,
         fontSize: 16,
         textAlign: "center",
+    },
+    loadingWrapper: {
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
     },
     closeButton: {
         backgroundColor: COLORS.primary,

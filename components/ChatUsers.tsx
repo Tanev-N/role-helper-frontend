@@ -90,6 +90,8 @@ const ChatUsers = () => {
             charactersStore.getCharacterById(modalActiveCharacterId)) ||
         null;
 
+    const isModalLoading = modalActiveCharacterId !== null && !modalCharacter;
+
     const toggleDeathSave = (characterId: string, index: number) => {
         setDeathSaves((prev) => {
             const current = prev[characterId] || [false, false, false];
@@ -184,6 +186,7 @@ const ChatUsers = () => {
                     visible={modalActiveCharacterId !== null}
                     onClose={() => setModalActiveCharacterId(null)}
                     title={modalCharacter?.name || "Персонаж"}
+                    loading={isModalLoading}
                 >
                     {modalCharacter && (
                         <StatsContent
@@ -260,6 +263,7 @@ const ChatUsers = () => {
                 visible={modalActiveCharacterId !== null}
                 onClose={() => setModalActiveCharacterId(null)}
                 title={modalCharacter?.name || "Персонаж"}
+                loading={isModalLoading}
             >
                 {modalCharacter && (
                     <StatsContent
@@ -362,6 +366,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
+        width: "100%",
+        height: "100%",
     },
     userName: {
         fontFamily: "Roboto",
