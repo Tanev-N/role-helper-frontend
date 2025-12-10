@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { Armor } from "@/stores/Item/api";
+import { observer } from "mobx-react-lite";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Modal,
   ScrollView,
-  View,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  TextInput,
-  Modal,
+  View,
 } from "react-native";
-import { observer } from "mobx-react-lite";
-import { COLORS } from "@/constant/colors";
 import { armorStyles as styles } from "./styles";
 
 type ArmorModifier = {
@@ -34,45 +36,15 @@ type ArmorItem = {
 };
 
 const ArmorListScreen = observer(() => {
+  const { itemStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
 
-  // ====== ТЕСТОВЫЕ ДАННЫЕ ======
-  const [armorList, setArmorList] = useState<ArmorItem[]>([
-    {
-      id: "armor-1",
-      name: "Кожаный доспех",
-      type: "лёгкий доспех",
-      ac: "11 + показатель ловкости",
-      cost: "30 золотых",
-      rarity: "Обычная",
-      stealthDisadvantage: "Нет",
-      strengthRequirement: "Нет",
-      weight: "5",
-      uniqueStats: "Нет",
-      charges: "Нет",
-      modifiers: [],
-    },
-    {
-      id: "armor-2",
-      name: "Хороший кожаный доспех",
-      type: "лёгкий доспех",
-      ac: "11 + показатель ловкости",
-      cost: "60 золотых",
-      rarity: "Редкое",
-      stealthDisadvantage: "Нет",
-      strengthRequirement: "12",
-      weight: "5",
-      uniqueStats: "Нет",
-      charges: "55 / 60",
-      modifiers: [
-        { id: "m1", value: "+1", stat: "Сила" },
-        { id: "m2", value: "+4", stat: "Ловкость" },
-      ],
-    },
-  ]);
+  useEffect(() => {
+    itemStore.fetchArmors();
+  }, [itemStore]);
 
   // ====== СОЗДАНИЕ БРОНИ (МОДАЛКА) ======
   const [createVisible, setCreateVisible] = useState(false);
@@ -104,25 +76,31 @@ const ArmorListScreen = observer(() => {
     setFormModifiers([]);
   };
 
-  const handleAddArmor = () => {
+  const handleAddArmor = async () => {
     if (!formName.trim()) return;
 
-    const newArmor: ArmorItem = {
-      id: `armor-${Date.now()}`,
+    const payload = {
       name: formName.trim(),
-      type: formType.trim() || "тип предмета",
-      ac: formAC.trim() || "—",       
-      cost: formCost.trim() || "—",
-      rarity: formRarity.trim() || "Обычная",
-      stealthDisadvantage: formStealth.trim() || "Нет",
-      strengthRequirement: formStrengthReq.trim() || "Нет",
-      weight: formWeight.trim() || "—",
-      uniqueStats: formUnique.trim() || "Нет",
-      charges: formCharges.trim() || "Нет",
-      modifiers: formModifiers,
+      type: formType.trim() || undefined,
+      armor_class: formAC ? parseInt(formAC) : undefined,
+      modifier: formModifier.trim() || undefined,
+      cost: formCost.trim() || undefined,
+      rarity: formRarity.trim() || undefined,
+      stealth_disadvantage: formStealth.trim() || undefined,
+      strength_requirement: formStrengthReq.trim() || undefined,
+      weight: formWeight.trim() || undefined,
+      unique_stats: formUnique.trim() || undefined,
+      charges: formCharges.trim() || undefined,
+      modifiers:
+        formModifiers.length > 0
+          ? formModifiers
+            .map((m) => `${m.value?.trim()} ${m.stat?.trim()}`.trim())
+            .filter(Boolean)
+            .join(", ")
+          : undefined,
     };
 
-    setArmorList((prev) => [...prev, newArmor]);
+    await itemStore.createArmor(payload);
     resetForm();
     setCreateVisible(false);
   };
@@ -143,6 +121,42 @@ const ArmorListScreen = observer(() => {
       prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
     );
   };
+
+  const mapArmorToCard = (armor: Armor): ArmorItem => {
+    const modifiersArr =
+      armor.modifiers
+        ?.split(",")
+        .map((m) => m.trim())
+        .filter(Boolean)
+        .map((m, idx) => ({ id: `mod-${armor.id}-${idx}`, value: m, stat: "" })) ??
+      [];
+    const acText =
+      armor.armor_class !== undefined
+        ? armor.modifier
+          ? `${armor.armor_class} + ${armor.modifier}`
+          : String(armor.armor_class)
+        : "—";
+
+    return {
+      id: String(armor.id),
+      name: armor.name,
+      type: armor.type ?? "тип предмета",
+      ac: acText,
+      cost: armor.cost ?? "—",
+      rarity: armor.rarity ?? "Обычная",
+      stealthDisadvantage: armor.stealth_disadvantage ?? "Нет",
+      strengthRequirement: armor.strength_requirement ?? "Нет",
+      weight: armor.weight ?? "—",
+      uniqueStats: armor.unique_stats ?? "Нет",
+      charges: armor.charges ?? "Нет",
+      modifiers: modifiersArr,
+    };
+  };
+
+  const armorList: ArmorItem[] = useMemo(
+    () => itemStore.getArmors.map(mapArmorToCard),
+    [itemStore.getArmors]
+  );
 
   // ====== РЕНДЕР КАРТОЧКИ БРОНИ ======
   const renderArmorCard = (armor: ArmorItem) => {

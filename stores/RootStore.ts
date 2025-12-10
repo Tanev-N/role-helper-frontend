@@ -3,6 +3,7 @@ import { AuthStore } from "./Auth/AuthStore";
 import { CharactersStore } from "./Characters/CharactersStore";
 import { GamesStore } from "./Games/GamesStore";
 import { ImageStore } from "./Image/ImageStore";
+import { ItemStore } from "./Item/ItemStore";
 import { SessionStore } from "./Session/SessionStore";
 
 export class RootStore {
@@ -11,6 +12,7 @@ export class RootStore {
   readonly sessionStore: SessionStore;
   readonly gamesStore: GamesStore;
   readonly imageStore: ImageStore;
+  readonly itemStore: ItemStore;
   constructor() {
     makeAutoObservable(this);
     this.authStore = new AuthStore();
@@ -18,5 +20,6 @@ export class RootStore {
     this.sessionStore = new SessionStore();
     this.gamesStore = new GamesStore();
     this.imageStore = new ImageStore();
+    this.itemStore = new ItemStore();
   }
 }

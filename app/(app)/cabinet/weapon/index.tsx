@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import { COLORS } from "@/constant/colors";
+import useStore from "@/hooks/store";
+import { Weapon } from "@/stores/Item/api";
+import { observer } from "mobx-react-lite";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Modal,
   ScrollView,
-  View,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  TextInput,
-  Modal,
+  View,
 } from "react-native";
-import { observer } from "mobx-react-lite";
-import { COLORS } from "@/constant/colors";
 import { weaponStyles as styles } from "./styles";
 
 type WeaponModifier = {
@@ -35,44 +37,15 @@ type WeaponItem = {
 };
 
 const WeaponListScreen = observer(() => {
+  const { itemStore } = useStore();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
 
-  // ====== ТЕСТОВЫЕ ДАННЫЕ ======
-  const [weaponList, setWeaponList] = useState<WeaponItem[]>([
-    {
-      id: "weapon-1",
-      name: "Боевая коса",
-      type: "простое рукопашное",
-      damage: "1к8",
-      damageModifier: "показат. ловкости",
-      cost: "30 золотых",
-      rarity: "Обычная",
-      grip: "Двуручное",
-      range: "2.5",
-      weight: "5",
-      uniqueStats: "Нет",
-      charges: "Нет",
-      modifiers: [],
-    },
-    {
-      id: "weapon-2",
-      name: "Боевая коса",
-      type: "простое рукопашное",
-      damage: "1к8",
-      damageModifier: "показат. ловкости",
-      cost: "30 золотых",
-      rarity: "Обычная",
-      grip: "Двуручное",
-      range: "2.5",
-      weight: "5",
-      uniqueStats: "Нет",
-      charges: "Нет",
-      modifiers: [],
-    },
-  ]);
+  useEffect(() => {
+    itemStore.fetchWeapons();
+  }, [itemStore]);
 
   // ====== СОЗДАНИЕ ОРУЖИЯ (МОДАЛКА) ======
   const [createVisible, setCreateVisible] = useState(false);
@@ -105,26 +78,31 @@ const WeaponListScreen = observer(() => {
     setFormModifiers([]);
   };
 
-  const handleAddWeapon = () => {
+  const handleAddWeapon = async () => {
     if (!formName.trim()) return;
 
-    const newWeapon: WeaponItem = {
-      id: `weapon-${Date.now()}`,
+    const payload = {
       name: formName.trim(),
-      type: formType.trim() || "тип предмета",
-      damage: formDamage.trim() || "—",
-      damageModifier: formDamageMod.trim(),
-      cost: formCost.trim() || "—",
-      rarity: formRarity.trim() || "Обычная",
-      grip: formGrip.trim() || "—",
-      range: formRange.trim() || "—",
-      weight: formWeight.trim() || "—",
-      uniqueStats: formUnique.trim() || "Нет",
-      charges: formCharges.trim() || "Нет",
-      modifiers: formModifiers,
+      type: formType.trim() || undefined,
+      damage: formDamage.trim() || undefined,
+      modifier: formDamageMod.trim() || undefined,
+      cost: formCost.trim() || undefined,
+      rarity: formRarity.trim() || undefined,
+      grip: formGrip.trim() || undefined,
+      range_meters: formRange.trim() || undefined,
+      weight: formWeight.trim() || undefined,
+      unique_stats: formUnique.trim() || undefined,
+      charges: formCharges.trim() || undefined,
+      modifiers:
+        formModifiers.length > 0
+          ? formModifiers
+            .map((m) => `${m.value?.trim()} ${m.stat?.trim()}`.trim())
+            .filter(Boolean)
+            .join(", ")
+          : undefined,
     };
 
-    setWeaponList((prev) => [...prev, newWeapon]);
+    await itemStore.createWeapon(payload);
     resetForm();
     setCreateVisible(false);
   };
@@ -145,6 +123,36 @@ const WeaponListScreen = observer(() => {
       prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
     );
   };
+
+  const mapWeaponToCard = (weapon: Weapon): WeaponItem => {
+    const modifiersArr =
+      weapon.modifiers
+        ?.split(",")
+        .map((m) => m.trim())
+        .filter(Boolean)
+        .map((m, idx) => ({ id: `mod-${weapon.id}-${idx}`, value: m, stat: "" })) ??
+      [];
+    return {
+      id: String(weapon.id),
+      name: weapon.name,
+      type: weapon.type ?? "тип предмета",
+      damage: weapon.damage ?? "—",
+      damageModifier: weapon.modifier ?? "",
+      cost: weapon.cost ?? "—",
+      rarity: weapon.rarity ?? "Обычная",
+      grip: weapon.grip ?? "—",
+      range: weapon.range_meters ?? "—",
+      weight: weapon.weight ?? "—",
+      uniqueStats: weapon.unique_stats ?? "Нет",
+      charges: weapon.charges ?? "Нет",
+      modifiers: modifiersArr,
+    };
+  };
+
+  const weaponList: WeaponItem[] = useMemo(
+    () => itemStore.getWeapons.map(mapWeaponToCard),
+    [itemStore.getWeapons]
+  );
 
   // ====== РЕНДЕР КАРТОЧКИ ОРУЖИЯ ======
   const renderWeaponCard = (weapon: WeaponItem) => {
