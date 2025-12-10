@@ -219,6 +219,7 @@ const CreateGameScreen = observer(() => {
                         shadowRadius: 8,
                         elevation: 8,
                     }}>
+<<<<<<< HEAD
                         <Animated.View style={{
                             transform: [{ scale: pulseAnim }],
                             marginBottom: 24,
@@ -255,6 +256,13 @@ const CreateGameScreen = observer(() => {
                 </View>
             </Modal>
         </>
+=======
+                        {gamesStore.IsLoading ? "Создание..." : "Создать мир"}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
+>>>>>>> dev-web
     );
 });
 

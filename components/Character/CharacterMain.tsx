@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { ChevronDown, Pencil } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Image,
     Text,
@@ -9,6 +9,7 @@ import {
     useWindowDimensions,
     View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { COLORS } from "../../constant/colors";
 import { DND_CLASSES, DND_RACES } from "../../constant/dnd";
 import SelectionModal from "./SelectionModal";
@@ -39,7 +40,14 @@ interface CharacterMainProps {
     onWisdomChange: (value: string) => void;
     onCharismaChange: (value: string) => void;
     onPhotoChange: (value: string) => void;
+    onValidationChange?: (isValid: boolean) => void; // Новый пропс для валидации
 }
+
+// Константы для валидации
+const STAT_MIN_VALUE = 1;
+const STAT_MAX_VALUE = 30;
+const LEVEL_MIN_VALUE = 1;
+const LEVEL_MAX_VALUE = 20;
 
 const CharacterMain = ({
     name,
@@ -66,6 +74,7 @@ const CharacterMain = ({
     onWisdomChange,
     onCharismaChange,
     onPhotoChange,
+    onValidationChange,
 }: CharacterMainProps) => {
     const { width } = useWindowDimensions();
     const isMobile = width < 768;
@@ -83,6 +92,125 @@ const CharacterMain = ({
     const selectedClassIcon = DND_CLASSES.find(
         (c) => c.name === className || c.nameEn === className
     )?.icon;
+
+    // === Валидация полей ===
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+    // Функция для валидации числового поля
+    const validateNumberField = (
+        value: string, 
+        fieldName: string, 
+        min: number, 
+        max: number, 
+        fieldLabel: string
+    ): boolean => {
+        const numValue = parseInt(value);
+        
+        // Если поле пустое или не число
+        if (value === '' || isNaN(numValue)) {
+            setValidationErrors(prev => ({
+                ...prev,
+                [fieldName]: `Поле "${fieldLabel}" должно содержать число`
+            }));
+            return false;
+        }
+        
+        // Проверка диапазона
+        if (numValue < min || numValue > max) {
+            setValidationErrors(prev => ({
+                ...prev,
+                [fieldName]: `Число в поле "${fieldLabel}" должно быть от ${min} до ${max}`
+            }));
+            return false;
+        }
+        
+        // Если валидация прошла успешно, удаляем ошибку
+        setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldName];
+            return newErrors;
+        });
+        return true;
+    };
+
+    // Функция для ограничения ввода двумя цифрами
+    const handleNumberInput = (
+        value: string, 
+        onChange: (value: string) => void,
+        fieldName: string,
+        min: number,
+        max: number,
+        fieldLabel: string
+    ) => {
+        // Удаляем все нецифровые символы
+        const cleaned = value.replace(/[^0-9]/g, '');
+        
+        // Ограничиваем двумя цифрами
+        const limited = cleaned.length > 2 ? cleaned.slice(0, 2) : cleaned;
+        
+        onChange(limited);
+        
+        // Валидируем только если значение не пустое
+        if (limited !== '') {
+            validateNumberField(limited, fieldName, min, max, fieldLabel);
+            
+            // Показываем Toast уведомление при ошибке
+            const numValue = parseInt(limited);
+            if (!isNaN(numValue) && (numValue < min || numValue > max)) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Ошибка ввода',
+                    text2: `Число в поле "${fieldLabel}" должно быть от ${min} до ${max}`,
+                    position: 'top',
+                    visibilityTime: 3000,
+                });
+            }
+        } else {
+            // Если поле очищено, удаляем ошибку
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[fieldName];
+                return newErrors;
+            });
+        }
+    };
+
+    // Функция для проверки всех полей
+    const validateAllFields = (): boolean => {
+        const errors: Record<string, string> = {};
+        let isValid = true;
+
+        // Валидация уровня
+        if (!validateNumberField(level, 'level', LEVEL_MIN_VALUE, LEVEL_MAX_VALUE, 'Уровень')) {
+            isValid = false;
+        }
+
+        // Валидация характеристик
+        const statsToValidate = [
+            { value: strength, field: 'strength', label: 'Сила' },
+            { value: dexterity, field: 'dexterity', label: 'Ловкость' },
+            { value: constitution, field: 'constitution', label: 'Телосложение' },
+            { value: intelligence, field: 'intelligence', label: 'Интеллект' },
+            { value: wisdom, field: 'wisdom', label: 'Мудрость' },
+            { value: charisma, field: 'charisma', label: 'Харизма' },
+        ];
+
+        statsToValidate.forEach(stat => {
+            if (!validateNumberField(stat.value, stat.field, STAT_MIN_VALUE, STAT_MAX_VALUE, stat.label)) {
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    };
+
+    // Эффект для проверки валидации при изменении полей
+    useEffect(() => {
+        if (onValidationChange) {
+            const isValid = validateAllFields();
+            onValidationChange(isValid);
+        }
+    }, [level, strength, dexterity, constitution, intelligence, wisdom, charisma]);
 
     // === Выбор изображения ===
     const pickImage = async () => {
@@ -116,12 +244,90 @@ const CharacterMain = ({
     };
 
     const stats = [
-        { name: "Сила", value: strength, color: COLORS.strength, onChange: onStrengthChange },
-        { name: "Ловкость", value: dexterity, color: COLORS.dexterity, onChange: onDexterityChange },
-        { name: "Телослож.", value: constitution, color: COLORS.constitution, onChange: onConstitutionChange },
-        { name: "Интеллект", value: intelligence, color: COLORS.intelligence, onChange: onIntelligenceChange },
-        { name: "Мудрость", value: wisdom, color: COLORS.wisdom, onChange: onWisdomChange },
-        { name: "Харизма", value: charisma, color: COLORS.charisma, onChange: onCharismaChange },
+        { 
+            name: "Сила", 
+            value: strength, 
+            color: COLORS.strength, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onStrengthChange, 
+                'strength', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Сила'
+            ),
+            error: validationErrors.strength 
+        },
+        { 
+            name: "Ловкость", 
+            value: dexterity, 
+            color: COLORS.dexterity, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onDexterityChange, 
+                'dexterity', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Ловкость'
+            ),
+            error: validationErrors.dexterity 
+        },
+        { 
+            name: "Телослож.", 
+            value: constitution, 
+            color: COLORS.constitution, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onConstitutionChange, 
+                'constitution', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Телосложение'
+            ),
+            error: validationErrors.constitution 
+        },
+        { 
+            name: "Интеллект", 
+            value: intelligence, 
+            color: COLORS.intelligence, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onIntelligenceChange, 
+                'intelligence', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Интеллект'
+            ),
+            error: validationErrors.intelligence 
+        },
+        { 
+            name: "Мудрость", 
+            value: wisdom, 
+            color: COLORS.wisdom, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onWisdomChange, 
+                'wisdom', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Мудрость'
+            ),
+            error: validationErrors.wisdom 
+        },
+        { 
+            name: "Харизма", 
+            value: charisma, 
+            color: COLORS.charisma, 
+            onChange: (value: string) => handleNumberInput(
+                value, 
+                onCharismaChange, 
+                'charisma', 
+                STAT_MIN_VALUE, 
+                STAT_MAX_VALUE, 
+                'Харизма'
+            ),
+            error: validationErrors.charisma 
+        },
     ];
 
     return (
@@ -191,12 +397,24 @@ const CharacterMain = ({
                         </View>
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
-                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Уровень"
+                                style={[
+                                    styles.input, 
+                                    isMobile ? styles.inputWide : styles.inputHalf,
+                                    validationErrors.level && { borderColor: COLORS.error }
+                                ]}
+                                placeholder="Уровень (от 1 до 20)"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={level}
-                                onChangeText={onLevelChange}
+                                onChangeText={(value) => handleNumberInput(
+                                    value, 
+                                    onLevelChange, 
+                                    'level', 
+                                    LEVEL_MIN_VALUE, 
+                                    LEVEL_MAX_VALUE, 
+                                    'Уровень'
+                                )}
                                 keyboardType="numeric"
+                                maxLength={2}
                             />
                         </View>
                     </View>
@@ -248,16 +466,35 @@ const CharacterMain = ({
                         <View key={stat.name} style={styles.statBox}>
                             <View style={{ position: "relative", alignItems: "center" }}>
                                 <TextInput
-                                    style={[styles.statValue, { color: stat.color, textAlign: "center" }]}
+                                    style={[
+                                        styles.statValue, 
+                                        { 
+                                            color: stat.color, 
+                                            textAlign: "center",
+                                            borderColor: stat.error ? COLORS.error : 'transparent',
+                                            borderWidth: stat.error ? 1 : 0
+                                        }
+                                    ]}
                                     value={stat.value}
                                     onChangeText={stat.onChange}
                                     keyboardType="numeric"
                                     placeholder="0"
                                     placeholderTextColor={stat.color}
+                                    maxLength={2}
                                 />
                                 <Text style={styles.statBonus}>{modifierText}</Text>
                             </View>
                             <Text style={styles.statLabel}>{stat.name}</Text>
+                            {stat.error && (
+                                <Text style={{
+                                    color: COLORS.error,
+                                    fontSize: 10,
+                                    textAlign: 'center',
+                                    marginTop: 2
+                                }}>
+                                    {stat.error}
+                                </Text>
+                            )}
                         </View>
                     );
                 })}

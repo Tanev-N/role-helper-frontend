@@ -197,6 +197,30 @@ export const characterStyles = StyleSheet.create({
         marginTop: 8,
     },
 
+    toastWrapper: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 9999,
+        elevation: 9999,
+    },
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 12,
+        fontFamily: 'Roboto',
+        marginTop: 4,
+        marginLeft: 4,
+    },
+
+    statError: {
+        color: '#ff6b6b',
+        fontSize: 10,
+        fontFamily: 'Roboto',
+        marginTop: 2,
+        textAlign: 'center',
+        maxWidth: 60,
+    },
+
     // ==================== ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ ====================
 
     secondaryBlock: {
