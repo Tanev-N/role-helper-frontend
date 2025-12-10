@@ -211,13 +211,12 @@ const WeaponListScreen = observer(() => {
 
     return (
       <View key={weapon.id} style={styles.card}>
-        {/* Превью изображения, если есть */}
         {weapon.photo && (
-          <View style={{ marginBottom: 12, alignItems: "center" }}>
-            <Text style={styles.label}>Изображение:</Text>
+          <View style={{ marginBottom: 12, alignItems: "flex-start", flexDirection: "row" }}>
             <View
               style={{
-                width: "100%",
+                width: 100,
+                height: 100,
                 borderRadius: 12,
                 overflow: "hidden",
                 borderWidth: 1,

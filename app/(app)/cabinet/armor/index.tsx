@@ -214,7 +214,6 @@ const ArmorListScreen = observer(() => {
         {/* Превью изображения, если есть */}
         {armor.photo && (
           <View style={{ marginBottom: 12, alignItems: "flex-start", flexDirection: "row" }}>
-            <Text style={styles.label}>Изображение:</Text>
             <View
               style={{
                 width: 100,
