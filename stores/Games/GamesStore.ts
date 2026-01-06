@@ -12,6 +12,7 @@ export class GamesStore {
   private currentGame: Game | null = null;
   private currentSession: Session | null = null;
   private gamePlayers: GamePlayer[] = [];
+  private sessionPlayers: GamePlayer[] = [];
   private previousSessions: Session[] = [];
   private sessionRole: "master" | "player" | null = null;
   private playerCharacterId: string | null = null;
@@ -37,6 +38,10 @@ export class GamesStore {
 
   public get getGamePlayers(): GamePlayer[] {
     return this.gamePlayers;
+  }
+
+  public get getSessionPlayers(): GamePlayer[] {
+    return this.sessionPlayers;
   }
 
   public get getPreviousSessions(): Session[] {
@@ -74,6 +79,10 @@ export class GamesStore {
 
   private setGamePlayers(players: GamePlayer[]) {
     this.gamePlayers = players;
+  }
+
+  private setSessionPlayers(players: GamePlayer[]) {
+    this.sessionPlayers = players;
   }
 
   private setPreviousSessions(sessions: Session[]) {
@@ -276,6 +285,56 @@ export class GamesStore {
     }
   }
 
+  public async fetchPreviousSessions(gameId: number) {
+    if (this.isLoading) return;
+    this.setIsLoading(true);
+    this.setError(null);
+    try {
+      const response = await apiGames.getPreviousSessions(gameId);
+      if (response.status === 200) {
+        runInAction(() => {
+          this.setPreviousSessions(response.data || []);
+        });
+      }
+    } catch (e: any) {
+      console.warn("GamesStore: fetchPreviousSessions error", e);
+      runInAction(() => {
+        this.setError(
+          e.response?.data?.error || "Ошибка при загрузке предыдущих сессий"
+        );
+      });
+    } finally {
+      runInAction(() => {
+        this.setIsLoading(false);
+      });
+    }
+  }
+
+  public async fetchSessionPlayers(sessionId: number) {
+    if (this.isLoading) return;
+    this.setIsLoading(true);
+    this.setError(null);
+    try {
+      const response = await apiGames.getSessionPlayers(sessionId);
+      if (response.status === 200) {
+        runInAction(() => {
+          this.setSessionPlayers(response.data || []);
+        });
+      }
+    } catch (e: any) {
+      console.warn("GamesStore: fetchSessionPlayers error", e);
+      runInAction(() => {
+        this.setError(
+          e.response?.data?.error || "Ошибка при загрузке игроков сессии"
+        );
+      });
+    } finally {
+      runInAction(() => {
+        this.setIsLoading(false);
+      });
+    }
+  }
+
   public clearError() {
     this.setError(null);
   }
@@ -285,6 +344,7 @@ export class GamesStore {
     this.setCurrentGame(null);
     this.setCurrentSession(null);
     this.setGamePlayers([]);
+    this.setSessionPlayers([]);
     this.setPreviousSessions([]);
     this.setSessionRole(null);
     this.setPlayerCharacterId(null);

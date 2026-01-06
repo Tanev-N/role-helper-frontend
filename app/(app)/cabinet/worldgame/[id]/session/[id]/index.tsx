@@ -1,45 +1,114 @@
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 import { observer } from "mobx-react-lite";
-import React from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { ScrollView, Text, useWindowDimensions, View } from "react-native";
 
+import useStore from "@/hooks/store";
 import { sessionDetailsStyles as styles } from "./styles";
 
 const SessionDetailsScreen = observer(() => {
+  const { gamesStore, charactersStore } = useStore();
+  const { id } = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
 
-  // ===== тестовые данные =====
-  const session = {
-    title: "СЕССИЯ 1",
-    players: "Джо Пьяный Король, Гига ЧИТ, Фрирен, Гойдaрик",
-    characters: "Дубинка, Шиншила, Пельмешка, Конина",
-    npcs: "Барон Серая Грива, Темная Дева, Семен, Белка",
-  };
+  useEffect(() => {
+    if (id) {
+      gamesStore.fetchSessionPlayers(Number(id));
+    }
+  }, [id, gamesStore]);
 
-  const chatMessages = [
-    {
-      id: "m1",
-      side: "left" as const,
-      text: "Здравствуйте! Что вы хотите?",
-    },
-    {
-      id: "m2",
-      side: "right" as const,
-      text: "Начать новую игру!",
-    },
-    {
-      id: "m3",
-      side: "left" as const,
-      text:
-        "Добро пожаловать в мир приключений!\n" +
-        "В этом разделе будет размещено описание кампании Dungeons & Dragons — истории, полной опасностей, магии и неожиданных поворотов.\n" +
-        "Соберите свою партию, бросьте кости и отправьтесь навстречу судьбе: древние подземелья ждут своих героев.\n" +
-        "Здесь появятся сведения о персонажах, локациях и легендах, с которыми вы столкнётесь в ходе путешествия.",
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      if (id) {
+        gamesStore.fetchSessionPlayers(Number(id));
+      }
+    }, [id, gamesStore])
+  );
+
+  // Получаем сессию из previous sessions
+  const session = useMemo(() => {
+    return gamesStore.getPreviousSessions.find(
+      (s) => s.id === Number(id)
+    );
+  }, [gamesStore.getPreviousSessions, id]);
+
+  // Загружаем информацию о персонажах
+  useEffect(() => {
+    const sessionPlayers = gamesStore.getSessionPlayers;
+    sessionPlayers.forEach((player) => {
+      const charId = String(player.character_id);
+      if (!charactersStore.getCharacterById(charId)) {
+        charactersStore.fetchCharacterById(charId);
+      }
+    });
+  }, [gamesStore.getSessionPlayers, charactersStore]);
+
+  // Формируем списки игроков и персонажей
+  const playersList = useMemo(() => {
+    const sessionPlayers = gamesStore.getSessionPlayers;
+    if (!sessionPlayers || sessionPlayers.length === 0) {
+      return "Нет данных об игроках";
+    }
+
+    return sessionPlayers
+      .map((player) => {
+        const charId = String(player.character_id);
+        const character = charactersStore.getCharacterById(charId);
+        const shortCharacter = charactersStore.getCharacters?.find(
+          (char) => char.id === charId
+        );
+        const characterName =
+          character?.name || shortCharacter?.name || `Персонаж ${charId}`;
+        return characterName;
+      })
+      .join(", ");
+  }, [
+    gamesStore.getSessionPlayers,
+    charactersStore.getCharacterById,
+    charactersStore.getCharacters,
+  ]);
+
+  const charactersList = useMemo(() => {
+    const sessionPlayers = gamesStore.getSessionPlayers;
+    if (!sessionPlayers || sessionPlayers.length === 0) {
+      return "Нет данных о персонажах";
+    }
+
+    return sessionPlayers
+      .map((player) => {
+        const charId = String(player.character_id);
+        const character = charactersStore.getCharacterById(charId);
+        const shortCharacter = charactersStore.getCharacters?.find(
+          (char) => char.id === charId
+        );
+        const characterName =
+          character?.name || shortCharacter?.name || `Персонаж ${charId}`;
+        return characterName;
+      })
+      .join(", ");
+  }, [
+    gamesStore.getSessionPlayers,
+    charactersStore.getCharacterById,
+    charactersStore.getCharacters,
+  ]);
+
+  const formatSessionTitle = () => {
+    if (!session) return "СЕССИЯ";
+    if (session.created_at) {
+      const date = new Date(session.created_at);
+      return `СЕССИЯ ${date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })}`;
+    }
+    return "СЕССИЯ";
+  };
 
   return (
     <ScrollView
@@ -50,59 +119,25 @@ const SessionDetailsScreen = observer(() => {
       ]}
     >
       <View style={[styles.container, { width: containerWidth }]}>
-        <Text style={styles.sessionTitle}>{session.title}</Text>
+        <Text style={styles.sessionTitle}>{formatSessionTitle()}</Text>
         <View style={styles.titleDivider} />
 
         <View style={styles.infoCard}>
           <Text style={styles.infoCardTitle}>Игроки</Text>
-          <Text style={styles.infoCardText}>{session.players}</Text>
+          <Text style={styles.infoCardText}>{playersList}</Text>
         </View>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoCardTitle}>Персонажи</Text>
-          <Text style={styles.infoCardText}>{session.characters}</Text>
+          <Text style={styles.infoCardText}>{charactersList}</Text>
         </View>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoCardTitle}>NPC</Text>
-          <Text style={styles.infoCardText}>{session.npcs}</Text>
-        </View>
-
-        {/* === ЧАТ === */}
-        <View style={styles.chatCard}>
-
-          <View style={styles.chatHeader}>
-            <Text style={styles.chatHeaderText}>Чат</Text>
+        {session?.summary && (
+          <View style={styles.infoCard}>
+            <Text style={styles.infoCardTitle}>Описание сессии</Text>
+            <Text style={styles.infoCardText}>{session.summary}</Text>
           </View>
-
-          <View style={styles.chatInnerWrapper}>
-            <View style={styles.chatInner}>
-              {chatMessages.map((msg) => (
-                <View
-                  key={msg.id}
-                  style={[
-                    styles.chatBubbleWrapper,
-                    msg.side === "right"
-                      ? { alignItems: "flex-end" }
-                      : { alignItems: "flex-start" },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.chatBubble,
-                      msg.side === "right"
-                        ? styles.chatBubbleRight
-                        : styles.chatBubbleLeft,
-                    ]}
-                  >
-                    <Text style={styles.chatBubbleText}>{msg.text}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-
-        </View>
+        )}
 
 
       </View>

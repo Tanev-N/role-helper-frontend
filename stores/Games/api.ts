@@ -55,6 +55,8 @@ const apiGamesUrl = {
   gamePlayers: (gameId: number) => createEndpoint(`/games/${gameId}/players`),
   gamePreviousSessions: (gameId: number) =>
     createEndpoint(`/api/games/${gameId}/previous_sessions`),
+  sessionPlayers: (sessionId: number) =>
+    createEndpoint(`/api/games/sessions/${sessionId}/players`),
 };
 
 export const apiGames = {
@@ -70,8 +72,12 @@ export const apiGames = {
     } as CreateGameRequest);
   },
 
-  async getPreviousSession(gameId: number) {
+  async getPreviousSessions(gameId: number) {
     return await axios.get(apiGamesUrl.gamePreviousSessions(gameId));
+  },
+
+  async getSessionPlayers(sessionId: number) {
+    return await axios.get(apiGamesUrl.sessionPlayers(sessionId));
   },
 
   async createSession(gameId: number) {

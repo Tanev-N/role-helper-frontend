@@ -1,14 +1,18 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Image,
+  Pressable,
   ScrollView,
   Text,
   useWindowDimensions,
   View
 } from "react-native";
 
+import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { worldGameStyles as styles } from "./styles";
 
@@ -33,7 +37,35 @@ const WorldGameScreen = observer(() => {
 
   const world = gamesStore.getGames.find((game) => game.id === id as any);
 
-  //const sessions = gamesStore.getPreviousSessions.filter((session) => session.game_id === id as any);
+  useEffect(() => {
+    if (id) {
+      gamesStore.fetchPreviousSessions(Number(id));
+    }
+  }, [id, gamesStore]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (id) {
+        gamesStore.fetchPreviousSessions(Number(id));
+      }
+    }, [id, gamesStore])
+  );
+
+  const sessions = gamesStore.getPreviousSessions.filter(
+    (session) => session.game_id === Number(id)
+  );
+
+  const formatSessionTitle = (session: any, index: number) => {
+    if (session.created_at) {
+      const date = new Date(session.created_at);
+      return `СЕССИЯ ${date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })}`;
+    }
+    return `СЕССИЯ ${index + 1}`;
+  };
 
   return (
     <ScrollView
@@ -73,27 +105,33 @@ const WorldGameScreen = observer(() => {
           ВАШИ СЕССИИ
         </Text>
         <View style={styles.sectionDivider} />
-        {/* 
-        {sessions.map((session) => (
+        {sessions.map((session, index) => (
           <View key={session.id} style={styles.sessionCard}>
-            <Text style={styles.sessionTitle}>{session.title}</Text>
+            <Text style={styles.sessionTitle}>
+              {formatSessionTitle(session, index)}
+            </Text>
 
             <View style={styles.sessionRow}>
               <Text style={styles.sessionPreview} numberOfLines={5}>
-                {session.preview}
+                {session.summary || "Описание сессии отсутствует"}
               </Text>
 
               <Pressable
                 style={styles.sessionArrowHitbox}
                 onPress={() => {
-                  router.push("/(app)/cabinet/worldgame/" + id + "/session/" + session.id as any);
+                  router.push(
+                    ("/(app)/cabinet/worldgame/" +
+                      id +
+                      "/session/" +
+                      session.id) as any
+                  );
                 }}
               >
                 <ChevronRight size={24} color={COLORS.textPrimary} />
               </Pressable>
             </View>
           </View>
-        ))} */}
+        ))}
       </View>
     </ScrollView>
   );
