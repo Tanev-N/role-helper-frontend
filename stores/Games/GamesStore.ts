@@ -339,6 +339,13 @@ export class GamesStore {
     this.setError(null);
   }
 
+  public exitSession() {
+    this.setCurrentSession(null);
+    this.setSessionRole(null);
+    this.setPlayerCharacterId(null);
+    this.setSessionPlayers([]);
+  }
+
   public reset() {
     this.setGames([]);
     this.setCurrentGame(null);

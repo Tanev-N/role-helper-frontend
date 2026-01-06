@@ -103,4 +103,10 @@ export class SessionStore {
   public get getHistory() {
     return this.history;
   }
+
+  public clearSession() {
+    this.session_id = "1";
+    this.history = [];
+    this.code = "";
+  }
 }

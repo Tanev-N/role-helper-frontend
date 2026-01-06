@@ -2,6 +2,7 @@ import CharactersScreen from "@/app/(app)/cabinet/character";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
+import { X } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -221,6 +222,26 @@ const Chat = () => {
         </View>
     );
 
+    // Обработчик завершения сессии для мастера
+    const handleFinishSession = async () => {
+        const currentSession = gamesStore.getCurrentSession;
+        if (!currentSession) return;
+
+        try {
+            await gamesStore.finishSession(currentSession.id, "Тут будет описание");
+            router.replace("/(app)/main");
+        } catch (e) {
+            console.warn("Ошибка при завершении сессии", e);
+        }
+    };
+
+    // Обработчик выхода из сессии для игрока
+    const handleExitSession = () => {
+        gamesStore.exitSession();
+        sessionStore.clearSession();
+        router.replace("/(app)/main");
+    };
+
     return (
         <View style={styles.fullscreen}>
             <View style={[styles.page, isMobile && styles.pageMobile]}>
@@ -242,6 +263,16 @@ const Chat = () => {
                             isMobile && styles.chatContainerMobile,
                         ]}
                     >
+                        {/* Кнопка выхода из сессии для игрока */}
+                        <View style={styles.exitButtonContainer}>
+                            <TouchableOpacity
+                                onPress={handleExitSession}
+                                style={styles.exitButton}
+                            >
+                                <X size={24} color={COLORS.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+
                         {playerCharacterId ? (
                             playerCharacter ? (
                                 <CharactersScreen
@@ -293,6 +324,14 @@ const Chat = () => {
 
                             <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
                                 <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
+                            </TouchableOpacity>
+
+                            {/* Кнопка завершения сессии для мастера */}
+                            <TouchableOpacity
+                                onPress={handleFinishSession}
+                                style={styles.finishButton}
+                            >
+                                <X size={24} color={COLORS.textPrimary} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -409,5 +448,28 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.backgroundPrimary,
         borderRadius: 8,
         marginLeft: 8,
+    },
+    finishButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: COLORS.primary,
+        borderRadius: 8,
+        marginLeft: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    exitButtonContainer: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        zIndex: 10,
+    },
+    exitButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: COLORS.primary,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
