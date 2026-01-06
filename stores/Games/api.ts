@@ -54,9 +54,9 @@ const apiGamesUrl = {
     createEndpoint(`/games/sessions/${sessionId}/finish`),
   gamePlayers: (gameId: number) => createEndpoint(`/games/${gameId}/players`),
   gamePreviousSessions: (gameId: number) =>
-    createEndpoint(`/api/games/${gameId}/previous_sessions`),
+    createEndpoint(`/games/${gameId}/previous_sessions`),
   sessionPlayers: (sessionId: number) =>
-    createEndpoint(`/api/games/sessions/${sessionId}/players`),
+    createEndpoint(`/games/sessions/${sessionId}/players`),
 };
 
 export const apiGames = {
