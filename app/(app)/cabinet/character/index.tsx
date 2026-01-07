@@ -6,6 +6,7 @@ import { COLORS } from "@/constant/colors";
 import { imagesUrlDefault } from "@/constant/default_images";
 import useStore from "@/hooks/store";
 import { CharacterSkill } from "@/stores/Characters/api";
+import { CharacterFormDraft } from "@/stores/Characters/CharactersStore";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
@@ -163,6 +164,58 @@ const CharactersScreen = ({
     );
   };
 
+  const applyDraftToForm = (draft: CharacterFormDraft) => {
+    setName(draft.name ?? "");
+    setRace(draft.race ?? "");
+    setLevel(draft.level ?? "");
+    setClassName(draft.className ?? "");
+    setAlignment(draft.alignment ?? "");
+    setStrength(draft.strength ?? "1");
+    setDexterity(draft.dexterity ?? "1");
+    setConstitution(draft.constitution ?? "1");
+    setIntelligence(draft.intelligence ?? "1");
+    setWisdom(draft.wisdom ?? "1");
+    setCharisma(draft.charisma ?? "1");
+    setPhoto(draft.photo ?? "");
+    setInitiative(draft.initiative ?? "");
+    setArmorClass(draft.armorClass ?? "");
+    setSpeed(draft.speed ?? "");
+    setHitPoints(draft.hitPoints ?? "");
+    setTempHitPoints(draft.tempHitPoints ?? "");
+    setHitDice(draft.hitDice ?? "");
+    setBackground(draft.background ?? "");
+    setFeatures(draft.features ?? "");
+    setSkills(draft.skills ?? []);
+    setSelectedArmorId(draft.selectedArmorId ?? null);
+    setSelectedWeaponId(draft.selectedWeaponId ?? null);
+  };
+
+  const buildDraft = (): CharacterFormDraft => ({
+    name,
+    race,
+    level,
+    className,
+    alignment,
+    strength,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma,
+    photo,
+    initiative,
+    armorClass,
+    speed,
+    hitPoints,
+    tempHitPoints,
+    hitDice,
+    background,
+    features,
+    skills,
+    selectedArmorId,
+    selectedWeaponId,
+  });
+
   // Загружаем персонажа для редактирования
   useEffect(() => {
     if (!isEditMode || !characterId) return;
@@ -180,6 +233,47 @@ const CharactersScreen = ({
       }
     })();
   }, [isEditMode, characterId, charactersStore]);
+
+  // Поднимаем черновик из стора при повторном заходе на страницу создания
+  useEffect(() => {
+    if (isEditMode) return;
+    const draft = charactersStore.getCharacterDraft;
+    if (draft) {
+      applyDraftToForm(draft);
+    }
+  }, [charactersStore, isEditMode]);
+
+  // Сохраняем черновик в стор при каждом изменении полей, чтобы не потерять данные после навигации
+  useEffect(() => {
+    if (isEditMode) return;
+    charactersStore.saveCharacterDraft(buildDraft());
+  }, [
+    isEditMode,
+    charactersStore,
+    name,
+    race,
+    level,
+    className,
+    alignment,
+    strength,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma,
+    photo,
+    initiative,
+    armorClass,
+    speed,
+    hitPoints,
+    tempHitPoints,
+    hitDice,
+    background,
+    features,
+    skills,
+    selectedArmorId,
+    selectedWeaponId,
+  ]);
 
   // Загружаем списки брони/оружия для выбора
   useEffect(() => {
@@ -345,6 +439,7 @@ const CharactersScreen = ({
         onUpdated?.();
       } else {
         await charactersStore.createCharacter(payload as any);
+        charactersStore.clearCharacterDraft();
         // Автоматический переход на предыдущую страницу после успешного создания
         router.back();
       }

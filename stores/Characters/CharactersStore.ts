@@ -4,13 +4,43 @@ import {
   Character,
   CharacterCreate,
   CharacterShort,
+  CharacterSkill,
   CharacterUpdate,
 } from "./api";
+
+// Черновик формы создания персонажа с текстовыми значениями,
+// чтобы легко восстанавливать состояние полей ввода после навигации.
+export type CharacterFormDraft = {
+  name: string;
+  race: string;
+  level: string;
+  className: string;
+  alignment: string;
+  strength: string;
+  dexterity: string;
+  constitution: string;
+  intelligence: string;
+  wisdom: string;
+  charisma: string;
+  photo: string;
+  initiative: string;
+  armorClass: string;
+  speed: string;
+  hitPoints: string;
+  tempHitPoints: string;
+  hitDice: string;
+  background: string;
+  features: string;
+  skills: CharacterSkill[];
+  selectedArmorId: string | null;
+  selectedWeaponId: string | null;
+};
 
 export class CharactersStore {
   private characters: CharacterShort[] = [];
   private isLoading: boolean = false;
   private characterDetails: Map<string, Character> = new Map();
+  private characterDraft: CharacterFormDraft | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -18,6 +48,10 @@ export class CharactersStore {
 
   public get getCharacters() {
     return this.characters;
+  }
+
+  public get getCharacterDraft() {
+    return this.characterDraft;
   }
 
   private setCharacters(characters: CharacterShort[]) {
@@ -30,6 +64,14 @@ export class CharactersStore {
 
   private setIsLoading(isLoading: boolean) {
     this.isLoading = isLoading;
+  }
+
+  public saveCharacterDraft(draft: CharacterFormDraft | null) {
+    this.characterDraft = draft;
+  }
+
+  public clearCharacterDraft() {
+    this.characterDraft = null;
   }
 
   public getCharacterById(id: string): Character | undefined {
