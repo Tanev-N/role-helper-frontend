@@ -54,7 +54,6 @@ const apiGamesUrl = {
     createEndpoint(`/games/sessions/${sessionId}/finish`),
   leaveSession: (sessionId: string) =>
     createEndpoint(`/games/sessions/${sessionId}/leave`),
-  gamePlayers: (gameId: string) => createEndpoint(`/games/${gameId}/players`),
   gamePreviousSessions: (gameId: string) =>
     createEndpoint(`/games/${gameId}/previous_sessions`),
   sessionPlayers: (sessionId: string) =>
@@ -106,9 +105,5 @@ export const apiGames = {
 
   async leaveSession(sessionId: string) {
     return await axios.post(apiGamesUrl.leaveSession(sessionId));
-  },
-
-  async getGamePlayers(gameId: string) {
-    return await axios.get(apiGamesUrl.gamePlayers(gameId));
   },
 };

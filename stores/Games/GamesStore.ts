@@ -11,7 +11,6 @@ export class GamesStore {
   private games: Game[] = [];
   private currentGame: Game | null = null;
   private currentSession: Session | null = null;
-  private gamePlayers: GamePlayer[] = [];
   private sessionPlayers: GamePlayer[] = [];
   private previousSessions: Session[] = [];
   private sessionRole: "master" | "player" | null = null;
@@ -34,10 +33,6 @@ export class GamesStore {
 
   public get getCurrentSession(): Session | null {
     return this.currentSession;
-  }
-
-  public get getGamePlayers(): GamePlayer[] {
-    return this.gamePlayers;
   }
 
   public get getSessionPlayers(): GamePlayer[] {
@@ -75,10 +70,6 @@ export class GamesStore {
 
   private setCurrentSession(session: Session | null) {
     this.currentSession = session;
-  }
-
-  private setGamePlayers(players: GamePlayer[]) {
-    this.gamePlayers = players;
   }
 
   private setSessionPlayers(players: GamePlayer[]) {
@@ -160,7 +151,7 @@ export class GamesStore {
   public setSelectedGame(game: Game | null) {
     this.setCurrentGame(game);
     if (!game) {
-      this.setGamePlayers([]);
+      this.setSessionPlayers([]);
       this.setCurrentSession(null);
       this.setPreviousSessions([]);
     }
@@ -255,29 +246,6 @@ export class GamesStore {
         );
       });
       throw e;
-    } finally {
-      runInAction(() => {
-        this.setIsLoading(false);
-      });
-    }
-  }
-
-  public async fetchGamePlayers(gameId: string) {
-    if (this.isLoading) return;
-    this.setIsLoading(true);
-    this.setError(null);
-    try {
-      const response = await apiGames.getGamePlayers(gameId.toString());
-      if (response.status === 200) {
-        runInAction(() => {
-          this.setGamePlayers(response.data as GamePlayer[]);
-        });
-      }
-    } catch (e: any) {
-      console.warn("GamesStore: fetchGamePlayers error", e);
-      runInAction(() => {
-        this.setError(e.response?.data?.error || "Ошибка при загрузке игроков");
-      });
     } finally {
       runInAction(() => {
         this.setIsLoading(false);
@@ -406,7 +374,6 @@ export class GamesStore {
     this.setGames([]);
     this.setCurrentGame(null);
     this.setCurrentSession(null);
-    this.setGamePlayers([]);
     this.setSessionPlayers([]);
     this.setPreviousSessions([]);
     this.setSessionRole(null);

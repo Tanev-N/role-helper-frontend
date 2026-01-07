@@ -26,19 +26,9 @@ const SessionScreen = () => {
     // Опрос игроков каждые 5 секунд
     useEffect(() => {
         const pollPlayers = async () => {
-            // Пытаемся получить gameId из currentSession
-            let gameId: string | undefined = gamesStore.getCurrentSession?.game_id;
-
-            // Если currentSession не установлен, пытаемся найти сессию в previousSessions
-            if (!gameId) {
-                const sessionId = id as string;
-                const previousSessions = gamesStore.getPreviousSessions;
-                const session = previousSessions.find(s => s.id === sessionId);
-                gameId = session?.game_id?.toString();
-            }
-
-            if (gameId) {
-                await gamesStore.fetchGamePlayers(gameId.toString());
+            const sessionId = id as string;
+            if (sessionId) {
+                await gamesStore.fetchSessionPlayers(sessionId);
             }
         };
 

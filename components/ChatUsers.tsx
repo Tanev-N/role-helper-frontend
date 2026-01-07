@@ -45,26 +45,26 @@ const ChatUsers = () => {
 
     // Загружаем персонажей для игроков, если они еще не загружены
     useEffect(() => {
-        const gamePlayers = gamesStore.getGamePlayers;
-        if (!gamePlayers || gamePlayers.length === 0) return;
+        const sessionPlayers = gamesStore.getSessionPlayers;
+        if (!sessionPlayers || sessionPlayers.length === 0) return;
 
-        gamePlayers.forEach((player) => {
+        sessionPlayers.forEach((player) => {
             const charId = String(player.character_id);
             // если нет полной карточки в кэше — подгружаем
             if (!charactersStore.getCharacterById(charId)) {
                 charactersStore.fetchCharacterById(charId);
             }
         });
-    }, [gamesStore.getGamePlayers, charactersStore]);
+    }, [gamesStore.getSessionPlayers, charactersStore]);
 
     // Получаем игроков из store и преобразуем их в формат User
     const users = useMemo(() => {
-        const gamePlayers = gamesStore.getGamePlayers;
-        if (!gamePlayers || gamePlayers.length === 0) {
+        const sessionPlayers = gamesStore.getSessionPlayers;
+        if (!sessionPlayers || sessionPlayers.length === 0) {
             return [];
         }
 
-        return gamePlayers.map((player) => {
+        return sessionPlayers.map((player) => {
             const charId = String(player.character_id);
             const fullCharacter = charactersStore.getCharacterById(charId);
             const shortCharacter =
@@ -80,7 +80,7 @@ const ChatUsers = () => {
                 photo,
             };
         });
-    }, [gamesStore.getGamePlayers, charactersStore.getCharacters, charactersStore]);
+    }, [gamesStore.getSessionPlayers, charactersStore.getCharacters, charactersStore]);
 
     useEffect(() => {
         if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {

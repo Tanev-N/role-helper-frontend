@@ -283,21 +283,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
-  /api/games/{game_id}/players:
+  /api/games/sessions/{session_id}/players:
     get:
       tags: [games]
-      summary: Получение игроков игры
+      summary: Получение игроков активной сессии
       parameters:
-        - name: game_id
+        - name: session_id
           in: path
           required: true
           schema:
             type: string
             format: uuid
-          description: UUID игры
+          description: UUID сессии
       responses:
         "200":
-          description: Список игроков игры
+          description: Список игроков активной сессии
           content:
             application/json:
               schema:
