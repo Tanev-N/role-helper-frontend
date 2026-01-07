@@ -236,10 +236,27 @@ const Chat = () => {
     };
 
     // Обработчик выхода из сессии для игрока
-    const handleExitSession = () => {
-        gamesStore.exitSession();
-        sessionStore.clearSession();
-        router.replace("/(app)/main");
+    const handleExitSession = async () => {
+        const currentSession = gamesStore.getCurrentSession;
+        if (!currentSession) {
+            // Если сессии нет, просто очищаем состояние и переходим
+            gamesStore.exitSession();
+            sessionStore.clearSession();
+            router.replace("/(app)/main");
+            return;
+        }
+
+        try {
+            await gamesStore.leaveSession(currentSession.id);
+            sessionStore.clearSession();
+            router.replace("/(app)/main");
+        } catch (e) {
+            console.warn("Ошибка при выходе из сессии", e);
+            // В случае ошибки все равно очищаем локальное состояние и переходим
+            gamesStore.exitSession();
+            sessionStore.clearSession();
+            router.replace("/(app)/main");
+        }
     };
 
     return (

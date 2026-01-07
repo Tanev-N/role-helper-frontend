@@ -52,11 +52,15 @@ const apiGamesUrl = {
   enterSession: createEndpoint("/games/sessions/enter"),
   finishSession: (sessionId: string) =>
     createEndpoint(`/games/sessions/${sessionId}/finish`),
+  leaveSession: (sessionId: string) =>
+    createEndpoint(`/games/sessions/${sessionId}/leave`),
   gamePlayers: (gameId: string) => createEndpoint(`/games/${gameId}/players`),
   gamePreviousSessions: (gameId: string) =>
     createEndpoint(`/games/${gameId}/previous_sessions`),
   sessionPlayers: (sessionId: string) =>
     createEndpoint(`/games/sessions/${sessionId}/players`),
+  previousSessionPlayers: (sessionId: string) =>
+    createEndpoint(`/games/previous_sessions/${sessionId}/players`),
 };
 
 export const apiGames = {
@@ -80,6 +84,10 @@ export const apiGames = {
     return await axios.get(apiGamesUrl.sessionPlayers(sessionId));
   },
 
+  async getPreviousSessionPlayers(sessionId: string) {
+    return await axios.get(apiGamesUrl.previousSessionPlayers(sessionId));
+  },
+
   async createSession(gameId: string) {
     return await axios.post(apiGamesUrl.gameSessions(gameId));
   },
@@ -94,6 +102,10 @@ export const apiGames = {
   async finishSession(sessionId: string, summary?: string) {
     const body: FinishSessionRequest = summary ? { summary } : {};
     return await axios.post(apiGamesUrl.finishSession(sessionId), body);
+  },
+
+  async leaveSession(sessionId: string) {
+    return await axios.post(apiGamesUrl.leaveSession(sessionId));
   },
 
   async getGamePlayers(gameId: string) {

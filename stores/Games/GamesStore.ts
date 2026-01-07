@@ -335,8 +335,64 @@ export class GamesStore {
     }
   }
 
+  public async fetchPreviousSessionPlayers(sessionId: string) {
+    if (this.isLoading) return;
+    this.setIsLoading(true);
+    this.setError(null);
+    try {
+      const response = await apiGames.getPreviousSessionPlayers(sessionId.toString());
+      if (response.status === 200) {
+        runInAction(() => {
+          this.setSessionPlayers(response.data as GamePlayer[]);
+        });
+      }
+    } catch (e: any) {
+      console.warn("GamesStore: fetchPreviousSessionPlayers error", e);
+      runInAction(() => {
+        this.setError(
+          e.response?.data?.error || "Ошибка при загрузке игроков завершенной сессии"
+        );
+      });
+    } finally {
+      runInAction(() => {
+        this.setIsLoading(false);
+      });
+    }
+  }
+
   public clearError() {
     this.setError(null);
+  }
+
+  public async leaveSession(sessionId: string) {
+    this.setError(null);
+    this.setIsLoading(true);
+    try {
+      const response = await apiGames.leaveSession(sessionId);
+      if (response.status === 200) {
+        runInAction(() => {
+          // Очищаем состояние после успешного выхода
+          if (this.currentSession?.id === sessionId) {
+            this.setCurrentSession(null);
+          }
+          this.setSessionRole(null);
+          this.setPlayerCharacterId(null);
+          this.setSessionPlayers([]);
+        });
+      }
+    } catch (e: any) {
+      console.warn("GamesStore: leaveSession error", e);
+      runInAction(() => {
+        this.setError(
+          e.response?.data?.error || "Ошибка при выходе из сессии"
+        );
+      });
+      throw e;
+    } finally {
+      runInAction(() => {
+        this.setIsLoading(false);
+      });
+    }
   }
 
   public exitSession() {
