@@ -1,28 +1,93 @@
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 
-import { Stack, Redirect, useRouter, usePathname } from "expo-router";
-import { observer } from "mobx-react-lite";
-import useStore from "@/hooks/store";
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Image,
-  useWindowDimensions,
-} from "react-native";
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
-import { useState } from "react";
-import DEBUG_MODE from "../../config/debug";
+import useStore from "@/hooks/store";
+import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { CornerUpLeft } from "lucide-react-native";
+import { observer } from "mobx-react-lite";
+import { useEffect, useRef, useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import DEBUG_MODE from "../../config/debug";
 
 function AppLayoutContent() {
-  const { authStore } = useStore();
+  const { authStore, gamesStore, sessionStore } = useStore();
   const isAuth = !!authStore?.isAuth;
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const router = useRouter();
+  const hasHandledReload = useRef(false);
 
   const isMobile = width < 1300;
+
+  // Обработка перезагрузки страницы
+  useEffect(() => {
+    // Проверяем, была ли уже обработана перезагрузка
+    if (hasHandledReload.current) return;
+
+    // Проверяем, была ли перезагрузка страницы через sessionStorage
+    const wasReloaded = typeof window !== "undefined" &&
+      sessionStorage.getItem("pageReloaded") === "true";
+
+    const handleReload = async () => {
+      const currentSession = gamesStore.getCurrentSession;
+      const sessionRole = gamesStore.getSessionRole;
+
+      // Обрабатываем только если была реальная перезагрузка страницы
+      if (wasReloaded && currentSession && sessionRole) {
+        try {
+          if (sessionRole === "player") {
+            // Если игрок - выходим из сессии
+            await gamesStore.leaveSession(currentSession.id);
+            sessionStore?.clearSession();
+          } else if (sessionRole === "master") {
+            // Если мастер - завершаем сессию
+            await gamesStore.finishSession(currentSession.id, "Сессия завершена из-за перезагрузки страницы");
+            sessionStore?.clearSession();
+          }
+        } catch (e) {
+          console.warn("Ошибка при обработке перезагрузки сессии", e);
+          // В случае ошибки все равно очищаем состояние
+          gamesStore.exitSession();
+          sessionStore?.clearSession();
+        }
+      }
+
+      // Перенаправляем на главную страницу только при перезагрузке
+      if (wasReloaded && pathname !== "/main" && pathname !== "/login" && pathname !== "/register") {
+        router.replace("/(app)/main");
+      }
+
+      // Очищаем флаг перезагрузки
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("pageReloaded");
+      }
+
+      hasHandledReload.current = true;
+    };
+
+    // Выполняем обработку при монтировании
+    handleReload();
+
+    // Устанавливаем флаг перезагрузки при событии beforeunload
+    if (typeof window !== "undefined") {
+      const handleBeforeUnload = () => {
+        sessionStorage.setItem("pageReloaded", "true");
+      };
+
+      window.addEventListener("beforeunload", handleBeforeUnload);
+
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+    }
+  }, [gamesStore, sessionStore, router, pathname]);
 
   if (!DEBUG_MODE) {
     if (!isAuth) {
@@ -207,7 +272,7 @@ const BackButton = ({ small = false }: { small?: boolean }) => {
 
   const handleBack = () => {
     const previousRoute = getPreviousRoute();
-    
+
     if (previousRoute) {
       // Есть история - переходим на предыдущий маршрут
       goBack(); // Удаляем текущую страницу из истории
