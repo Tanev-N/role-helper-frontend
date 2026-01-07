@@ -59,8 +59,8 @@ function AppLayoutContent() {
         }
       }
 
-      // Перенаправляем на главную страницу только при перезагрузке
-      if (wasReloaded && pathname !== "/main" && pathname !== "/login" && pathname !== "/register") {
+      // Перенаправляем на главную страницу при любой перезагрузке
+      if (wasReloaded) {
         router.replace("/(app)/main");
       }
 
