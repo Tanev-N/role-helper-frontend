@@ -31,64 +31,21 @@ const SessionDetailsScreen = observer(() => {
     const loadAllData = async () => {
       if (!id) return;
       
-      setCharactersLoaded(false);
-      
-      // Загружаем все данные параллельно
-      const promises: Promise<any>[] = [
-        // Загружаем игроков завершенной сессии
-        gamesStore.fetchPreviousSessionPlayers(id as string),
-        // Загружаем историю сессии
-        sessionStore ? sessionStore.initSession(id as string) : Promise.resolve(),
-      ];
-      
-      await Promise.all(promises);
-      
-      // Получаем game_id из первого игрока или из существующей сессии
-      const sessionPlayers = gamesStore.getSessionPlayers;
-      const existingSession = gamesStore.getPreviousSessions.find(
-        (s) => s.id === id as string
-      );
-      const gameId = existingSession?.game_id || 
-                     (sessionPlayers && sessionPlayers.length > 0 ? String(sessionPlayers[0].game_id) : null);
-      
-      // Если нет информации о сессии и есть game_id, загружаем previousSessions
-      if (!existingSession && gameId) {
-        await gamesStore.fetchPreviousSessions(gameId);
-      }
-      
-      // Небольшая задержка для обновления MobX состояния
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      
-      // Сразу загружаем всех персонажей параллельно
-      if (sessionPlayers && sessionPlayers.length > 0) {
-        const characterPromises = sessionPlayers.map((player) => {
-          const charId = String(player.character_id);
-          if (!charactersStore.getCharacterById(charId)) {
-            return charactersStore.fetchCharacterById(charId);
-          }
-          return Promise.resolve();
-        });
-        await Promise.all(characterPromises);
-      }
-      
-      setCharactersLoaded(true);
-    };
-    loadAllData();
-  }, [id, gamesStore, charactersStore, sessionStore]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const loadAllData = async () => {
-        if (!id) return;
-        
+      try {
         setCharactersLoaded(false);
         
         // Загружаем все данные параллельно
         const promises: Promise<any>[] = [
           // Загружаем игроков завершенной сессии
-          gamesStore.fetchPreviousSessionPlayers(id as string),
+          gamesStore.fetchPreviousSessionPlayers(id as string).catch((e) => {
+            console.warn("Error loading session players:", e);
+            return null;
+          }),
           // Загружаем историю сессии
-          sessionStore ? sessionStore.initSession(id as string) : Promise.resolve(),
+          sessionStore ? sessionStore.initSession(id as string).catch((e) => {
+            console.warn("Error loading session history:", e);
+            return null;
+          }) : Promise.resolve(),
         ];
         
         await Promise.all(promises);
@@ -99,11 +56,17 @@ const SessionDetailsScreen = observer(() => {
           (s) => s.id === id as string
         );
         const gameId = existingSession?.game_id || 
-                       (sessionPlayers && sessionPlayers.length > 0 ? String(sessionPlayers[0].game_id) : null);
+                       (sessionPlayers && sessionPlayers.length > 0 && sessionPlayers[0]?.game_id 
+                         ? String(sessionPlayers[0].game_id) 
+                         : null);
         
         // Если нет информации о сессии и есть game_id, загружаем previousSessions
         if (!existingSession && gameId) {
-          await gamesStore.fetchPreviousSessions(gameId);
+          try {
+            await gamesStore.fetchPreviousSessions(gameId);
+          } catch (e) {
+            console.warn("Error loading previous sessions:", e);
+          }
         }
         
         // Небольшая задержка для обновления MobX состояния
@@ -114,7 +77,10 @@ const SessionDetailsScreen = observer(() => {
           const characterPromises = sessionPlayers.map((player) => {
             const charId = String(player.character_id);
             if (!charactersStore.getCharacterById(charId)) {
-              return charactersStore.fetchCharacterById(charId);
+              return charactersStore.fetchCharacterById(charId).catch((e) => {
+                console.warn(`Error loading character ${charId}:`, e);
+                return null;
+              });
             }
             return Promise.resolve();
           });
@@ -122,6 +88,80 @@ const SessionDetailsScreen = observer(() => {
         }
         
         setCharactersLoaded(true);
+      } catch (error) {
+        console.error("Error loading session data:", error);
+        setCharactersLoaded(true); // Устанавливаем в true, чтобы не блокировать UI
+      }
+    };
+    loadAllData();
+  }, [id, gamesStore, charactersStore, sessionStore]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadAllData = async () => {
+        if (!id) return;
+        
+        try {
+          setCharactersLoaded(false);
+          
+          // Загружаем все данные параллельно
+          const promises: Promise<any>[] = [
+            // Загружаем игроков завершенной сессии
+            gamesStore.fetchPreviousSessionPlayers(id as string).catch((e) => {
+              console.warn("Error loading session players:", e);
+              return null;
+            }),
+            // Загружаем историю сессии
+            sessionStore ? sessionStore.initSession(id as string).catch((e) => {
+              console.warn("Error loading session history:", e);
+              return null;
+            }) : Promise.resolve(),
+          ];
+          
+          await Promise.all(promises);
+          
+          // Получаем game_id из первого игрока или из существующей сессии
+          const sessionPlayers = gamesStore.getSessionPlayers;
+          const existingSession = gamesStore.getPreviousSessions.find(
+            (s) => s.id === id as string
+          );
+          const gameId = existingSession?.game_id || 
+                         (sessionPlayers && sessionPlayers.length > 0 && sessionPlayers[0]?.game_id 
+                           ? String(sessionPlayers[0].game_id) 
+                           : null);
+          
+          // Если нет информации о сессии и есть game_id, загружаем previousSessions
+          if (!existingSession && gameId) {
+            try {
+              await gamesStore.fetchPreviousSessions(gameId);
+            } catch (e) {
+              console.warn("Error loading previous sessions:", e);
+            }
+          }
+          
+          // Небольшая задержка для обновления MobX состояния
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          
+          // Сразу загружаем всех персонажей параллельно
+          if (sessionPlayers && sessionPlayers.length > 0) {
+            const characterPromises = sessionPlayers.map((player) => {
+              const charId = String(player.character_id);
+              if (!charactersStore.getCharacterById(charId)) {
+                return charactersStore.fetchCharacterById(charId).catch((e) => {
+                  console.warn(`Error loading character ${charId}:`, e);
+                  return null;
+                });
+              }
+              return Promise.resolve();
+            });
+            await Promise.all(characterPromises);
+          }
+          
+          setCharactersLoaded(true);
+        } catch (error) {
+          console.error("Error loading session data:", error);
+          setCharactersLoaded(true); // Устанавливаем в true, чтобы не блокировать UI
+        }
       };
       loadAllData();
     }, [id, gamesStore, charactersStore, sessionStore])
@@ -132,87 +172,82 @@ const SessionDetailsScreen = observer(() => {
   // Преобразуем историю из store в сообщения для чата
   useEffect(() => {
     if (!sessionStore) return;
-    const msgs: Message[] = [];
-    sessionStore.getHistory.forEach((h: any, idx: number) => {
-      if (h.query) {
-        msgs.push({
-          id: `s-q-${idx}`,
-          text: h.query,
-          fromUser: true,
-          timestamp: h.timestamp,
+    try {
+      const msgs: Message[] = [];
+      const history = sessionStore.getHistory;
+      if (Array.isArray(history)) {
+        history.forEach((h: any, idx: number) => {
+          if (h?.query) {
+            msgs.push({
+              id: `s-q-${idx}`,
+              text: h.query,
+              fromUser: true,
+              timestamp: h.timestamp,
+            });
+          }
+          if (h?.answer) {
+            msgs.push({
+              id: `s-a-${idx}`,
+              text: h.answer,
+              fromUser: false,
+              timestamp: h.timestamp,
+            });
+          }
         });
       }
-      if (h.answer) {
-        msgs.push({
-          id: `s-a-${idx}`,
-          text: h.answer,
-          fromUser: false,
-          timestamp: h.timestamp,
-        });
-      }
-    });
-    setMessages(msgs);
-  }, [sessionStore, sessionStore?.history.length]);
+      setMessages(msgs);
+    } catch (error) {
+      console.error("Error processing session history:", error);
+      setMessages([]);
+    }
+  }, [sessionStore, sessionStore?.history?.length]);
 
   // Получаем сессию из previous sessions
   const session = useMemo(() => {
-    return gamesStore.getPreviousSessions.find(
-      (s) => s.id === id as string
-    );
+    try {
+      const previousSessions = gamesStore.getPreviousSessions;
+      if (!Array.isArray(previousSessions)) return undefined;
+      return previousSessions.find(
+        (s) => s?.id === id as string
+      );
+    } catch (error) {
+      console.error("Error getting session:", error);
+      return undefined;
+    }
   }, [gamesStore.getPreviousSessions, id]);
 
   // Этот useEffect больше не нужен, так как загрузка происходит выше
 
-  // Формируем списки игроков и персонажей
-  const playersList = useMemo(() => {
-    const sessionPlayers = gamesStore.getSessionPlayers;
-    if (!sessionPlayers || sessionPlayers.length === 0) {
-      return "Нет данных об игроках";
-    }
-
-    return sessionPlayers
-      .map((player) => {
-        const charId = String(player.character_id);
-        const character = charactersStore.getCharacterById(charId);
-        const shortCharacter = charactersStore.getCharacters?.find(
-          (char) => char.id === charId
-        );
-        const characterName =
-          character?.name || shortCharacter?.name || `Персонаж ${charId}`;
-        return characterName;
-      })
-      .join(", ");
-  }, [
-    gamesStore.getSessionPlayers,
-    charactersStore.getCharacters,
-    // Принудительно обновляем при изменении количества персонажей в store
-    charactersStore.getCharacters.length,
-    charactersLoaded, // Обновляем после загрузки персонажей
-  ]);
-
+  // Формируем список персонажей
   const charactersList = useMemo(() => {
-    const sessionPlayers = gamesStore.getSessionPlayers;
-    if (!sessionPlayers || sessionPlayers.length === 0) {
-      return "Нет данных о персонажах";
-    }
+    try {
+      const sessionPlayers = gamesStore.getSessionPlayers;
+      if (!sessionPlayers || !Array.isArray(sessionPlayers) || sessionPlayers.length === 0) {
+        return "Нет данных о персонажах";
+      }
 
-    return sessionPlayers
-      .map((player) => {
-        const charId = String(player.character_id);
-        const character = charactersStore.getCharacterById(charId);
-        const shortCharacter = charactersStore.getCharacters?.find(
-          (char) => char.id === charId
-        );
-        const characterName =
-          character?.name || shortCharacter?.name || `Персонаж ${charId}`;
-        return characterName;
-      })
-      .join(", ");
+      return sessionPlayers
+        .map((player) => {
+          if (!player || !player.character_id) return "Неизвестный персонаж";
+          const charId = String(player.character_id);
+          const character = charactersStore.getCharacterById(charId);
+          const shortCharacter = charactersStore.getCharacters?.find(
+            (char) => char?.id === charId
+          );
+          const characterName =
+            character?.name || shortCharacter?.name || `Персонаж ${charId}`;
+          return characterName;
+        })
+        .join(", ");
+    } catch (error) {
+      console.error("Error building characters list:", error);
+      return "Ошибка загрузки персонажей";
+    }
   }, [
     gamesStore.getSessionPlayers,
     charactersStore.getCharacters,
     // Принудительно обновляем при изменении количества персонажей в store
-    charactersStore.getCharacters.length,
+    charactersStore.getCharacters?.length || 0,
     charactersLoaded, // Обновляем после загрузки персонажей
   ]);
 
@@ -267,11 +302,6 @@ const SessionDetailsScreen = observer(() => {
       <View style={[styles.container, { width: containerWidth }]}>
         <Text style={styles.sessionTitle}>{formatSessionTitle()}</Text>
         <View style={styles.titleDivider} />
-
-        <View style={styles.infoCard}>
-          <Text style={styles.infoCardTitle}>Игроки</Text>
-          <Text style={styles.infoCardText}>{playersList}</Text>
-        </View>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoCardTitle}>Персонажи</Text>
