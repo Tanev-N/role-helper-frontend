@@ -18,7 +18,7 @@ import { worldGameStyles as styles } from "./styles";
 
 const WorldGameScreen = observer(() => {
   const { gamesStore } = useStore();
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const router = useRouter();
@@ -35,24 +35,26 @@ const WorldGameScreen = observer(() => {
   const imageHeight = cardWidth * CARD_RATIO_IMAGE;
   const nameHeight = cardWidth * CARD_RATIO_NAME;
 
-  const world = gamesStore.getGames.find((game) => game.id === id as any);
+  const world = gamesStore.getGames.find(
+    (game) => game.id?.toString() === (id ?? "").toString()
+  );
 
   useEffect(() => {
     if (id) {
-      gamesStore.fetchPreviousSessions(Number(id));
+      gamesStore.fetchPreviousSessions(id.toString());
     }
   }, [id, gamesStore]);
 
   useFocusEffect(
     useCallback(() => {
       if (id) {
-        gamesStore.fetchPreviousSessions(Number(id));
+        gamesStore.fetchPreviousSessions(id.toString());
       }
     }, [id, gamesStore])
   );
 
   const sessions = gamesStore.getPreviousSessions.filter(
-    (session) => session.game_id === Number(id)
+    (session) => session.game_id?.toString() === (id ?? "").toString()
   );
 
   const formatSessionTitle = (session: any, index: number) => {
