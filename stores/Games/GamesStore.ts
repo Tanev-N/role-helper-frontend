@@ -166,15 +166,15 @@ export class GamesStore {
     }
   }
 
-  public async createSession(gameId: number) {
+  public async createSession(gameId: string) {
     this.setError(null);
     this.setIsLoading(true);
     try {
-      const response = await apiGames.createSession(gameId);
+      const response = await apiGames.createSession(gameId.toString());
       if (response.status === 201) {
         const data = response.data as CreateSessionResponse;
         runInAction(() => {
-          this.setCurrentSession(data.session);
+          this.setCurrentSession(data.session as Session);
           this.setSessionRole("master");
           this.setPlayerCharacterId(null);
           if (data.previous_sessions) {
@@ -210,7 +210,7 @@ export class GamesStore {
           this.setPlayerCharacterId(characterId);
           if (session.game_id) {
             // Обновляем текущую игру, если она найдена в списке
-            const game = (this.games ?? []).find((g) => g.id === session.game_id);
+            const game = (this.games ?? []).find((g) => g.id?.toString() === session.game_id);
             if (game) {
               this.setCurrentGame(game);
             }
@@ -233,15 +233,15 @@ export class GamesStore {
     }
   };
 
-  public async finishSession(sessionId: number, summary?: string) {
+  public async finishSession(sessionId: string, summary?: string) {
     this.setError(null);
     this.setIsLoading(true);
     try {
-      const response = await apiGames.finishSession(sessionId, summary);
+      const response = await apiGames.finishSession(sessionId.toString(), summary);
       if (response.status === 200) {
         runInAction(() => {
           // Обновляем текущую сессию, если она была завершена
-          if (this.currentSession?.id === sessionId) {
+          if (this.currentSession?.id?.toString() === sessionId.toString()) {
             this.setCurrentSession(null);
           }
         });
@@ -262,15 +262,15 @@ export class GamesStore {
     }
   }
 
-  public async fetchGamePlayers(gameId: number) {
+  public async fetchGamePlayers(gameId: string) {
     if (this.isLoading) return;
     this.setIsLoading(true);
     this.setError(null);
     try {
-      const response = await apiGames.getGamePlayers(gameId);
+      const response = await apiGames.getGamePlayers(gameId.toString());
       if (response.status === 200) {
         runInAction(() => {
-          this.setGamePlayers(response.data);
+          this.setGamePlayers(response.data as GamePlayer[]);
         });
       }
     } catch (e: any) {
@@ -285,7 +285,7 @@ export class GamesStore {
     }
   }
 
-  public async fetchPreviousSessions(gameId: number) {
+  public async fetchPreviousSessions(gameId: string) {
     if (this.isLoading) return;
     this.setIsLoading(true);
     this.setError(null);
@@ -310,15 +310,15 @@ export class GamesStore {
     }
   }
 
-  public async fetchSessionPlayers(sessionId: number) {
+  public async fetchSessionPlayers(sessionId: string) {
     if (this.isLoading) return;
     this.setIsLoading(true);
     this.setError(null);
     try {
-      const response = await apiGames.getSessionPlayers(sessionId);
+      const response = await apiGames.getSessionPlayers(sessionId.toString());
       if (response.status === 200) {
         runInAction(() => {
-          this.setSessionPlayers(response.data || []);
+          this.setSessionPlayers(response.data as GamePlayer[]);
         });
       }
     } catch (e: any) {

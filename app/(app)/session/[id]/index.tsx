@@ -27,18 +27,18 @@ const SessionScreen = () => {
     useEffect(() => {
         const pollPlayers = async () => {
             // Пытаемся получить gameId из currentSession
-            let gameId: number | undefined = gamesStore.getCurrentSession?.game_id;
+            let gameId: string | undefined = gamesStore.getCurrentSession?.game_id;
 
             // Если currentSession не установлен, пытаемся найти сессию в previousSessions
             if (!gameId) {
-                const sessionId = parseInt(id as string, 10);
+                const sessionId = id as string;
                 const previousSessions = gamesStore.getPreviousSessions;
                 const session = previousSessions.find(s => s.id === sessionId);
-                gameId = session?.game_id;
+                gameId = session?.game_id?.toString();
             }
 
             if (gameId) {
-                await gamesStore.fetchGamePlayers(gameId);
+                await gamesStore.fetchGamePlayers(gameId.toString());
             }
         };
 

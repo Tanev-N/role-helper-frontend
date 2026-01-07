@@ -18,14 +18,14 @@ const SessionDetailsScreen = observer(() => {
 
   useEffect(() => {
     if (id) {
-      gamesStore.fetchSessionPlayers(Number(id));
+      gamesStore.fetchSessionPlayers(id as string);
     }
   }, [id, gamesStore]);
 
   useFocusEffect(
     useCallback(() => {
       if (id) {
-        gamesStore.fetchSessionPlayers(Number(id));
+        gamesStore.fetchSessionPlayers(id as string);
       }
     }, [id, gamesStore])
   );
@@ -33,7 +33,7 @@ const SessionDetailsScreen = observer(() => {
   // Получаем сессию из previous sessions
   const session = useMemo(() => {
     return gamesStore.getPreviousSessions.find(
-      (s) => s.id === Number(id)
+      (s) => s.id === id as string
     );
   }, [gamesStore.getPreviousSessions, id]);
 

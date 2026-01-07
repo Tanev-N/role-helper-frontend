@@ -1,12 +1,16 @@
-import { View, Text } from "react-native";
+import CharactersScreen from "@/app/(app)/cabinet/character/index";
+import { useLocalSearchParams } from "expo-router";
 import { observer } from "mobx-react-lite";
 
-const CharacterScreen = ({ id }: { id: string }) => {
-    return (
-        <View>
-            <Text>Character Screen {id}</Text>
-        </View>
-    );
-}
+const CharacterScreenById = () => {
+    const { id } = useLocalSearchParams<{ id: string }>();
 
-export default observer(CharacterScreen);
+    return (
+        <CharactersScreen
+            characterId={id}
+            mode="edit"
+        />
+    );
+};
+
+export default observer(CharacterScreenById);

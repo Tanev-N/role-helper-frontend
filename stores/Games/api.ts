@@ -10,8 +10,8 @@ export interface Game {
 }
 
 export interface Session {
-  id: number;
-  game_id: number;
+  id: string;
+  game_id: string;
   session_key: string;
   summary: string | null;
   created_at: string | null;
@@ -47,15 +47,15 @@ export interface GamePlayer {
 
 const apiGamesUrl = {
   games: createEndpoint("/games"),
-  gameById: (gameId: number) => createEndpoint(`/games/${gameId}`),
-  gameSessions: (gameId: number) => createEndpoint(`/games/${gameId}/sessions`),
+  gameById: (gameId: string) => createEndpoint(`/games/${gameId}`),
+  gameSessions: (gameId: string) => createEndpoint(`/games/${gameId}/sessions`),
   enterSession: createEndpoint("/games/sessions/enter"),
-  finishSession: (sessionId: number) =>
+  finishSession: (sessionId: string) =>
     createEndpoint(`/games/sessions/${sessionId}/finish`),
-  gamePlayers: (gameId: number) => createEndpoint(`/games/${gameId}/players`),
-  gamePreviousSessions: (gameId: number) =>
+  gamePlayers: (gameId: string) => createEndpoint(`/games/${gameId}/players`),
+  gamePreviousSessions: (gameId: string) =>
     createEndpoint(`/games/${gameId}/previous_sessions`),
-  sessionPlayers: (sessionId: number) =>
+  sessionPlayers: (sessionId: string) =>
     createEndpoint(`/games/sessions/${sessionId}/players`),
 };
 
@@ -72,15 +72,15 @@ export const apiGames = {
     } as CreateGameRequest);
   },
 
-  async getPreviousSessions(gameId: number) {
+  async getPreviousSessions(gameId: string) {
     return await axios.get(apiGamesUrl.gamePreviousSessions(gameId));
   },
 
-  async getSessionPlayers(sessionId: number) {
+  async getSessionPlayers(sessionId: string) {
     return await axios.get(apiGamesUrl.sessionPlayers(sessionId));
   },
 
-  async createSession(gameId: number) {
+  async createSession(gameId: string) {
     return await axios.post(apiGamesUrl.gameSessions(gameId));
   },
 
@@ -91,12 +91,12 @@ export const apiGames = {
     } as EnterSessionRequest);
   },
 
-  async finishSession(sessionId: number, summary?: string) {
+  async finishSession(sessionId: string, summary?: string) {
     const body: FinishSessionRequest = summary ? { summary } : {};
     return await axios.post(apiGamesUrl.finishSession(sessionId), body);
   },
 
-  async getGamePlayers(gameId: number) {
+  async getGamePlayers(gameId: string) {
     return await axios.get(apiGamesUrl.gamePlayers(gameId));
   },
 };
