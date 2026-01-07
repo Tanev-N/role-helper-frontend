@@ -40,7 +40,7 @@ const SessionDetailsScreen = observer(() => {
   // Загружаем информацию о персонажах
   useEffect(() => {
     const sessionPlayers = gamesStore.getSessionPlayers;
-    sessionPlayers.forEach((player) => {
+    sessionPlayers && sessionPlayers.forEach((player) => {
       const charId = String(player.character_id);
       if (!charactersStore.getCharacterById(charId)) {
         charactersStore.fetchCharacterById(charId);
