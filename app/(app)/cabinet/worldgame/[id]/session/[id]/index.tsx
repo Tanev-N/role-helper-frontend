@@ -21,39 +21,113 @@ const SessionDetailsScreen = observer(() => {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const [messages, setMessages] = useState<Message[]>([]);
+  const [charactersLoaded, setCharactersLoaded] = useState(false);
 
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
 
-  // Загружаем игроков завершенной сессии
+  // Загружаем все данные параллельно: игроки, персонажи, история сессии, информация о сессии
   useEffect(() => {
-    if (id) {
-      gamesStore.fetchPreviousSessionPlayers(id as string);
-    }
-  }, [id, gamesStore]);
+    const loadAllData = async () => {
+      if (!id) return;
+      
+      setCharactersLoaded(false);
+      
+      // Загружаем все данные параллельно
+      const promises: Promise<any>[] = [
+        // Загружаем игроков завершенной сессии
+        gamesStore.fetchPreviousSessionPlayers(id as string),
+        // Загружаем историю сессии
+        sessionStore ? sessionStore.initSession(id as string) : Promise.resolve(),
+      ];
+      
+      await Promise.all(promises);
+      
+      // Получаем game_id из первого игрока или из существующей сессии
+      const sessionPlayers = gamesStore.getSessionPlayers;
+      const existingSession = gamesStore.getPreviousSessions.find(
+        (s) => s.id === id as string
+      );
+      const gameId = existingSession?.game_id || 
+                     (sessionPlayers && sessionPlayers.length > 0 ? String(sessionPlayers[0].game_id) : null);
+      
+      // Если нет информации о сессии и есть game_id, загружаем previousSessions
+      if (!existingSession && gameId) {
+        await gamesStore.fetchPreviousSessions(gameId);
+      }
+      
+      // Небольшая задержка для обновления MobX состояния
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      
+      // Сразу загружаем всех персонажей параллельно
+      if (sessionPlayers && sessionPlayers.length > 0) {
+        const characterPromises = sessionPlayers.map((player) => {
+          const charId = String(player.character_id);
+          if (!charactersStore.getCharacterById(charId)) {
+            return charactersStore.fetchCharacterById(charId);
+          }
+          return Promise.resolve();
+        });
+        await Promise.all(characterPromises);
+      }
+      
+      setCharactersLoaded(true);
+    };
+    loadAllData();
+  }, [id, gamesStore, charactersStore, sessionStore]);
 
   useFocusEffect(
     useCallback(() => {
-      if (id) {
-        gamesStore.fetchPreviousSessionPlayers(id as string);
-      }
-    }, [id, gamesStore])
+      const loadAllData = async () => {
+        if (!id) return;
+        
+        setCharactersLoaded(false);
+        
+        // Загружаем все данные параллельно
+        const promises: Promise<any>[] = [
+          // Загружаем игроков завершенной сессии
+          gamesStore.fetchPreviousSessionPlayers(id as string),
+          // Загружаем историю сессии
+          sessionStore ? sessionStore.initSession(id as string) : Promise.resolve(),
+        ];
+        
+        await Promise.all(promises);
+        
+        // Получаем game_id из первого игрока или из существующей сессии
+        const sessionPlayers = gamesStore.getSessionPlayers;
+        const existingSession = gamesStore.getPreviousSessions.find(
+          (s) => s.id === id as string
+        );
+        const gameId = existingSession?.game_id || 
+                       (sessionPlayers && sessionPlayers.length > 0 ? String(sessionPlayers[0].game_id) : null);
+        
+        // Если нет информации о сессии и есть game_id, загружаем previousSessions
+        if (!existingSession && gameId) {
+          await gamesStore.fetchPreviousSessions(gameId);
+        }
+        
+        // Небольшая задержка для обновления MobX состояния
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        // Сразу загружаем всех персонажей параллельно
+        if (sessionPlayers && sessionPlayers.length > 0) {
+          const characterPromises = sessionPlayers.map((player) => {
+            const charId = String(player.character_id);
+            if (!charactersStore.getCharacterById(charId)) {
+              return charactersStore.fetchCharacterById(charId);
+            }
+            return Promise.resolve();
+          });
+          await Promise.all(characterPromises);
+        }
+        
+        setCharactersLoaded(true);
+      };
+      loadAllData();
+    }, [id, gamesStore, charactersStore, sessionStore])
   );
 
-  // Загружаем историю сессии
-  useEffect(() => {
-    if (id && sessionStore) {
-      sessionStore.initSession(id as string);
-    }
-  }, [id, sessionStore]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (id && sessionStore) {
-        sessionStore.initSession(id as string);
-      }
-    }, [id, sessionStore])
-  );
+  // История сессии теперь загружается вместе с игроками выше
 
   // Преобразуем историю из store в сообщения для чата
   useEffect(() => {
@@ -87,16 +161,7 @@ const SessionDetailsScreen = observer(() => {
     );
   }, [gamesStore.getPreviousSessions, id]);
 
-  // Загружаем информацию о персонажах
-  useEffect(() => {
-    const sessionPlayers = gamesStore.getSessionPlayers;
-    sessionPlayers && sessionPlayers.forEach((player) => {
-      const charId = String(player.character_id);
-      if (!charactersStore.getCharacterById(charId)) {
-        charactersStore.fetchCharacterById(charId);
-      }
-    });
-  }, [gamesStore.getSessionPlayers, charactersStore]);
+  // Этот useEffect больше не нужен, так как загрузка происходит выше
 
   // Формируем списки игроков и персонажей
   const playersList = useMemo(() => {
@@ -119,8 +184,10 @@ const SessionDetailsScreen = observer(() => {
       .join(", ");
   }, [
     gamesStore.getSessionPlayers,
-    charactersStore.getCharacterById,
     charactersStore.getCharacters,
+    // Принудительно обновляем при изменении количества персонажей в store
+    charactersStore.getCharacters.length,
+    charactersLoaded, // Обновляем после загрузки персонажей
   ]);
 
   const charactersList = useMemo(() => {
@@ -143,8 +210,10 @@ const SessionDetailsScreen = observer(() => {
       .join(", ");
   }, [
     gamesStore.getSessionPlayers,
-    charactersStore.getCharacterById,
     charactersStore.getCharacters,
+    // Принудительно обновляем при изменении количества персонажей в store
+    charactersStore.getCharacters.length,
+    charactersLoaded, // Обновляем после загрузки персонажей
   ]);
 
   const formatSessionTitle = () => {
