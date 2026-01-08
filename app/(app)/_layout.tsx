@@ -28,18 +28,36 @@ function AppLayoutContent() {
 
   // Обработка перезагрузки страницы
   useEffect(() => {
-    // Проверяем, была ли уже обработана перезагрузка
-    if (hasHandledReload.current) return;
+    // Проверяем, была ли уже обработана перезагрузка в этой сессии
+    const reloadHandledKey = "reloadHandled";
+    if (typeof window !== "undefined" && sessionStorage.getItem(reloadHandledKey) === "true") {
+      return;
+    }
 
-    // Проверяем, была ли перезагрузка страницы через sessionStorage
-    const wasReloaded = typeof window !== "undefined" &&
-      sessionStorage.getItem("pageReloaded") === "true";
+    // Проверяем, была ли перезагрузка страницы
+    // Используем комбинацию sessionStorage и проверки типа навигации
+    let wasReloaded = false;
+    if (typeof window !== "undefined") {
+      // Проверяем флаг из sessionStorage (устанавливается при beforeunload)
+      const reloadFlag = sessionStorage.getItem("pageReloaded") === "true";
+
+      // Проверяем тип навигации (если доступно)
+      const navType = (performance as any).navigation?.type;
+      const isReload = navType === 1; // TYPE_RELOAD
+
+      wasReloaded = reloadFlag || isReload;
+    }
 
     const handleReload = async () => {
+      // Помечаем, что обработка началась
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(reloadHandledKey, "true");
+      }
+
       const currentSession = gamesStore.getCurrentSession;
       const sessionRole = gamesStore.getSessionRole;
 
-      // Обрабатываем только если была реальная перезагрузка страницы
+      // Обрабатываем сессию только если была реальная перезагрузка страницы
       if (wasReloaded && currentSession && sessionRole) {
         try {
           if (sessionRole === "player") {
@@ -61,15 +79,15 @@ function AppLayoutContent() {
 
       // Перенаправляем на главную страницу при любой перезагрузке
       if (wasReloaded) {
-        router.replace("/(app)/main");
+        // Очищаем флаг перезагрузки перед редиректом
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("pageReloaded");
+        }
+        // Используем setTimeout для гарантии выполнения после монтирования
+        setTimeout(() => {
+          router.replace("/(app)/main");
+        }, 0);
       }
-
-      // Очищаем флаг перезагрузки
-      if (typeof window !== "undefined") {
-        sessionStorage.removeItem("pageReloaded");
-      }
-
-      hasHandledReload.current = true;
     };
 
     // Выполняем обработку при монтировании
@@ -79,6 +97,8 @@ function AppLayoutContent() {
     if (typeof window !== "undefined") {
       const handleBeforeUnload = () => {
         sessionStorage.setItem("pageReloaded", "true");
+        // Сбрасываем флаг обработки, чтобы при следующей загрузке обработка выполнилась
+        sessionStorage.removeItem(reloadHandledKey);
       };
 
       window.addEventListener("beforeunload", handleBeforeUnload);
@@ -87,7 +107,7 @@ function AppLayoutContent() {
         window.removeEventListener("beforeunload", handleBeforeUnload);
       };
     }
-  }, [gamesStore, sessionStore, router, pathname]);
+  }, [gamesStore, sessionStore, router]);
 
   if (!DEBUG_MODE) {
     if (!isAuth) {
