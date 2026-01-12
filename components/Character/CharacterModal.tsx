@@ -49,7 +49,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({
 
                     {/* === КНОПКА ЗАКРЫТИЯ === */}
                     <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                        <Text style={styles.closeButtonText}>Закрыть</Text>
+                        <Text style={styles.closeButtonText}>ОК</Text>
                     </TouchableOpacity>
                 </View>
             </View>

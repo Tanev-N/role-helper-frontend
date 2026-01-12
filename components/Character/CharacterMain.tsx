@@ -98,14 +98,14 @@ const CharacterMain = ({
 
     // Функция для валидации числового поля
     const validateNumberField = (
-        value: string, 
-        fieldName: string, 
-        min: number, 
-        max: number, 
+        value: string,
+        fieldName: string,
+        min: number,
+        max: number,
         fieldLabel: string
     ): boolean => {
         const numValue = parseInt(value);
-        
+
         // Если поле пустое или не число
         if (value === '' || isNaN(numValue)) {
             setValidationErrors(prev => ({
@@ -114,7 +114,7 @@ const CharacterMain = ({
             }));
             return false;
         }
-        
+
         // Проверка диапазона
         if (numValue < min || numValue > max) {
             setValidationErrors(prev => ({
@@ -123,7 +123,7 @@ const CharacterMain = ({
             }));
             return false;
         }
-        
+
         // Если валидация прошла успешно, удаляем ошибку
         setValidationErrors(prev => {
             const newErrors = { ...prev };
@@ -135,7 +135,7 @@ const CharacterMain = ({
 
     // Функция для ограничения ввода двумя цифрами
     const handleNumberInput = (
-        value: string, 
+        value: string,
         onChange: (value: string) => void,
         fieldName: string,
         min: number,
@@ -144,16 +144,16 @@ const CharacterMain = ({
     ) => {
         // Удаляем все нецифровые символы
         const cleaned = value.replace(/[^0-9]/g, '');
-        
+
         // Ограничиваем двумя цифрами
         const limited = cleaned.length > 2 ? cleaned.slice(0, 2) : cleaned;
-        
+
         onChange(limited);
-        
+
         // Валидируем только если значение не пустое
         if (limited !== '') {
             validateNumberField(limited, fieldName, min, max, fieldLabel);
-            
+
             // Показываем Toast уведомление при ошибке
             const numValue = parseInt(limited);
             if (!isNaN(numValue) && (numValue < min || numValue > max)) {
@@ -244,89 +244,89 @@ const CharacterMain = ({
     };
 
     const stats = [
-        { 
-            name: "Сила", 
-            value: strength, 
-            color: COLORS.strength, 
+        {
+            name: "Сила",
+            value: strength,
+            color: COLORS.strength,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onStrengthChange, 
-                'strength', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onStrengthChange,
+                'strength',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Сила'
             ),
-            error: validationErrors.strength 
+            error: validationErrors.strength
         },
-        { 
-            name: "Ловкость", 
-            value: dexterity, 
-            color: COLORS.dexterity, 
+        {
+            name: "Ловкость",
+            value: dexterity,
+            color: COLORS.dexterity,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onDexterityChange, 
-                'dexterity', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onDexterityChange,
+                'dexterity',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Ловкость'
             ),
-            error: validationErrors.dexterity 
+            error: validationErrors.dexterity
         },
-        { 
-            name: "Телослож.", 
-            value: constitution, 
-            color: COLORS.constitution, 
+        {
+            name: "Телослож.",
+            value: constitution,
+            color: COLORS.constitution,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onConstitutionChange, 
-                'constitution', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onConstitutionChange,
+                'constitution',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Телосложение'
             ),
-            error: validationErrors.constitution 
+            error: validationErrors.constitution
         },
-        { 
-            name: "Интеллект", 
-            value: intelligence, 
-            color: COLORS.intelligence, 
+        {
+            name: "Интеллект",
+            value: intelligence,
+            color: COLORS.intelligence,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onIntelligenceChange, 
-                'intelligence', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onIntelligenceChange,
+                'intelligence',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Интеллект'
             ),
-            error: validationErrors.intelligence 
+            error: validationErrors.intelligence
         },
-        { 
-            name: "Мудрость", 
-            value: wisdom, 
-            color: COLORS.wisdom, 
+        {
+            name: "Мудрость",
+            value: wisdom,
+            color: COLORS.wisdom,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onWisdomChange, 
-                'wisdom', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onWisdomChange,
+                'wisdom',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Мудрость'
             ),
-            error: validationErrors.wisdom 
+            error: validationErrors.wisdom
         },
-        { 
-            name: "Харизма", 
-            value: charisma, 
-            color: COLORS.charisma, 
+        {
+            name: "Харизма",
+            value: charisma,
+            color: COLORS.charisma,
             onChange: (value: string) => handleNumberInput(
-                value, 
-                onCharismaChange, 
-                'charisma', 
-                STAT_MIN_VALUE, 
-                STAT_MAX_VALUE, 
+                value,
+                onCharismaChange,
+                'charisma',
+                STAT_MIN_VALUE,
+                STAT_MAX_VALUE,
                 'Харизма'
             ),
-            error: validationErrors.charisma 
+            error: validationErrors.charisma
         },
     ];
 
@@ -362,7 +362,7 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Имя персонажа"
+                                placeholder="Имя персонажа*"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={name}
                                 onChangeText={onNameChange}
@@ -374,10 +374,11 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Раса"
+                                placeholder="Раса*"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={race}
-                                onChangeText={onRaceChange}
+                                editable={false}         
+                                onPressIn={() => setRaceModalVisible(true)}  
                             />
                             {selectedRaceIcon ? (
                                 <TouchableOpacity
@@ -398,24 +399,36 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[
-                                    styles.input, 
+                                    styles.input,
                                     isMobile ? styles.inputWide : styles.inputHalf,
                                     validationErrors.level && { borderColor: COLORS.error }
                                 ]}
-                                placeholder="Уровень (от 1 до 20)"
+                                placeholder="Уровень* от 1 до 20"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={level}
                                 onChangeText={(value) => handleNumberInput(
-                                    value, 
-                                    onLevelChange, 
-                                    'level', 
-                                    LEVEL_MIN_VALUE, 
-                                    LEVEL_MAX_VALUE, 
+                                    value,
+                                    onLevelChange,
+                                    'level',
+                                    LEVEL_MIN_VALUE,
+                                    LEVEL_MAX_VALUE,
                                     'Уровень'
                                 )}
                                 keyboardType="numeric"
                                 maxLength={2}
                             />
+                            {validationErrors.level && (
+                                <Text
+                                    style={{
+                                        color: COLORS.error,
+                                        fontSize: 10,
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    {validationErrors.level}
+                                </Text>
+                            )}
+
                         </View>
                     </View>
 
@@ -423,11 +436,13 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Класс"
+                                placeholder="Класс*"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={className}
-                                onChangeText={onClassChange}
+                                editable={false}
+                                onPressIn={() => setClassModalVisible(true)}
                             />
+
                             {selectedClassIcon ? (
                                 <TouchableOpacity
                                     onPress={() => setClassModalVisible(true)}
@@ -447,7 +462,7 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Мировоззрение"
+                                placeholder="Мировоззрение*"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={alignment}
                                 onChangeText={onAlignmentChange}
@@ -467,9 +482,9 @@ const CharacterMain = ({
                             <View style={{ position: "relative", alignItems: "center" }}>
                                 <TextInput
                                     style={[
-                                        styles.statValue, 
-                                        { 
-                                            color: stat.color, 
+                                        styles.statValue,
+                                        {
+                                            color: stat.color,
                                             textAlign: "center",
                                             borderColor: stat.error ? COLORS.error : 'transparent',
                                             borderWidth: stat.error ? 1 : 0
