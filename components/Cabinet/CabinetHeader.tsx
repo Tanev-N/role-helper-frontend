@@ -1,13 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Edit2, LogOut } from "lucide-react-native";
 import { styles } from "./styles";
 
 export default function CabinetHeader({ authStore, router, blockWidth }: any) {
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
-
   const userName = authStore.getUser?.login || "Имя пользователя";
+  const avatarUrl = authStore.getUser?.avatar_url || null;
 
   const initials = useMemo(() => {
     const name = userName.trim();
@@ -30,7 +29,12 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       aspect: [1, 1],
       quality: 1,
     });
-    if (!result.canceled) setAvatarUri(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]?.uri) {
+      const success = await authStore.uploadAvatar(result.assets[0].uri);
+      if (!success) {
+        Alert.alert("Ошибка", "Не удалось загрузить аватар");
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -42,8 +46,8 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
     <View style={[styles.headerBlock, { width: blockWidth }]}>
       <TouchableOpacity onPress={pickImage}>
         <View style={styles.avatar}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
           ) : (
             <Text style={styles.avatarText}>{initials}</Text>
           )}

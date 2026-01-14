@@ -147,6 +147,36 @@ export class AuthStore {
     }
   }
 
+  // === ЗАГРУЗКА АВАТАРА ===
+  public async uploadAvatar(avatarUri: string): Promise<boolean> {
+    this.error = null;
+    try {
+      const response = await apiAuth.uploadAvatar(avatarUri);
+
+      if (response.status === 200 && response.data?.data?.avatar_url) {
+        if (this.user) {
+          await this.setUser({
+            ...this.user,
+            avatar_url: response.data.data.avatar_url,
+          });
+        }
+        return true;
+      }
+
+      runInAction(() => (this.error = "ServerError"));
+      return false;
+    } catch (e: any) {
+      console.warn("AuthStore: ошибка загрузки аватара", e);
+      
+      if (e.response?.status === 400) {
+        runInAction(() => (this.error = "ServerError"));
+      } else {
+        runInAction(() => (this.error = "NetworkError"));
+      }
+      return false;
+    }
+  }
+
   // === ГЕТТЕРЫ ===
   get getUser(): User | null {
     return this.user;
