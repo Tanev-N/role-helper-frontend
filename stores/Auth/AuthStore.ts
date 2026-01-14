@@ -63,8 +63,10 @@ export class AuthStore {
   }
 
   private setUser(user: User | null) {
+    console.log("AuthStore.setUser called with:", user);
     this.isAuthentication = user ? true : false;
     this.user = user;
+    console.log("AuthStore.user updated to:", this.user);
     this.persistUser(user);
   }
 

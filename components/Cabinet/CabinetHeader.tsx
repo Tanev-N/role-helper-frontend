@@ -1,12 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Edit2, LogOut } from "lucide-react-native";
+import { observer } from "mobx-react-lite";
 import { styles } from "./styles";
 
-export default function CabinetHeader({ authStore, router, blockWidth }: any) {
+const CabinetHeader = observer(({ authStore, router, blockWidth }: any) => {
   const userName = authStore.getUser?.login || "Имя пользователя";
   const avatarUrl = authStore.getUser?.avatar_url || null;
+
+  useEffect(() => {
+    console.log("CabinetHeader: avatarUrl changed:", avatarUrl);
+  }, [avatarUrl]);
 
   const initials = useMemo(() => {
     const name = userName.trim();
@@ -80,7 +85,17 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       <TouchableOpacity onPress={pickImage}>
         <View style={styles.avatar}>
           {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            <Image 
+              source={{ uri: avatarUrl }} 
+              style={styles.avatarImage}
+              onError={(e) => {
+                console.error("Image load error:", e.nativeEvent.error);
+                console.error("Failed to load image from:", avatarUrl);
+              }}
+              onLoad={() => {
+                console.log("Image loaded successfully from:", avatarUrl);
+              }}
+            />
           ) : (
             <Text style={styles.avatarText}>{initials}</Text>
           )}
@@ -97,4 +112,6 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       </TouchableOpacity>
     </View>
   );
-}
+});
+
+export default CabinetHeader;
