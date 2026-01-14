@@ -28,7 +28,7 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       console.log("Permission granted, launching image picker");
       
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 1,
