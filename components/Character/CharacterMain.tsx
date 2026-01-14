@@ -244,7 +244,9 @@ const CharacterMain = ({
                     const uploadedPhotoUrl = await charactersStore.uploadPhoto(characterId, uri);
                     if (uploadedPhotoUrl) {
                         // Обновляем фото в локальном состоянии - это заставит компонент перерисоваться
+                        console.log("Uploaded photo URL:", uploadedPhotoUrl);
                         onPhotoChange(uploadedPhotoUrl);
+                        console.log("Photo state updated via onPhotoChange");
                         
                         Toast.show({
                             type: "success",

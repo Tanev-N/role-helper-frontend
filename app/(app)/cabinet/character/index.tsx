@@ -422,8 +422,24 @@ const CharactersScreen = ({
           nextPhoto = photo;
         }
       } else {
-        // При редактировании используем текущее фото
-        nextPhoto = photo || imagesUrlDefault.charactersUrl;
+        // При редактировании используем текущее фото из состояния
+        // Если фото было загружено через uploadPhoto, оно уже обновлено в состоянии через onPhotoChange
+        // Также проверяем актуальное значение из стора на случай, если состояние не обновилось синхронно
+        const characterFromStore = characterId ? charactersStore.getCharacterById(characterId) : null;
+        // Используем photo из состояния, если оно есть, иначе из стора
+        const currentPhoto = (photo && photo.trim() !== "") ? photo : (characterFromStore?.photo || "");
+        
+        console.log("Edit mode - photo from state:", photo);
+        console.log("Edit mode - photo from store:", characterFromStore?.photo);
+        console.log("Edit mode - currentPhoto:", currentPhoto);
+        
+        if (currentPhoto && currentPhoto.trim() !== "") {
+          // Если фото есть, используем его
+          nextPhoto = currentPhoto;
+        } else {
+          // Если фото пустое, не отправляем его (сервер оставит текущее или установит дефолтное)
+          nextPhoto = undefined;
+        }
       }
 
       const payload = {
@@ -455,6 +471,10 @@ const CharactersScreen = ({
       };
 
       if (isEditMode && characterId) {
+        // Логируем для отладки
+        console.log("Saving character with photo:", payload.photo);
+        console.log("Current photo state:", photo);
+        
         await charactersStore.updateCharacter(characterId, payload);
         Toast.show({
           type: "success",
