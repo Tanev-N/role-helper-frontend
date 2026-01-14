@@ -28,7 +28,7 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       console.log("Permission granted, launching image picker");
       
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaType.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 1,
@@ -38,13 +38,24 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
       
       if (!result.canceled && result.assets[0]?.uri) {
         console.log("Image selected, URI:", result.assets[0].uri);
-        console.log("Calling authStore.uploadAvatar");
-        const success = await authStore.uploadAvatar(result.assets[0].uri);
-        console.log("Upload result:", success);
-        if (!success) {
-          Alert.alert("Ошибка", "Не удалось загрузить аватар");
+        console.log("authStore:", authStore);
+        console.log("authStore type:", typeof authStore);
+        console.log("authStore.uploadAvatar:", authStore.uploadAvatar);
+        console.log("authStore.uploadAvatar type:", typeof authStore.uploadAvatar);
+        console.log("authStore methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(authStore)));
+        
+        if (typeof authStore.uploadAvatar === 'function') {
+          console.log("Calling authStore.uploadAvatar");
+          const success = await authStore.uploadAvatar(result.assets[0].uri);
+          console.log("Upload result:", success);
+          if (!success) {
+            Alert.alert("Ошибка", "Не удалось загрузить аватар");
+          } else {
+            Alert.alert("Успех", "Аватар успешно загружен");
+          }
         } else {
-          Alert.alert("Успех", "Аватар успешно загружен");
+          console.error("uploadAvatar is not a function!");
+          Alert.alert("Ошибка", "Метод uploadAvatar не найден в authStore");
         }
       } else {
         console.log("Image selection canceled or no URI");
