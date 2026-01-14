@@ -240,22 +240,35 @@ const CharacterMain = ({
             // Если есть characterId и charactersStore, загружаем фото на сервер
             if (characterId && charactersStore?.uploadPhoto) {
                 try {
-                    const success = await charactersStore.uploadPhoto(characterId, uri);
-                    if (success) {
-                        // Обновляем фото из стора
-                        const character = charactersStore.getCharacterById(characterId);
-                        if (character?.photo) {
-                            onPhotoChange(character.photo);
-                        } else {
-                            // Если фото не обновилось в сторе, используем URI временно
-                            onPhotoChange(uri);
-                        }
+                    const uploadedPhotoUrl = await charactersStore.uploadPhoto(characterId, uri);
+                    if (uploadedPhotoUrl) {
+                        // Используем URL загруженного фото напрямую
+                        onPhotoChange(uploadedPhotoUrl);
+                        Toast.show({
+                            type: "success",
+                            text1: "Успешно",
+                            text2: "Фото загружено",
+                            position: "top",
+                            visibilityTime: 2000,
+                        });
                     } else {
-                        alert("Не удалось загрузить фото");
+                        Toast.show({
+                            type: "error",
+                            text1: "Ошибка",
+                            text2: "Не удалось загрузить фото",
+                            position: "top",
+                            visibilityTime: 3000,
+                        });
                     }
                 } catch (error) {
                     console.error("Error uploading photo:", error);
-                    alert("Ошибка при загрузке фото");
+                    Toast.show({
+                        type: "error",
+                        text1: "Ошибка",
+                        text2: "Ошибка при загрузке фото",
+                        position: "top",
+                        visibilityTime: 3000,
+                    });
                 }
             } else {
                 // Если нет characterId (создание нового персонажа), просто сохраняем URI локально

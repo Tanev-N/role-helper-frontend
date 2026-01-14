@@ -195,7 +195,7 @@ export class CharactersStore {
     }
   }
 
-  public async uploadPhoto(id: string, photoUri: string): Promise<boolean> {
+  public async uploadPhoto(id: string, photoUri: string): Promise<string | null> {
     try {
       const response = await apiCharacters.uploadPhoto(id, photoUri);
       if (response.status === 200 && response.data?.data?.photo_url) {
@@ -219,12 +219,12 @@ export class CharactersStore {
             this.characterDetails.set(id, character);
           }
         });
-        return true;
+        return photoUrl;
       }
-      return false;
+      return null;
     } catch (e) {
       console.warn("CharactersStore: uploadPhoto error", e);
-      return false;
+      return null;
     }
   }
 }
