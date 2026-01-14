@@ -1,19 +1,11 @@
-import { useNavigationHistory } from '@/hooks/useNavigationHistory';
-
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
 import useStore from "@/hooks/store";
 import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { CornerUpLeft } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
-import { useEffect, useRef, useState } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import DEBUG_MODE from "../../config/debug";
 
 function AppLayoutContent() {
@@ -22,34 +14,33 @@ function AppLayoutContent() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const hasHandledReload = useRef(false);
 
   const isMobile = width < 1300;
 
   // Обработка перезагрузки страницы
   useEffect(() => {
-    // Проверяем, была ли уже обработана перезагрузка в этой сессии
     const reloadHandledKey = "reloadHandled";
     if (typeof window !== "undefined" && sessionStorage.getItem(reloadHandledKey) === "true") {
       return;
     }
 
     // Проверяем, была ли перезагрузка страницы
-    // Используем комбинацию sessionStorage и проверки типа навигации
     let wasReloaded = false;
     if (typeof window !== "undefined") {
-      // Проверяем флаг из sessionStorage (устанавливается при beforeunload)
       const reloadFlag = sessionStorage.getItem("pageReloaded") === "true";
 
       // Проверяем тип навигации (если доступно)
-      const navType = (performance as any).navigation?.type;
-      const isReload = navType === 1; // TYPE_RELOAD
+      let navType: string | undefined;
+      try {
+        const navEntries = performance.getEntriesByType?.("navigation") as any[] | undefined;
+        navType = navEntries?.[0]?.type; // "reload" | "navigate" | "back_forward" | ...
+      } catch { }
 
+      const isReload = navType === "reload";
       wasReloaded = reloadFlag || isReload;
     }
 
     const handleReload = async () => {
-      // Помечаем, что обработка началась
       if (typeof window !== "undefined") {
         sessionStorage.setItem(reloadHandledKey, "true");
       }
@@ -57,7 +48,6 @@ function AppLayoutContent() {
       const currentSession = gamesStore.getCurrentSession;
       const sessionRole = gamesStore.getSessionRole;
 
-      // Обрабатываем сессию только если была реальная перезагрузка страницы
       if (wasReloaded && currentSession && sessionRole) {
         try {
           if (sessionRole === "player") {
@@ -65,8 +55,10 @@ function AppLayoutContent() {
             await gamesStore.leaveSession(currentSession.id);
             sessionStore?.clearSession();
           } else if (sessionRole === "master") {
-            // Если мастер - завершаем сессию
-            await gamesStore.finishSession(currentSession.id, "Сессия завершена из-за перезагрузки страницы");
+            await gamesStore.finishSession(
+              currentSession.id,
+              "Сессия завершена из-за перезагрузки страницы"
+            );
             sessionStore?.clearSession();
           }
         } catch (e) {
@@ -77,13 +69,11 @@ function AppLayoutContent() {
         }
       }
 
-      // Перенаправляем на главную страницу при любой перезагрузке
+      // при любой перезагрузке — на главную
       if (wasReloaded) {
-        // Очищаем флаг перезагрузки перед редиректом
         if (typeof window !== "undefined") {
           sessionStorage.removeItem("pageReloaded");
         }
-        // Используем setTimeout для гарантии выполнения после монтирования
         setTimeout(() => {
           router.replace("/(app)/main");
         }, 0);
@@ -102,40 +92,39 @@ function AppLayoutContent() {
       };
 
       window.addEventListener("beforeunload", handleBeforeUnload);
-
-      return () => {
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-      };
+      return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }
   }, [gamesStore, sessionStore, router]);
 
-  if (!DEBUG_MODE) {
-    if (!isAuth) {
-      return <Redirect href="/login" />;
-    }
+  if (!DEBUG_MODE && !isAuth) {
+    return <Redirect href="/login" />;
   }
 
+  const backExactRoutes = useMemo(
+    () => [
+      "/connect", // подключение к сессии
+      "/session", // создание сессии
+      "/cabinet", // профиль
+      "/cabinet/characters", // список персонажей
+      "/cabinet/worlds", // список миров
+      "/cabinet/worldgame", // окно мира
+      "/cabinet/session", // окно конкретной сессии
+      "/cabinet/game", // окно создания игры
+      "/cabinet/armor", // окно списка брони
+      "/cabinet/weapon", // окно списка оружия
+    ],
+    []
+  );
 
-  const backExactRoutes = [
-    "/connect",            // подключение к сессии
-    "/session",            // создание сессии
-    "/cabinet",            // профиль
-    "/cabinet/characters", // список персонажей
-    "/cabinet/worlds",     // список миров
-    "/cabinet/worldgame",  // окно мира
-    "/cabinet/session",    // окно конкретной сессии
-    "/cabinet/game",    // окно создания игры
-    "/cabinet/armor",   //окно списка брони
-    "/cabinet/weapon", //окно списка оружия
-  ];
-
-  const backPrefixRoutes = [
-    "/cabinet/character",  // /cabinet/character и /cabinet/character/[id]
-  ];
+  const backPrefixRoutes = useMemo(
+    () => [
+      "/cabinet/character", // /cabinet/character и /cabinet/character/[id]
+    ],
+    []
+  );
 
   const showBackButton =
-    backExactRoutes.includes(pathname) ||
-    backPrefixRoutes.some((prefix) => pathname.startsWith(prefix));
+    backExactRoutes.includes(pathname) || backPrefixRoutes.some((prefix) => pathname.startsWith(prefix));
 
   return (
     <View style={styles.container}>
@@ -147,29 +136,16 @@ function AppLayoutContent() {
       )}
 
       {/* Панель с кнопками домой/кабинет */}
-      <View
-        style={[
-          styles.routeBox,
-          isMobile ? styles.routeBoxMobile : styles.routeBoxDesktop,
-        ]}
-      >
+      <View style={[styles.routeBox, isMobile ? styles.routeBoxMobile : styles.routeBoxDesktop]}>
         {isMobile ? (
           <>
-            {pathname !== "/cabinet" && (
-              <ElementMenu icon={ICONS.profile} path="/cabinet" small />
-            )}
-            {pathname !== "/main" && (
-              <ElementMenu icon={ICONS.home} path="/main" small />
-            )}
+            {pathname !== "/cabinet" && <ElementMenu icon={ICONS.profile} path="/cabinet" small />}
+            {pathname !== "/main" && <ElementMenu icon={ICONS.home} path="/main" small />}
           </>
         ) : (
           <>
-            {pathname !== "/main" && (
-              <ElementMenu icon={ICONS.home} path="/main" />
-            )}
-            {pathname !== "/cabinet" && (
-              <ElementMenu icon={ICONS.profile} path="/cabinet" />
-            )}
+            {pathname !== "/main" && <ElementMenu icon={ICONS.home} path="/main" />}
+            {pathname !== "/cabinet" && <ElementMenu icon={ICONS.profile} path="/cabinet" />}
           </>
         )}
       </View>
@@ -180,10 +156,7 @@ function AppLayoutContent() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.backgroundPrimary,
-  },
+  container: { flex: 1, backgroundColor: COLORS.backgroundPrimary },
 
   routeBox: {
     position: "absolute",
@@ -192,12 +165,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  routeBoxDesktop: {
-    top: 50,
-    right: 50,
-    flexDirection: "column",
-    gap: 12,
-  },
+  routeBoxDesktop: { top: 50, right: 50, flexDirection: "column", gap: 12 },
 
   routeBoxMobile: {
     top: 0,
@@ -211,19 +179,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  backBoxDesktop: {
-    position: "absolute",
-    top: 50,
-    left: 50,
-    zIndex: 100,
-  },
+  backBoxDesktop: { position: "absolute", top: 50, left: 50, zIndex: 100 },
 
-  backBoxMobile: {
-    position: "absolute",
-    top: 8,
-    left: 16,
-    zIndex: 101,
-  },
+  backBoxMobile: { position: "absolute", top: 8, left: 16, zIndex: 101 },
 
   elementMenu: {
     width: 70,
@@ -240,20 +198,10 @@ const styles = StyleSheet.create({
     transitionDuration: "200ms",
   },
 
-  elementMenuSmall: {
-    width: 55,
-    height: 55,
-    borderRadius: 12,
-  },
+  elementMenuSmall: { width: 55, height: 55, borderRadius: 12 },
 
-  icon: {
-    width: 32,
-    height: 32,
-  },
-  iconSmall: {
-    width: 26,
-    height: 26,
-  },
+  icon: { width: 32, height: 32 },
+  iconSmall: { width: 26, height: 26 },
 });
 
 const ElementMenu = ({
@@ -284,24 +232,26 @@ const ElementMenu = ({
   );
 };
 
+
 const BackButton = ({ small = false }: { small?: boolean }) => {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { getPreviousRoute, goBack, getDefaultRoute } = useNavigationHistory();
+
+  const getDefaultRoute = (currentPath: string) => {
+    //дефолт если идти назад некуда
+    if (currentPath.startsWith("/cabinet")) return "/(app)/cabinet";
+    return "/(app)/main";
+  };
 
   const handleBack = () => {
-    const previousRoute = getPreviousRoute();
-
-    if (previousRoute) {
-      // Есть история - переходим на предыдущий маршрут
-      goBack(); // Удаляем текущую страницу из истории
-      router.push(previousRoute as any);
-    } else {
-      // Нет истории - идем на дефолтный маршрут
-      const defaultRoute = getDefaultRoute(pathname);
-      router.push(defaultRoute as any);
+    if ((router as any).canGoBack?.()) {
+      (router as any).back();
+      return;
     }
+
+    const fallback = getDefaultRoute(pathname);
+    router.replace(fallback as any);
   };
 
   return (
