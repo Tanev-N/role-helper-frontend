@@ -148,7 +148,7 @@ export class AuthStore {
   }
 
   // === ЗАГРУЗКА АВАТАРА ===
-  public uploadAvatar = async (avatarUri: string): Promise<boolean> => {
+  public async uploadAvatar(avatarUri: string): Promise<boolean> {
     console.log("AuthStore.uploadAvatar called with URI:", avatarUri);
     this.error = null;
     try {

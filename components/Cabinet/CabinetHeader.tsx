@@ -42,9 +42,12 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
         console.log("authStore type:", typeof authStore);
         console.log("authStore.uploadAvatar:", authStore.uploadAvatar);
         console.log("authStore.uploadAvatar type:", typeof authStore.uploadAvatar);
-        console.log("authStore methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(authStore)));
+        console.log("authStore prototype methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(authStore)));
+        console.log("authStore instance properties:", Object.getOwnPropertyNames(authStore));
+        console.log("'uploadAvatar' in authStore:", 'uploadAvatar' in authStore);
         
-        if (typeof authStore.uploadAvatar === 'function') {
+        // Стрелочные функции - это свойства экземпляра, а не методы прототипа
+        if (authStore.uploadAvatar && typeof authStore.uploadAvatar === 'function') {
           console.log("Calling authStore.uploadAvatar");
           const success = await authStore.uploadAvatar(result.assets[0].uri);
           console.log("Upload result:", success);
@@ -55,7 +58,8 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
           }
         } else {
           console.error("uploadAvatar is not a function!");
-          Alert.alert("Ошибка", "Метод uploadAvatar не найден в authStore");
+          console.error("Available properties:", Object.keys(authStore));
+          Alert.alert("Ошибка", "Метод uploadAvatar не найден в authStore. Перезагрузите страницу.");
         }
       } else {
         console.log("Image selection canceled or no URI");
