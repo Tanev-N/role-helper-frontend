@@ -200,8 +200,12 @@ export class CharactersStore {
       console.log("CharactersStore.uploadPhoto called with id:", id, "uri:", photoUri);
       const response = await apiCharacters.uploadPhoto(id, photoUri);
       console.log("uploadPhoto response:", response.status, response.data);
-      if (response.status === 200 && response.data?.data?.photo_url) {
-        const photoUrl = response.data.data.photo_url;
+      console.log("uploadPhoto response.data structure:", JSON.stringify(response.data, null, 2));
+      
+      // Проверяем оба возможных пути: response.data.photo_url и response.data.data.photo_url
+      const photoUrl = response.data?.photo_url || response.data?.data?.photo_url;
+      
+      if (response.status === 200 && photoUrl) {
         console.log("CharactersStore: extracted photoUrl:", photoUrl);
         runInAction(() => {
           // Обновляем фото в краткой версии - создаем новый массив для принудительного обновления
