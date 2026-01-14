@@ -12,6 +12,7 @@ import {
 import Toast from "react-native-toast-message";
 import { COLORS } from "../../constant/colors";
 import { DND_CLASSES, DND_RACES } from "../../constant/dnd";
+import { imagesUrlDefault } from "../../constant/default_images";
 import SelectionModal from "./SelectionModal";
 import { characterStyles as styles } from "./styles";
 
@@ -242,8 +243,8 @@ const CharacterMain = ({
                 try {
                     const uploadedPhotoUrl = await charactersStore.uploadPhoto(characterId, uri);
                     if (uploadedPhotoUrl) {
-                        // Используем URL загруженного фото напрямую
                         onPhotoChange(uploadedPhotoUrl);
+                        
                         Toast.show({
                             type: "success",
                             text1: "Успешно",
@@ -381,11 +382,14 @@ const CharacterMain = ({
             >
                 {/* === Аватар === */}
                 <View style={styles.avatarContainer}>
-                    {photo ? (
-                        <Image source={{ uri: photo }} style={styles.avatar} />
-                    ) : (
-                        <View style={styles.avatar} />
-                    )}
+                    <Image 
+                        source={{ 
+                            uri: photo && photo.trim() !== "" 
+                                ? photo 
+                                : `https://critical-roll.ru${imagesUrlDefault.charactersUrl}`
+                        }} 
+                        style={styles.avatar} 
+                    />
                     <TouchableOpacity style={styles.avatarEdit} onPress={pickImage}>
                         <Pencil size={18} color={COLORS.textPrimary} />
                     </TouchableOpacity>
