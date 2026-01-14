@@ -149,11 +149,15 @@ export class AuthStore {
 
   // === ЗАГРУЗКА АВАТАРА ===
   public async uploadAvatar(avatarUri: string): Promise<boolean> {
+    console.log("AuthStore.uploadAvatar called with URI:", avatarUri);
     this.error = null;
     try {
+      console.log("Calling apiAuth.uploadAvatar");
       const response = await apiAuth.uploadAvatar(avatarUri);
+      console.log("API response:", response.status, response.data);
 
       if (response.status === 200 && response.data?.data?.avatar_url) {
+        console.log("Upload successful, avatar_url:", response.data.data.avatar_url);
         if (this.user) {
           await this.setUser({
             ...this.user,
@@ -163,10 +167,12 @@ export class AuthStore {
         return true;
       }
 
+      console.warn("Upload failed, status:", response.status, "data:", response.data);
       runInAction(() => (this.error = "ServerError"));
       return false;
     } catch (e: any) {
-      console.warn("AuthStore: ошибка загрузки аватара", e);
+      console.error("AuthStore: ошибка загрузки аватара", e);
+      console.error("Error details:", e.response?.data, e.response?.status, e.message);
       
       if (e.response?.status === 400) {
         runInAction(() => (this.error = "ServerError"));

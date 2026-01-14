@@ -26,17 +26,41 @@ export const apiAuth = {
     return await axios.post(apiAuthUrl.logout);
   },
   async uploadAvatar(avatarUri: string, fileName?: string) {
-    const formData = new FormData();
-    // В React Native FormData принимает объект с uri, type и name
-    const fileExtension = avatarUri.split('.').pop()?.toLowerCase() || 'jpg';
-    const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-    const name = fileName || `avatar.${fileExtension}`;
+    console.log("uploadAvatar called with URI:", avatarUri);
     
-    formData.append("avatar", {
-      uri: avatarUri,
-      type: mimeType,
-      name: name,
-    } as any);
+    let file: File | Blob;
+    
+    if (avatarUri.indexOf('blob:') === 0) {
+      try {
+        const response = await fetch(avatarUri);
+        const blob = await response.blob();
+        const isPng = blob.type.indexOf('png') !== -1;
+        const fileExtension = isPng ? 'png' : 'jpg';
+        const mimeType = blob.type || (fileExtension === 'png' ? 'image/png' : 'image/jpeg');
+        const name = fileName || `avatar.${fileExtension}`;
+        file = new File([blob], name, { type: mimeType });
+        const fileInfo = file instanceof File ? `${file.name}, ${file.type}, ${file.size}` : 'File created';
+        console.log("Created File from blob:", fileInfo);
+      } catch (error) {
+        console.error("Error converting blob to File:", error);
+        throw error;
+      }
+    } else {
+      const fileExtension = avatarUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      const name = fileName || `avatar.${fileExtension}`;
+      
+      file = {
+        uri: avatarUri,
+        type: mimeType,
+        name: name,
+      } as any;
+    }
+    
+    const formData = new FormData();
+    formData.append("avatar", file);
+    
+    console.log("Sending request to:", apiAuthUrl.uploadAvatar);
     
     return await axios.post(apiAuthUrl.uploadAvatar, formData, {
       headers: {

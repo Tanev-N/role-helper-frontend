@@ -18,22 +18,40 @@ export default function CabinetHeader({ authStore, router, blockWidth }: any) {
   }, [userName]);
 
   const pickImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Ошибка", "Разрешите доступ к галерее");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled && result.assets[0]?.uri) {
-      const success = await authStore.uploadAvatar(result.assets[0].uri);
-      if (!success) {
-        Alert.alert("Ошибка", "Не удалось загрузить аватар");
+    console.log("pickImage called");
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Ошибка", "Разрешите доступ к галерее");
+        return;
       }
+      console.log("Permission granted, launching image picker");
+      
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+      
+      console.log("ImagePicker result:", result);
+      
+      if (!result.canceled && result.assets[0]?.uri) {
+        console.log("Image selected, URI:", result.assets[0].uri);
+        console.log("Calling authStore.uploadAvatar");
+        const success = await authStore.uploadAvatar(result.assets[0].uri);
+        console.log("Upload result:", success);
+        if (!success) {
+          Alert.alert("Ошибка", "Не удалось загрузить аватар");
+        } else {
+          Alert.alert("Успех", "Аватар успешно загружен");
+        }
+      } else {
+        console.log("Image selection canceled or no URI");
+      }
+    } catch (error) {
+      console.error("Error in pickImage:", error);
+      Alert.alert("Ошибка", `Ошибка при выборе изображения: ${error}`);
     }
   };
 
