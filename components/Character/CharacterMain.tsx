@@ -28,6 +28,8 @@ interface CharacterMainProps {
     wisdom: string;
     charisma: string;
     photo?: string;
+    characterId?: string; // ID персонажа для загрузки фото (если есть)
+    charactersStore?: any; // CharactersStore для загрузки фото
     onNameChange: (value: string) => void;
     onRaceChange: (value: string) => void;
     onLevelChange: (value: string) => void;
@@ -62,6 +64,8 @@ const CharacterMain = ({
     wisdom,
     charisma,
     photo,
+    characterId,
+    charactersStore,
     onNameChange,
     onRaceChange,
     onLevelChange,
@@ -230,10 +234,33 @@ const CharacterMain = ({
             quality: 1,
         });
 
-        if (!result.canceled) {
-            // В web result.assets может содержать array
-            const uri = result.assets?.[0]?.uri;
-            if (uri) onPhotoChange(uri);
+        if (!result.canceled && result.assets?.[0]?.uri) {
+            const uri = result.assets[0].uri;
+            
+            // Если есть characterId и charactersStore, загружаем фото на сервер
+            if (characterId && charactersStore?.uploadPhoto) {
+                try {
+                    const success = await charactersStore.uploadPhoto(characterId, uri);
+                    if (success) {
+                        // Обновляем фото из стора
+                        const character = charactersStore.getCharacterById(characterId);
+                        if (character?.photo) {
+                            onPhotoChange(character.photo);
+                        } else {
+                            // Если фото не обновилось в сторе, используем URI временно
+                            onPhotoChange(uri);
+                        }
+                    } else {
+                        alert("Не удалось загрузить фото");
+                    }
+                } catch (error) {
+                    console.error("Error uploading photo:", error);
+                    alert("Ошибка при загрузке фото");
+                }
+            } else {
+                // Если нет characterId (создание нового персонажа), просто сохраняем URI локально
+                onPhotoChange(uri);
+            }
         }
     };
 

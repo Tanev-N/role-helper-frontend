@@ -360,43 +360,64 @@ const CharactersScreen = ({
 
     try {
       let nextPhoto = photo;
+      let shouldUploadPhotoAfterCreate = false;
+      let photoUriToUpload = "";
 
+      // Проверяем, выбрал ли пользователь фото (blob URI означает выбор из галереи)
+      const isPhotoSelected = photo && photo.startsWith('blob:');
+      // Проверяем, загружено ли фото на сервер (URL начинается с https://)
+      const isPhotoUploaded = photo && photo.startsWith('https://') && photo.trim() !== '';
+      
       if (!isEditMode) {
-        // Показываем заставку генерации изображения
-        setIsGeneratingImage(true);
+        if (isPhotoSelected) {
+          // Если пользователь выбрал фото при создании, не используем LLM
+          // Сохраним URI для загрузки после создания персонажа
+          shouldUploadPhotoAfterCreate = true;
+          photoUriToUpload = photo;
+          nextPhoto = imagesUrlDefault.charactersUrl; // Временно используем дефолтное фото
+        } else if (!isPhotoUploaded) {
+          // Показываем заставку генерации изображения только если фото не выбрано и не загружено
+          setIsGeneratingImage(true);
 
-        // Запускаем анимацию пульсации
-        animationRef.current = Animated.loop(
-          Animated.sequence([
-            Animated.timing(pulseAnim, {
-              toValue: 1.2,
-              duration: 1000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(pulseAnim, {
-              toValue: 1,
-              duration: 1000,
-              useNativeDriver: true,
-            }),
-          ])
-        );
-        animationRef.current.start();
+          // Запускаем анимацию пульсации
+          animationRef.current = Animated.loop(
+            Animated.sequence([
+              Animated.timing(pulseAnim, {
+                toValue: 1.2,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+              Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 1000,
+                useNativeDriver: true,
+              }),
+            ])
+          );
+          animationRef.current.start();
 
-        const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name, background, features);
+          const imageUrlRaw = await imageStore.generateCharacterImage(race, className, name, background, features);
 
-        // Скрываем заставку после генерации
-        setIsGeneratingImage(false);
-        if (animationRef.current) {
-          animationRef.current.stop();
-          animationRef.current = null;
-        }
-        pulseAnim.setValue(1);
+          // Скрываем заставку после генерации
+          setIsGeneratingImage(false);
+          if (animationRef.current) {
+            animationRef.current.stop();
+            animationRef.current = null;
+          }
+          pulseAnim.setValue(1);
 
-        if (imageUrlRaw) {
-          nextPhoto = createEndpointImage(imageUrlRaw);
+          if (imageUrlRaw) {
+            nextPhoto = createEndpointImage(imageUrlRaw);
+          } else {
+            nextPhoto = imagesUrlDefault.charactersUrl;
+          }
         } else {
-          nextPhoto = imagesUrlDefault.charactersUrl;
+          // Если фото уже загружено на сервер, используем его
+          nextPhoto = photo;
         }
+      } else {
+        // При редактировании используем текущее фото
+        nextPhoto = photo || imagesUrlDefault.charactersUrl;
       }
 
       const payload = {
@@ -438,7 +459,13 @@ const CharactersScreen = ({
         });
         onUpdated?.();
       } else {
-        await charactersStore.createCharacter(payload as any);
+        const createdCharacter = await charactersStore.createCharacter(payload as any);
+        
+        // Если нужно загрузить фото после создания, загружаем его
+        if (shouldUploadPhotoAfterCreate && photoUriToUpload && createdCharacter?.id) {
+          await charactersStore.uploadPhoto(createdCharacter.id, photoUriToUpload);
+        }
+        
         charactersStore.clearCharacterDraft();
         // Автоматический переход на предыдущую страницу после успешного создания
         router.back();
@@ -560,6 +587,8 @@ const CharactersScreen = ({
             wisdom={wisdom}
             charisma={charisma}
             photo={photo}
+            characterId={characterId}
+            charactersStore={charactersStore}
             onNameChange={setName}
             onRaceChange={setRace}
             onLevelChange={setLevel}

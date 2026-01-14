@@ -28,9 +28,11 @@ export const apiAuth = {
   async uploadAvatar(avatarUri: string, fileName?: string) {
     console.log("uploadAvatar called with URI:", avatarUri);
     
-    let file: File | Blob;
+    let file: File | Blob | any;
     
+    // Проверяем, это blob URI (веб) или file/content URI (мобильный)
     if (avatarUri.indexOf('blob:') === 0) {
+      // Для веба: преобразуем blob URI в File
       try {
         const response = await fetch(avatarUri);
         const blob = await response.blob();
@@ -46,15 +48,32 @@ export const apiAuth = {
         throw error;
       }
     } else {
-      const fileExtension = avatarUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      // Для мобильных платформ: используем объект с uri, type и name
+      let fileExtension = 'jpg';
+      let mimeType = 'image/jpeg';
+      
+      if (fileName) {
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
+          fileExtension = ext === 'jpeg' ? 'jpg' : ext;
+          mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+        }
+      } else {
+        const uriExt = avatarUri.split('.').pop()?.toLowerCase();
+        if (uriExt === 'png' || uriExt === 'jpg' || uriExt === 'jpeg') {
+          fileExtension = uriExt === 'jpeg' ? 'jpg' : uriExt;
+          mimeType = uriExt === 'png' ? 'image/png' : 'image/jpeg';
+        }
+      }
+      
       const name = fileName || `avatar.${fileExtension}`;
       
       file = {
         uri: avatarUri,
         type: mimeType,
         name: name,
-      } as any;
+      };
+      console.log("Created file object for mobile:", file);
     }
     
     const formData = new FormData();
@@ -62,10 +81,17 @@ export const apiAuth = {
     
     console.log("Sending request to:", apiAuthUrl.uploadAvatar);
     
+    // Для мобильных устройств не устанавливаем Content-Type явно,
+    // чтобы axios автоматически установил правильный boundary
+    const headers: any = {};
+    
+    // Для веба устанавливаем Content-Type явно
+    if (avatarUri.indexOf('blob:') === 0) {
+      headers["Content-Type"] = "multipart/form-data";
+    }
+    
     return await axios.post(apiAuthUrl.uploadAvatar, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers,
     });
   },
 };

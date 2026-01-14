@@ -164,6 +164,7 @@ export interface CharacterUpdate {
 const apiCharactersUrl = {
   characters: createEndpoint("/characters"),
   characterById: (id: string) => createEndpoint(`/characters/${id}`),
+  uploadPhoto: (id: string) => createEndpoint(`/characters/${id}/photo`),
 };
 
 export const apiCharacters = {
@@ -200,5 +201,52 @@ export const apiCharacters = {
       status: response.status,
       data: response.data,
     };
+  },
+  async uploadPhoto(id: string, photoUri: string, fileName?: string) {
+    let file: File | Blob | any;
+    
+    // Проверяем, это blob URI (веб) или file/content URI (мобильный)
+    if (photoUri.indexOf('blob:') === 0) {
+      // Для веба: преобразуем blob URI в File
+      try {
+        const response = await fetch(photoUri);
+        const blob = await response.blob();
+        const isPng = blob.type.indexOf('png') !== -1;
+        const fileExtension = isPng ? 'png' : 'jpg';
+        const mimeType = blob.type || (fileExtension === 'png' ? 'image/png' : 'image/jpeg');
+        const name = fileName || `photo.${fileExtension}`;
+        file = new File([blob], name, { type: mimeType });
+      } catch (error) {
+        console.error("Error converting blob to File:", error);
+        throw error;
+      }
+    } else {
+      // Для мобильных платформ: используем объект с uri, type и name
+      const fileExtension = photoUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      const name = fileName || `photo.${fileExtension}`;
+      
+      file = {
+        uri: photoUri,
+        type: mimeType,
+        name: name,
+      };
+    }
+    
+    const formData = new FormData();
+    formData.append("photo", file);
+    
+    // Для мобильных устройств не устанавливаем Content-Type явно,
+    // чтобы axios автоматически установил правильный boundary
+    const headers: any = {};
+    
+    // Для веба устанавливаем Content-Type явно
+    if (photoUri.indexOf('blob:') === 0) {
+      headers["Content-Type"] = "multipart/form-data";
+    }
+    
+    return await axios.post(apiCharactersUrl.uploadPhoto(id), formData, {
+      headers,
+    });
   },
 };

@@ -144,10 +144,11 @@ export class CharactersStore {
     }
   }
 
-  public async createCharacter(character: CharacterCreate) {
+  public async createCharacter(character: CharacterCreate): Promise<Character | undefined> {
     try {
       const response = await apiCharacters.createCharacter(character);
       if (response.status === 201) {
+        let createdCharacter: Character | undefined;
         runInAction(() => {
           // Добавляем краткую версию в список
           const characterShort: CharacterShort = {
@@ -158,11 +159,14 @@ export class CharactersStore {
           this.setCharacters([...this.characters, characterShort]);
           // Сохраняем полную версию
           this.characterDetails.set(response.data.id, response.data);
+          createdCharacter = response.data;
         });
+        return createdCharacter;
       }
     } catch (e) {
       console.warn("CharactersStore: createCharacter error", e);
     }
+    return undefined;
   }
 
   public async updateCharacter(id: string, character: CharacterUpdate) {
@@ -188,6 +192,39 @@ export class CharactersStore {
       }
     } catch (e) {
       console.warn("CharactersStore: updateCharacter error", e);
+    }
+  }
+
+  public async uploadPhoto(id: string, photoUri: string): Promise<boolean> {
+    try {
+      const response = await apiCharacters.uploadPhoto(id, photoUri);
+      if (response.status === 200 && response.data?.data?.photo_url) {
+        const photoUrl = response.data.data.photo_url;
+        runInAction(() => {
+          // Обновляем фото в краткой версии
+          this.setCharacters(
+            this.characters.map((char) =>
+              char.id === id
+                ? {
+                    ...char,
+                    photo: photoUrl,
+                  }
+                : char
+            )
+          );
+          // Обновляем фото в полной версии
+          const character = this.characterDetails.get(id);
+          if (character) {
+            character.photo = photoUrl;
+            this.characterDetails.set(id, character);
+          }
+        });
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.warn("CharactersStore: uploadPhoto error", e);
+      return false;
     }
   }
 }

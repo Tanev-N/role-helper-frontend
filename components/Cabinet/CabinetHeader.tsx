@@ -39,7 +39,12 @@ const CabinetHeader = observer(({ authStore, router, blockWidth }: any) => {
       console.log("ImagePicker result:", result);
       
       if (!result.canceled && result.assets[0]?.uri) {
-        const success = await authStore.uploadAvatar(result.assets[0].uri);
+        const asset = result.assets[0];
+        const mimeType = asset.mimeType || 'image/jpeg';
+        const fileExtension = mimeType.includes('png') ? 'png' : 'jpg';
+        const fileName = `avatar.${fileExtension}`;
+        
+        const success = await authStore.uploadAvatar(asset.uri, fileName);
         if (!success) {
           Alert.alert("Ошибка", "Не удалось загрузить аватар");
         }
