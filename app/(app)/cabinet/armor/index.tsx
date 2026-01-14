@@ -41,9 +41,11 @@ type ArmorItem = {
   photo?: string;
 };
 
+const MAX_MODIFIERS = 4;
+
 const ArmorListScreen = observer(() => {
   const { itemStore, imageStore } = useStore();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isMobile = width < 768;
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
@@ -55,7 +57,7 @@ const ArmorListScreen = observer(() => {
   // ====== СОЗДАНИЕ БРОНИ (МОДАЛКА) ======
   const [createVisible, setCreateVisible] = useState(false);
   const [formName, setFormName] = useState("");
-  const [formType, setFormType] = useState("");         // тип предмета (заголовок)
+  const [formType, setFormType] = useState(""); // тип предмета (заголовок)
   const [formAC, setFormAC] = useState("");
   const [formModifier, setFormModifier] = useState(""); // <-- отдельный стейт модификатора
   const [formCost, setFormCost] = useState("");
@@ -109,7 +111,7 @@ const ArmorListScreen = observer(() => {
       animationRef.current.start();
 
       const imagePath = await imageStore.generateItemImage(
-        formName.trim(),
+        formName.trim(), 
         "Броня"
       );
       if (imagePath) {
@@ -154,20 +156,24 @@ const ArmorListScreen = observer(() => {
   };
 
   const handleAddModifier = () => {
-    setFormModifiers((prev) => [
-      ...prev,
-      { id: `mod-${Date.now()}`, value: "", stat: "" },
-    ]);
+    setFormModifiers((prev) => {
+      if (prev.length >= MAX_MODIFIERS) return prev;
+      return [...prev, { id: `mod-${Date.now()}`, value: "", stat: "" }];
+    });
+  };
+
+  const removeModifier = (id: string) => {
+    setFormModifiers((prev) => prev.filter((m) => m.id !== id));
   };
 
   const updateModifier = (
-    id: string,
-    field: "value" | "stat",
+    id: string, 
+    field: "value" | "stat", 
     value: string
   ) => {
-    setFormModifiers((prev) =>
+    setFormModifiers((prev) => 
       prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
-    );
+  );
   };
 
   const mapArmorToCard = (armor: Armor): ArmorItem => {
@@ -176,8 +182,8 @@ const ArmorListScreen = observer(() => {
         ?.split(",")
         .map((m) => m.trim())
         .filter(Boolean)
-        .map((m, idx) => ({ id: `mod-${armor.id}-${idx}`, value: m, stat: "" })) ??
-      [];
+        .map((m, idx) => ({ id: `mod-${armor.id}-${idx}`, value: m, stat: "" })) ?? 
+        [];
     const acText =
       armor.armor_class !== undefined
         ? armor.modifier
@@ -237,6 +243,7 @@ const ArmorListScreen = observer(() => {
             </View>
           </View>
         )}
+
         <Text style={styles.cardTitle}>
           {armor.name} <Text style={styles.cardTitleType}>/ {armor.type}</Text>
         </Text>
@@ -316,11 +323,32 @@ const ArmorListScreen = observer(() => {
     );
   };
 
-  const inlineLabelStyle = [
-    styles.modalLabel,
-    { marginBottom: 0, flexShrink: 0, width: 170 },
-  ];
-  const inlineInputStyle = [styles.modalInput, { flex: 1 }];
+  const labelWidth = isMobile ? 140 : 170;
+
+  const rowOneColumn = {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    width: "100%" as const,
+    marginBottom: isMobile ? 14 : 10,
+    gap: 12,
+  };
+
+  const labelText = {
+    ...(styles.modalLabel as any),
+    marginBottom: 0,
+    flexShrink: 0,
+    width: labelWidth,
+  };
+
+  const inputFull = {
+    ...(styles.modalInput as any),
+    flex: 1,
+    width: "auto" as const,
+    textAlign: isMobile ? ("center" as const) : ("left" as const),
+  };
+
+  const modalCardMaxHeight = Math.min(height * 0.9, 820);
+  const modalBodyMaxHeight = Math.max(240, modalCardMaxHeight - 220);
 
   return (
     <>
@@ -337,9 +365,9 @@ const ArmorListScreen = observer(() => {
           <View style={styles.pageDivider} />
 
           <View style={styles.createButtonWrapper}>
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={() => setCreateVisible(true)}
+            <TouchableOpacity 
+            style={styles.createButton} 
+            onPress={() => setCreateVisible(true)}
             >
               <Text style={styles.createButtonText}>Создать</Text>
             </TouchableOpacity>
@@ -357,11 +385,15 @@ const ArmorListScreen = observer(() => {
         onRequestClose={() => setCreateVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { width: containerWidth }]}>
+          <View style={[styles.modalCard, { width: containerWidth, maxHeight: modalCardMaxHeight }]}>
+            {/* ===== Header (фиксированный) ===== */}
             <View style={styles.modalHeader}>
               <View style={styles.modalTitleRow}>
                 <TextInput
-                  style={styles.modalTitleInput}
+                  style={[
+                    styles.modalTitleInput,
+                    isMobile && { textAlign: "center" as const },
+                  ]}
                   value={formName}
                   onChangeText={setFormName}
                   placeholder="Название предмета"
@@ -369,7 +401,11 @@ const ArmorListScreen = observer(() => {
                 />
                 <Text style={styles.modalTitleSlash}>/</Text>
                 <TextInput
-                  style={[styles.modalTitleInput, styles.modalTitleInputType]}
+                  style={[
+                    styles.modalTitleInput,
+                    styles.modalTitleInputType,
+                    isMobile && { textAlign: "center" as const },
+                  ]}
                   value={formType}
                   onChangeText={setFormType}
                   placeholder="тип предмета"
@@ -378,151 +414,175 @@ const ArmorListScreen = observer(() => {
               </View>
             </View>
 
-            <View style={styles.modalBody}>
-              <View style={styles.modalRow}>
-                <View style={styles.inlineStatRow}>
-                  <Text style={styles.inlineStatLabel}>Класс доспеха:</Text>
+            {/* ===== Body (скроллится) ===== */}
+            <ScrollView
+              style={{ flexGrow: 0, maxHeight: modalBodyMaxHeight }}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              showsVerticalScrollIndicator
+            >
+              <View style={styles.modalBody}>
+                {/* Всё в одном столбце (каждая строка: лейбл слева, инпут справа на всю оставшуюся ширину) */}
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Класс доспеха:</Text>
                   <TextInput
-                    style={[styles.modalInput, { flex: 1 }]}
+                    style={inputFull}
                     value={formAC}
                     onChangeText={setFormAC}
                     placeholder="11"
                     placeholderTextColor={COLORS.textLowEmphasis}
+                    keyboardType="numeric"
                   />
                 </View>
-                <View style={styles.inlineStatRow}>
-                  <Text style={styles.inlineStatLabel}>Модификатор:</Text>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Модификатор:</Text>
                   <TextInput
-                    style={[styles.modalInput, { flex: 1 }]}
+                    style={inputFull}
                     value={formModifier}
                     onChangeText={setFormModifier}
                     placeholder="Ловк."
                     placeholderTextColor={COLORS.textLowEmphasis}
                   />
                 </View>
-              </View>
 
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Стоимость:</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formCost}
-                  onChangeText={setFormCost}
-                  placeholder="30 золотых"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Редкость:</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formRarity}
-                  onChangeText={setFormRarity}
-                  placeholder="Обычная"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-
-              {/* Помеха для скрытности */}
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Помеха для скрытности:</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formStealth}
-                  onChangeText={setFormStealth}
-                  placeholder="Нет"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-
-              {/* Требование к силе */}
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Требование к силе:</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formStrengthReq}
-                  onChangeText={setFormStrengthReq}
-                  placeholder="Нет"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-
-              {/* Вес */}
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Вес (в кг):</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formWeight}
-                  onChangeText={setFormWeight}
-                  placeholder="3"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-
-              {/* Уникальные показатели + модификаторы */}
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Уникальные показатели:</Text>
-                <View style={{ flex: 1 }}>
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Стоимость:</Text>
                   <TextInput
-                    style={styles.modalInput}
+                    style={inputFull}
+                    value={formCost}
+                    onChangeText={setFormCost}
+                    placeholder="30 золотых"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                  />
+                </View>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Редкость:</Text>
+                  <TextInput
+                    style={inputFull}
+                    value={formRarity}
+                    onChangeText={setFormRarity}
+                    placeholder="Обычная"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                  />
+                </View>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Помеха для скрытности:</Text>
+                  <TextInput
+                    style={inputFull}
+                    value={formStealth}
+                    onChangeText={setFormStealth}
+                    placeholder="Нет"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                  />
+                </View>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Требование к силе:</Text>
+                  <TextInput
+                    style={inputFull}
+                    value={formStrengthReq}
+                    onChangeText={setFormStrengthReq}
+                    placeholder="Нет"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                  />
+                </View>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Вес (в кг):</Text>
+                  <TextInput
+                    style={inputFull}
+                    value={formWeight}
+                    onChangeText={setFormWeight}
+                    placeholder="3"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={rowOneColumn}>
+                  <Text style={labelText}>Уникальные показатели:</Text>
+                  <TextInput
+                    style={inputFull}
                     value={formUnique}
                     onChangeText={setFormUnique}
                     placeholder="Введите текст"
                     placeholderTextColor={COLORS.textLowEmphasis}
                   />
+                </View>
 
-                  {formModifiers.length > 0 && (
-                    <View style={styles.modalModsGrid}>
-                      {formModifiers.map((m) => (
-                        <View key={m.id} style={styles.modalModRow}>
+                {/* Модификаторы (в одном столбце) */}
+                {formModifiers.length > 0 && (
+                  <View style={{ marginTop: 8 }}>
+                    {formModifiers.map((m, idx) => (
+                      <View key={m.id} style={{ marginBottom: 16 }}>
+                        <View style={[rowOneColumn, { marginBottom: 10 }]}>
+                          <Text style={labelText}>Модификатор #{idx + 1}:</Text>
+                          <TouchableOpacity
+                            onPress={() => removeModifier(m.id)}
+                            style={{ paddingVertical: 6, paddingHorizontal: 10 }}
+                          >
+                            <Text style={{ color: COLORS.textLowEmphasis, fontFamily: "Roboto" }}>
+                              Удалить
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={rowOneColumn}>
+                          <Text style={labelText}>Значение:</Text>
                           <TextInput
-                            style={[styles.modalInput, styles.modalInputSmall]}
+                            style={inputFull}
                             value={m.value}
-                            onChangeText={(val) =>
-                              updateModifier(m.id, "value", val)
-                            }
+                            onChangeText={(val) => updateModifier(m.id, "value", val)}
                             placeholder="+2"
                             placeholderTextColor={COLORS.textLowEmphasis}
                           />
+                        </View>
+
+                        <View style={rowOneColumn}>
+                          <Text style={labelText}>Характеристика:</Text>
                           <TextInput
-                            style={[styles.modalInput, styles.modalInputSmall]}
+                            style={inputFull}
                             value={m.stat}
-                            onChangeText={(val) =>
-                              updateModifier(m.id, "stat", val)
-                            }
+                            onChangeText={(val) => updateModifier(m.id, "stat", val)}
                             placeholder="Сила"
                             placeholderTextColor={COLORS.textLowEmphasis}
                           />
                         </View>
-                      ))}
-                    </View>
-                  )}
+                      </View>
+                    ))}
+                  </View>
+                )}
 
-                  <TouchableOpacity
-                    onPress={handleAddModifier}
-                    style={styles.addModifierButton}
-                  >
-                    <Text style={styles.addModifierText}>
-                      + Добавить модификатор
-                    </Text>
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleAddModifier}
+                  style={[
+                    styles.addModifierButton,
+                    formModifiers.length >= MAX_MODIFIERS && { opacity: 0.5 },
+                  ]}
+                  disabled={formModifiers.length >= MAX_MODIFIERS}
+                >
+                  <Text style={styles.addModifierText}>
+                    + Добавить модификатор{" "}
+                    {formModifiers.length >= MAX_MODIFIERS ? `(макс. ${MAX_MODIFIERS})` : ""}
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={[rowOneColumn, { marginTop: 6 }]}>
+                  <Text style={labelText}>Заряд:</Text>
+                  <TextInput
+                    style={inputFull}
+                    value={formCharges}
+                    onChangeText={setFormCharges}
+                    placeholder="Нет"
+                    placeholderTextColor={COLORS.textLowEmphasis}
+                  />
                 </View>
               </View>
+            </ScrollView>
 
-              {/* Заряд */}
-              <View style={styles.modalRow}>
-                <Text style={inlineLabelStyle}>Заряд:</Text>
-                <TextInput
-                  style={inlineInputStyle}
-                  value={formCharges}
-                  onChangeText={setFormCharges}
-                  placeholder="Нет"
-                  placeholderTextColor={COLORS.textLowEmphasis}
-                />
-              </View>
-            </View>
-
+            {/* ===== Footer (фиксированный) ===== */}
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={[styles.footerButton, styles.footerButtonSecondary]}
@@ -533,6 +593,7 @@ const ArmorListScreen = observer(() => {
               >
                 <Text style={styles.footerButtonSecondaryText}>Отмена</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.footerButton, styles.footerButtonPrimary]}
                 onPress={handleAddArmor}
