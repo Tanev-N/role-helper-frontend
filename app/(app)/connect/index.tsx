@@ -121,6 +121,7 @@ const ConnectScreen = () => {
                         >
                             {character.photo ? (
                                 <Image
+                                    key={`${character.id}-${character.photo || 'default'}`}
                                     source={character.photo ? { uri: character.photo } : { uri: imagesUrlDefault.charactersUrl }}
                                     style={{
                                         width: "100%",

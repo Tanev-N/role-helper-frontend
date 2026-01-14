@@ -201,22 +201,22 @@ export class CharactersStore {
       if (response.status === 200 && response.data?.data?.photo_url) {
         const photoUrl = response.data.data.photo_url;
         runInAction(() => {
-          // Обновляем фото в краткой версии
-          this.setCharacters(
-            this.characters.map((char) =>
-              char.id === id
-                ? {
-                    ...char,
-                    photo: photoUrl,
-                  }
-                : char
-            )
+          // Обновляем фото в краткой версии - создаем новый массив для принудительного обновления
+          const updatedCharacters = this.characters.map((char) =>
+            char.id === id
+              ? {
+                  ...char,
+                  photo: photoUrl,
+                }
+              : char
           );
+          this.setCharacters([...updatedCharacters]);
+          
           // Обновляем фото в полной версии
           const character = this.characterDetails.get(id);
           if (character) {
             character.photo = photoUrl;
-            this.characterDetails.set(id, character);
+            this.characterDetails.set(id, { ...character });
           }
         });
         return photoUrl;

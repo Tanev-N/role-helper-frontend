@@ -109,6 +109,7 @@ const CharactersListScreen = observer(() => {
                             ]}
                         >
                             <ImageBackground
+                                key={`${character.id}-${photo || 'default'}`}
                                 source={
                                     photo
                                         ? { uri: photo }

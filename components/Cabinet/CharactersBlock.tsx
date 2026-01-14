@@ -84,6 +84,7 @@ const CharactersBlock = observer(() => {
               }}
             >
               <ImageBackground
+                key={`${character.id}-${character.photo || 'default'}`}
                 source={character.photo ? { uri: character.photo } : { uri: imagesUrlDefault.charactersUrl }}
                 style={{
                   width: "100%",
