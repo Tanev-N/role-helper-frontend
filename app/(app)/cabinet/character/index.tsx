@@ -72,6 +72,12 @@ const CharactersScreen = ({
   const [wisdom, setWisdom] = useState("1");
   const [charisma, setCharisma] = useState("1");
   const [photo, setPhoto] = useState("");
+  const photoRef = useRef(photo);
+  
+  // Обновляем ref при изменении photo
+  useEffect(() => {
+    photoRef.current = photo;
+  }, [photo]);
 
   // Дополнительная информация
   const [initiative, setInitiative] = useState("");
@@ -423,15 +429,23 @@ const CharactersScreen = ({
         }
       } else {
         // При редактировании используем текущее фото из состояния
-        // Если фото было загружено через uploadPhoto, оно уже обновлено в состоянии через onPhotoChange
-        // Также проверяем актуальное значение из стора на случай, если состояние не обновилось синхронно
+        // ВАЖНО: Используем photoRef.current для получения актуального значения,
+        // так как состояние может не обновиться синхронно
         const characterFromStore = characterId ? charactersStore.getCharacterById(characterId) : null;
-        // Используем photo из состояния, если оно есть, иначе из стора
-        const currentPhoto = (photo && photo.trim() !== "") ? photo : (characterFromStore?.photo || "");
         
-        console.log("Edit mode - photo from state:", photo);
+        // Используем актуальное значение из ref (которое обновляется через useEffect)
+        const currentPhotoFromState = photoRef.current || photo;
+        
+        // Приоритет: photo из состояния (ref) > photo из стора
+        let currentPhoto = currentPhotoFromState;
+        if (!currentPhoto || currentPhoto.trim() === "") {
+          currentPhoto = characterFromStore?.photo || "";
+        }
+        
+        console.log("Edit mode - photo from state (photo):", photo);
+        console.log("Edit mode - photo from ref (photoRef.current):", photoRef.current);
         console.log("Edit mode - photo from store:", characterFromStore?.photo);
-        console.log("Edit mode - currentPhoto:", currentPhoto);
+        console.log("Edit mode - currentPhoto (final):", currentPhoto);
         
         if (currentPhoto && currentPhoto.trim() !== "") {
           // Если фото есть, используем его
@@ -472,8 +486,12 @@ const CharactersScreen = ({
 
       if (isEditMode && characterId) {
         // Логируем для отладки
-        console.log("Saving character with photo:", payload.photo);
-        console.log("Current photo state:", photo);
+        console.log("=== SAVING CHARACTER ===");
+        console.log("Photo from state:", photo);
+        console.log("Photo from store:", charactersStore.getCharacterById(characterId)?.photo);
+        console.log("nextPhoto (will be sent):", nextPhoto);
+        console.log("payload.photo:", payload.photo);
+        console.log("========================");
         
         await charactersStore.updateCharacter(characterId, payload);
         Toast.show({

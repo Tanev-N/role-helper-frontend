@@ -197,9 +197,12 @@ export class CharactersStore {
 
   public async uploadPhoto(id: string, photoUri: string): Promise<string | null> {
     try {
+      console.log("CharactersStore.uploadPhoto called with id:", id, "uri:", photoUri);
       const response = await apiCharacters.uploadPhoto(id, photoUri);
+      console.log("uploadPhoto response:", response.status, response.data);
       if (response.status === 200 && response.data?.data?.photo_url) {
         const photoUrl = response.data.data.photo_url;
+        console.log("CharactersStore: extracted photoUrl:", photoUrl);
         runInAction(() => {
           // Обновляем фото в краткой версии - создаем новый массив для принудительного обновления
           const updatedCharacters = this.characters.map((char) =>
@@ -219,8 +222,10 @@ export class CharactersStore {
             this.characterDetails.set(id, { ...character });
           }
         });
+        console.log("CharactersStore: returning photoUrl:", photoUrl);
         return photoUrl;
       }
+      console.warn("CharactersStore: uploadPhoto - no photo_url in response");
       return null;
     } catch (e) {
       console.warn("CharactersStore: uploadPhoto error", e);

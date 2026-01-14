@@ -242,11 +242,18 @@ const CharacterMain = ({
             if (characterId && charactersStore?.uploadPhoto) {
                 try {
                     const uploadedPhotoUrl = await charactersStore.uploadPhoto(characterId, uri);
+                    console.log("uploadPhoto returned:", uploadedPhotoUrl);
                     if (uploadedPhotoUrl) {
                         // Обновляем фото в локальном состоянии - это заставит компонент перерисоваться
                         console.log("Uploaded photo URL:", uploadedPhotoUrl);
+                        console.log("Calling onPhotoChange with:", uploadedPhotoUrl);
                         onPhotoChange(uploadedPhotoUrl);
-                        console.log("Photo state updated via onPhotoChange");
+                        console.log("Photo state updated via onPhotoChange, new value should be:", uploadedPhotoUrl);
+                        
+                        // Проверяем, что состояние обновилось (через небольшую задержку для асинхронности React)
+                        setTimeout(() => {
+                            console.log("After state update, photo prop is:", photo);
+                        }, 100);
                         
                         Toast.show({
                             type: "success",
