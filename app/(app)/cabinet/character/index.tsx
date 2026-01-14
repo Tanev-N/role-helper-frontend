@@ -363,8 +363,13 @@ const CharactersScreen = ({
       let shouldUploadPhotoAfterCreate = false;
       let photoUriToUpload = "";
 
-      // Проверяем, выбрал ли пользователь фото (blob URI означает выбор из галереи)
-      const isPhotoSelected = photo && photo.startsWith('blob:');
+      // Проверяем, выбрал ли пользователь фото (blob/file/content URI означает выбор из галереи)
+      const isPhotoSelected = photo && (
+        photo.startsWith('blob:') || 
+        photo.startsWith('file://') || 
+        photo.startsWith('content://') ||
+        photo.startsWith('ph://')
+      );
       // Проверяем, загружено ли фото на сервер (URL начинается с https://)
       const isPhotoUploaded = photo && photo.startsWith('https://') && photo.trim() !== '';
       
@@ -374,7 +379,8 @@ const CharactersScreen = ({
           // Сохраним URI для загрузки после создания персонажа
           shouldUploadPhotoAfterCreate = true;
           photoUriToUpload = photo;
-          nextPhoto = imagesUrlDefault.charactersUrl; // Временно используем дефолтное фото
+          // Не устанавливаем дефолтное фото - оставляем undefined, чтобы сервер не перезаписал выбранное фото
+          nextPhoto = undefined;
         } else if (!isPhotoUploaded) {
           // Показываем заставку генерации изображения только если фото не выбрано и не загружено
           setIsGeneratingImage(true);
@@ -442,7 +448,7 @@ const CharactersScreen = ({
         temp_hit_points: tempHitPoints ? parseInt(tempHitPoints) : undefined,
         hit_dice: hitDice.trim() || undefined,
         features: features.trim() || undefined,
-        photo: nextPhoto.trim() || undefined,
+        photo: nextPhoto ? nextPhoto.trim() || undefined : undefined,
         skills: skills.length > 0 ? skills : undefined,
         armor_id: selectedArmorId ? parseInt(selectedArmorId) : undefined,
         weapon_id: selectedWeaponId ? parseInt(selectedWeaponId) : undefined,
