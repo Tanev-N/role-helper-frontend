@@ -34,14 +34,11 @@ const SessionDetailsScreen = observer(() => {
       try {
         setCharactersLoaded(false);
         
-        // Загружаем все данные параллельно
         const promises: Promise<any>[] = [
-          // Загружаем игроков завершенной сессии
           gamesStore.fetchPreviousSessionPlayers(id as string).catch((e) => {
             console.warn("Error loading session players:", e);
             return null;
           }),
-          // Загружаем историю сессии
           sessionStore ? sessionStore.initSession(id as string).catch((e) => {
             console.warn("Error loading session history:", e);
             return null;

@@ -56,7 +56,18 @@ export class CharactersStore {
   }
 
   private setCharacters(characters: CharacterShort[]) {
-    this.characters = characters;
+    // Нормализуем id в string и удаляем дубликаты (например, когда id приходит как number)
+    const byId = new Map<string, CharacterShort>();
+    (characters ?? []).forEach((c: any) => {
+      const id = String(c?.id ?? "");
+      if (!id) return;
+      byId.set(id, {
+        id,
+        name: c?.name ?? "",
+        photo: c?.photo ?? undefined,
+      });
+    });
+    this.characters = Array.from(byId.values());
   }
 
   public get IsLoading() {
@@ -87,7 +98,7 @@ export class CharactersStore {
       const response = await apiCharacters.getCharacters();
       if (response.status === 200) {
         runInAction(() => {
-          this.setCharacters(response.data);
+          this.setCharacters(response.data as any);
         });
       }
     } catch (e) {
@@ -109,16 +120,18 @@ export class CharactersStore {
       const response = await apiCharacters.getCharacterById(id);
       if (response.status === 200) {
         runInAction(() => {
-          this.characterDetails.set(id, response.data);
+          const charId = String((response.data as any)?.id ?? id);
+          const normalized: Character = { ...(response.data as any), id: charId };
+          this.characterDetails.set(charId, normalized);
           // Добавляем краткую версию, если ее еще нет в списке
-          const exists = this.characters.some((char) => char.id === id);
+          const exists = this.characters.some((char) => String(char.id) === charId);
           if (!exists) {
             this.setCharacters([
               ...this.characters,
               {
-                id: response.data.id,
-                name: response.data.name,
-                photo: response.data.photo,
+                id: charId,
+                name: (response.data as any).name,
+                photo: (response.data as any).photo,
               },
             ]);
           }
@@ -156,15 +169,16 @@ export class CharactersStore {
       if (response.status === 201) {
         let createdCharacter: Character | undefined;
         runInAction(() => {
+          const charId = String((response.data as any)?.id ?? "");
           // Добавляем краткую версию в список
           const characterShort: CharacterShort = {
-            id: response.data.id,
+            id: charId,
             name: response.data.name,
             photo: response.data.photo,
           };
           this.setCharacters([...this.characters, characterShort]);
           // Сохраняем полную версию
-          this.characterDetails.set(response.data.id, response.data);
+          this.characterDetails.set(charId, { ...(response.data as any), id: charId });
           createdCharacter = response.data;
         });
         return createdCharacter;
@@ -180,12 +194,13 @@ export class CharactersStore {
       const response = await apiCharacters.updateCharacter(id, character);
       if (response.status === 200) {
         runInAction(() => {
+          const charId = String((response.data as any)?.id ?? id);
           // Обновляем краткую версию в списке
           this.setCharacters(
             this.characters.map((char) =>
-              char.id === id
+              String(char.id) === charId
                 ? {
-                    id: response.data.id,
+                    id: charId,
                     name: response.data.name,
                     photo: response.data.photo,
                   }
@@ -193,7 +208,7 @@ export class CharactersStore {
             )
           );
           // Обновляем полную версию
-          this.characterDetails.set(id, response.data);
+          this.characterDetails.set(charId, { ...(response.data as any), id: charId });
         });
       }
     } catch (e) {

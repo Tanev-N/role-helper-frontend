@@ -166,6 +166,9 @@ export class GamesStore {
         const data = response.data as CreateSessionResponse;
         runInAction(() => {
           this.setCurrentSession(data.session as Session);
+          // ВАЖНО: новая сессия должна начинаться с пустого списка игроков,
+          // иначе на UI могут "залипать" игроки от предыдущей сессии до первого успешного polling.
+          this.setSessionPlayers([]);
           this.setSessionRole("master");
           this.setPlayerCharacterId(null);
           if (data.previous_sessions) {
@@ -197,6 +200,9 @@ export class GamesStore {
         const session = response.data as Session;
         runInAction(() => {
           this.setCurrentSession(session);
+          // Сбрасываем список игроков, чтобы не показывать старые данные,
+          // пока не придёт актуальный ответ /players для новой сессии.
+          this.setSessionPlayers([]);
           this.setSessionRole("player");
           this.setPlayerCharacterId(characterId);
           if (session.game_id) {
@@ -279,8 +285,8 @@ export class GamesStore {
   }
 
   public async fetchSessionPlayers(sessionId: string) {
-    if (this.isLoading) return;
-    this.setIsLoading(true);
+    // Не используем общий isLoading как блокировку: иначе polling игроков может "залипнуть"
+    // из-за параллельной загрузки (например, создание/вход/другие запросы).
     this.setError(null);
     try {
       const response = await apiGames.getSessionPlayers(sessionId.toString());
@@ -296,16 +302,10 @@ export class GamesStore {
           e.response?.data?.error || "Ошибка при загрузке игроков сессии"
         );
       });
-    } finally {
-      runInAction(() => {
-        this.setIsLoading(false);
-      });
     }
   }
 
   public async fetchPreviousSessionPlayers(sessionId: string) {
-    if (this.isLoading) return;
-    this.setIsLoading(true);
     this.setError(null);
     try {
       const response = await apiGames.getPreviousSessionPlayers(sessionId.toString());
@@ -320,10 +320,6 @@ export class GamesStore {
         this.setError(
           e.response?.data?.error || "Ошибка при загрузке игроков завершенной сессии"
         );
-      });
-    } finally {
-      runInAction(() => {
-        this.setIsLoading(false);
       });
     }
   }
