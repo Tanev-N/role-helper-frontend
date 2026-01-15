@@ -4,7 +4,7 @@ import useStore from "@/hooks/store";
 import { Character } from "@/stores/Characters/api";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     ImageBackground,
@@ -50,7 +50,15 @@ const ChatUsers = () => {
 
         sessionPlayers.forEach((player) => {
             const charId = String(player.character_id);
-            // если нет полной карточки в кэше — подгружаем
+            const characterFromAPI = player.character;
+
+            // если бекенд уже прислал character — используем его сразу (быстро и актуально)
+            if (characterFromAPI) {
+                charactersStore.updateCharacterFromAPI(characterFromAPI);
+                return;
+            }
+
+            // иначе, если нет полной карточки в кэше — подгружаем
             if (!charactersStore.getCharacterById(charId)) {
                 charactersStore.fetchCharacterById(charId);
             }
@@ -65,12 +73,20 @@ const ChatUsers = () => {
             ? []
             : sessionPlayers.map((player) => {
                   const charId = String(player.character_id);
-                  const fullCharacter = charactersStore.getCharacterById(charId);
+                  const characterFromAPI = player.character;
+                  const fullCharacter = characterFromAPI
+                      ? characterFromAPI
+                      : charactersStore.getCharacterById(charId);
                   const shortCharacter =
                       charactersStore.getCharacters?.find((char) => char.id === charId) || null;
 
-                  const name = fullCharacter?.name || shortCharacter?.name || `Игрок ${player.id}`;
-                  const photo = fullCharacter?.photo || shortCharacter?.photo;
+                  const name =
+                      characterFromAPI?.name ||
+                      fullCharacter?.name ||
+                      shortCharacter?.name ||
+                      `Игрок ${player.id}`;
+                  const photo =
+                      characterFromAPI?.photo || fullCharacter?.photo || shortCharacter?.photo;
 
                   return {
                       id: player.id,
@@ -82,9 +98,17 @@ const ChatUsers = () => {
 
     useEffect(() => {
         if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {
-            charactersStore.fetchCharacterById(modalActiveCharacterId);
+            const sessionPlayers = gamesStore.getSessionPlayers;
+            const playerWithCharacter = sessionPlayers.find(
+                (p) => String(p.character_id) === modalActiveCharacterId && p.character
+            );
+            if (playerWithCharacter?.character) {
+                charactersStore.updateCharacterFromAPI(playerWithCharacter.character);
+            } else {
+                charactersStore.fetchCharacterById(modalActiveCharacterId);
+            }
         }
-    }, [modalActiveCharacterId, charactersStore]);
+    }, [modalActiveCharacterId, charactersStore, gamesStore.getSessionPlayers]);
 
     const modalCharacter =
         (modalActiveCharacterId &&
@@ -94,7 +118,7 @@ const ChatUsers = () => {
     const isModalLoading = modalActiveCharacterId !== null && !modalCharacter;
 
     const toggleDeathSave = (characterId: string, index: number) => {
-        setDeathSaves((prev) => {
+        setDeathSaves((prev: Record<string, boolean[]>) => {
             const current = prev[characterId] || [false, false, false];
             const updated = [...current];
             updated[index] = !updated[index];
@@ -108,7 +132,9 @@ const ChatUsers = () => {
     };
 
     const getSkillValue = (name: string) => {
-        const skill = modalCharacter?.skills?.find((s) => s.name === name);
+        const skill = modalCharacter?.skills?.find(
+            (s: { name: string; modifier?: number | null }) => s.name === name
+        );
         if (!skill) return null;
         return skill.modifier ?? 0;
     };

@@ -1,8 +1,9 @@
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
 import Chat from "../../../../components/Chat";
 
@@ -45,6 +46,16 @@ const SessionScreen = () => {
             }
         };
     }, [id, gamesStore]);
+
+    // Мгновенно обновляем игроков при возврате на экран сессии
+    useFocusEffect(
+        useCallback(() => {
+            const sessionId = id as string;
+            if (sessionId) {
+                void gamesStore.fetchSessionPlayers(sessionId);
+            }
+        }, [id, gamesStore])
+    );
 
     return (
         <View

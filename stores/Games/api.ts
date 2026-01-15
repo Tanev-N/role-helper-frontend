@@ -1,5 +1,6 @@
 import createEndpoint from "@/api/api";
 import axios from "axios";
+import { Character } from "@/stores/Characters/api";
 
 export interface Game {
   id: number;
@@ -39,10 +40,11 @@ export interface FinishSessionRequest {
 
 export interface GamePlayer {
   id: number;
-  game_id: number;
+  session_id?: string;
+  game_id?: number;
   user_id: number;
-  character_id: string;
-  character: any;
+  character_id: string | number;
+  character?: Character;
 }
 
 const apiGamesUrl = {
