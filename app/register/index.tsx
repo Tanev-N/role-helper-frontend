@@ -8,6 +8,8 @@ import useStore from "@/hooks/store";
 import { useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 
+const MIN_LOGIN_LENGTH = 6;
+
 const RegisterScreen = observer(() => {
   const { authStore } = useStore();
   const router = useRouter();
@@ -17,6 +19,17 @@ const RegisterScreen = observer(() => {
   const [repassword, setRepassword] = useState("");
   const [errorLogin, setErrorLogin] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
+
+  const validateLogin = () => {
+    if (!login) {
+      setErrorLogin("");
+      return;
+    }
+
+    if (login.length < MIN_LOGIN_LENGTH) {
+      setErrorLogin("Логин должен содержать не менее 6 символов");
+    }
+  };
 
   const handleRegister = () => {
     void (async () => {
@@ -90,6 +103,7 @@ const RegisterScreen = observer(() => {
             setLogin(t);
             setErrorLogin("");
           }}
+          onBlur={validateLogin}
           error={errorLogin}
         />
 
