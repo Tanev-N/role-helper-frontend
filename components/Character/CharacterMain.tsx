@@ -416,11 +416,22 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Имя персонажа*"
+                                placeholder="Имя персонажа"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={name}
                                 onChangeText={onNameChange}
                             />
+                            {!name.trim() && (
+                                <Text
+                                    style={{
+                                        color: COLORS.error,
+                                        fontSize: 10,
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    Обязательное поле
+                                </Text>
+                            )}
                         </View>
                     </View>
 
@@ -428,11 +439,11 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Раса*"
+                                placeholder="Раса"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={race}
-                                editable={false}         
-                                onPressIn={() => setRaceModalVisible(true)}  
+                                editable={false}
+                                onPressIn={() => setRaceModalVisible(true)}
                             />
                             {selectedRaceIcon ? (
                                 <TouchableOpacity
@@ -449,6 +460,17 @@ const CharacterMain = ({
                                     <ChevronDown size={20} color={COLORS.textSecondary} />
                                 </TouchableOpacity>
                             )}
+                            {!race.trim() && (
+                                <Text
+                                    style={{
+                                        color: COLORS.error,
+                                        fontSize: 10,
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    Обязательное поле
+                                </Text>
+                            )}
                         </View>
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
@@ -457,7 +479,7 @@ const CharacterMain = ({
                                     isMobile ? styles.inputWide : styles.inputHalf,
                                     validationErrors.level && { borderColor: COLORS.error }
                                 ]}
-                                placeholder="Уровень* от 1 до 20"
+                                placeholder="Уровень (от 1 до 20)"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={level}
                                 onChangeText={(value) => handleNumberInput(
@@ -490,7 +512,7 @@ const CharacterMain = ({
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Класс*"
+                                placeholder="Класс"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={className}
                                 editable={false}
@@ -512,11 +534,22 @@ const CharacterMain = ({
                                     <ChevronDown size={20} color={COLORS.textSecondary} />
                                 </TouchableOpacity>
                             )}
+                            {!className.trim() && (
+                                <Text
+                                    style={{
+                                        color: COLORS.error,
+                                        fontSize: 10,
+                                        marginTop: 2,
+                                    }}
+                                >
+                                    Обязательное поле
+                                </Text>
+                            )}
                         </View>
                         <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
                             <TextInput
                                 style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Мировоззрение*"
+                                placeholder="Мировоззрение"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={alignment}
                                 onChangeText={onAlignmentChange}

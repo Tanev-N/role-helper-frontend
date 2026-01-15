@@ -615,7 +615,12 @@ const CharactersScreen = ({
       >
         {/* === ОСНОВНАЯ ИНФОРМАЦИЯ === */}
         <View style={styles.block}>
-          <Text style={styles.sectionTitle}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              isMobile && { fontSize: 24 },
+            ]}
+          >
             {isEditMode ? "РЕДАКТИРОВАНИЕ ПЕРСОНАЖА" : "ОСНОВНАЯ ИНФОРМАЦИЯ"}
           </Text>
           <CharacterMain

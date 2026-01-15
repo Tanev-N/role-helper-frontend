@@ -188,13 +188,14 @@ const ChatUsers = () => {
                 >
                     {users.map((u) => (
                         <Pressable
-                            key={u.id}
+                            key={`${u.id}-${u.photo || "default"}`}
                             style={[styles.userBoxMobile]}
                             onPress={() => {
                                 if (u.characterId) setModalActiveCharacterId(String(u.characterId));
                             }}
                         >
                             <ImageBackground
+                                key={`${u.id}-${u.photo || "default"}`}
                                 source={
                                     u.photo
                                         ? { uri: u.photo }
@@ -244,7 +245,7 @@ const ChatUsers = () => {
                         <View key={colIndex} style={[styles.column, { gap: totalGap }]}>
                             {col.map((u) => (
                                 <Pressable
-                                    key={u.id}
+                                    key={`${u.id}-${u.photo || "default"}`}
                                     style={[
                                         styles.userBox,
                                         { width: boxSize, height: boxSize },
@@ -254,6 +255,7 @@ const ChatUsers = () => {
                                     }}
                                 >
                                     <ImageBackground
+                                        key={`${u.id}-${u.photo || "default"}`}
                                         source={
                                             u.photo
                                                 ? { uri: u.photo }

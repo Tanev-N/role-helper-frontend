@@ -1,6 +1,7 @@
 import { COLORS } from "@/constant/colors";
 import { ICONS } from "@/constant/icons";
 import useStore from "@/hooks/store";
+import { useNavigationHistory } from "@/hooks/useNavigationHistory";
 import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { CornerUpLeft } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
@@ -237,21 +238,20 @@ const BackButton = ({ small = false }: { small?: boolean }) => {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
-  const getDefaultRoute = (currentPath: string) => {
-    //дефолт если идти назад некуда
-    if (currentPath.startsWith("/cabinet")) return "/(app)/cabinet";
-    return "/(app)/main";
-  };
+  const { getPreviousRoute, goBack, getDefaultRoute } = useNavigationHistory();
 
   const handleBack = () => {
-    if ((router as any).canGoBack?.()) {
-      (router as any).back();
-      return;
-    }
+    // Пытаемся перейти на предыдущий путь из собственной истории
+    const prev = getPreviousRoute();
 
-    const fallback = getDefaultRoute(pathname);
-    router.replace(fallback as any);
+    if (prev) {
+      goBack();
+      router.replace(prev as any);
+    } else {
+      // Если истории нет — падаем на дефолтный маршрут
+      const fallback = getDefaultRoute(pathname);
+      router.replace(fallback as any);
+    }
   };
 
   return (
