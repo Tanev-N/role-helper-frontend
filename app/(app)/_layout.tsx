@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   exitBoxDesktop: {
     position: "absolute",
     right: 50,
-    top: 202, // 50 (top) + 70*2 + 12 gap
+    top: 210, 
     zIndex: 100,
   },
   exitButtonDesktop: {
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   exitBoxMobile: {
     position: "absolute",
-    top: 72, // 8 (padding) + 55 (icon) + 9 (gap)
+    top: 80,  
     left: 0,
     right: 0,
     alignItems: "center",
