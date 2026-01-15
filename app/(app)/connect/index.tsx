@@ -58,13 +58,17 @@ const ConnectScreen = () => {
         if (isButtonDisabled || !selectedCharacterId) return;
 
         try {
+            // Явно очищаем старое состояние перед входом в новую сессию
+            gamesStore.exitSession();
+            
             const session = await gamesStore.enterSession(
                 sessionCode.trim(),
                 selectedCharacterId
             );
 
             if (session) {
-                router.push(`/session/${session.id}`);
+                // Используем replace вместо push, чтобы не было "назад" на connect
+                router.replace(`/session/${session.id}`);
             }
         } catch (error: any) {
             Alert.alert(

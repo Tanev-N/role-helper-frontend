@@ -258,32 +258,12 @@ export class CharactersStore {
     }
   }
 
-  /**
-   * Обновление персонажа данными, полученными не из /characters/{id},
-   * например, когда /players возвращает вложенный объект character.
-   * Делает "мягкое" обновление и краткого списка, и details-кэша.
-   */
   public updateCharacterFromAPI(character: Character) {
     runInAction(() => {
       const charId = String(character.id);
       const characterCopy: Character = { ...character, id: charId };
-
+      
       this.characterDetails.set(charId, characterCopy);
-
-      const short: CharacterShort = {
-        id: charId,
-        name: characterCopy.name,
-        photo: characterCopy.photo,
-      };
-
-      const existingIndex = this.characters.findIndex((c) => c.id === charId);
-      if (existingIndex !== -1) {
-        const next = [...this.characters];
-        next[existingIndex] = { ...next[existingIndex], ...short };
-        this.setCharacters(next);
-      } else {
-        this.setCharacters([...this.characters, short]);
-      }
     });
   }
 }

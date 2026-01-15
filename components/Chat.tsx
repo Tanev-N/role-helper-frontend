@@ -250,24 +250,27 @@ const Chat = () => {
 
     // Обработчик выхода из сессии для игрока
     const handleExitSession = async () => {
+        console.log("handleExitSession: начало выхода");
         const currentSession = gamesStore.getCurrentSession;
-        if (!currentSession) {
-            // Если сессии нет, просто очищаем состояние и переходим
-            gamesStore.exitSession();
-            sessionStore.clearSession();
+        
+        // ВСЕГДА очищаем состояние перед попыткой выйти
+        gamesStore.exitSession();
+        sessionStore.clearSession();
+        
+        if (!currentSession?.id) {
+            console.log("handleExitSession: нет активной сессии, переходим на main");
             router.replace("/(app)/main");
             return;
         }
 
         try {
+            console.log("handleExitSession: вызываем leaveSession для", currentSession.id);
             await gamesStore.leaveSession(currentSession.id);
-            sessionStore.clearSession();
-            router.replace("/(app)/main");
+            console.log("handleExitSession: успешно вышли, переходим на main");
         } catch (e) {
-            console.warn("Ошибка при выходе из сессии", e);
-            // В случае ошибки все равно очищаем локальное состояние и переходим
-            gamesStore.exitSession();
-            sessionStore.clearSession();
+            console.warn("Ошибка при выходе из сессии (продолжаем на main):", e);
+        } finally {
+            // В любом случае переходим на главную
             router.replace("/(app)/main");
         }
     };
