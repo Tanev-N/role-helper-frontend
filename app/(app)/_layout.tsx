@@ -3,7 +3,7 @@ import { ICONS } from "@/constant/icons";
 import useStore from "@/hooks/store";
 import { useNavigationHistory } from "@/hooks/useNavigationHistory";
 import { Redirect, Stack, usePathname, useRouter } from "expo-router";
-import { CornerUpLeft } from "lucide-react-native";
+import { CornerUpLeft, X } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -17,8 +17,13 @@ function AppLayoutContent() {
   const router = useRouter();
 
   const isMobile = width < 1300;
+  const currentSession = gamesStore.getCurrentSession;
+  const sessionRole = gamesStore.getSessionRole;
 
-  // Обработка перезагрузки страницы
+
+  const isLiveSessionRoute = pathname.startsWith("/session/");
+  const showExitButton = sessionRole === "player" && !!currentSession?.id && isLiveSessionRoute;
+
   useEffect(() => {
     const reloadHandledKey = "reloadHandled";
     if (typeof window !== "undefined" && sessionStorage.getItem(reloadHandledKey) === "true") {
@@ -127,6 +132,27 @@ function AppLayoutContent() {
   const showBackButton =
     backExactRoutes.includes(pathname) || backPrefixRoutes.some((prefix) => pathname.startsWith(prefix));
 
+  const handleExitSession = async () => {
+    const session = gamesStore.getCurrentSession;
+
+    // Сразу очищаем локальное состояние, чтобы UI не "залипал"
+    gamesStore.exitSession();
+    sessionStore?.clearSession();
+
+    if (!session?.id) {
+      router.replace("/(app)/main");
+      return;
+    }
+
+    try {
+      await gamesStore.leaveSession(session.id);
+    } catch (e) {
+      console.warn("Ошибка при выходе из сессии (layout):", e);
+    } finally {
+      router.replace("/(app)/main");
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Кнопка "назад" */}
@@ -150,6 +176,17 @@ function AppLayoutContent() {
           </>
         )}
       </View>
+
+      {showExitButton && (
+        <View style={isMobile ? styles.exitBoxMobile : styles.exitBoxDesktop}>
+          <Pressable
+            onPress={handleExitSession}
+            style={isMobile ? styles.exitButtonMobile : styles.exitButtonDesktop}
+          >
+            <X size={isMobile ? 20 : 24} color={COLORS.textPrimary} />
+          </Pressable>
+        </View>
+      )}
 
       <Stack screenOptions={{ headerShown: false }} />
     </View>
@@ -203,6 +240,43 @@ const styles = StyleSheet.create({
 
   icon: { width: 32, height: 32 },
   iconSmall: { width: 26, height: 26 },
+
+  // ===== Exit button (session player) =====
+  exitBoxDesktop: {
+    position: "absolute",
+    right: 50,
+    top: 202, // 50 (top) + 70*2 + 12 gap
+    zIndex: 100,
+  },
+  exitButtonDesktop: {
+    width: 70,
+    height: 70,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  exitBoxMobile: {
+    position: "absolute",
+    top: 72, // 8 (padding) + 55 (icon) + 9 (gap)
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 101,
+  },
+  exitButtonMobile: {
+    width: 55,
+    height: 55,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 const ElementMenu = ({

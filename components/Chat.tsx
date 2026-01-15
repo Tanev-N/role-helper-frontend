@@ -295,9 +295,6 @@ const Chat = () => {
                         <ChatUsers />
                     </View>
 
-                    <TouchableOpacity onPress={handleExitSession} style={styles.mobileExitBtn}>
-                        <X size={20} color={COLORS.textPrimary} />
-                    </TouchableOpacity>
                 </View>
 
                 {/* Content */}
@@ -346,11 +343,6 @@ const Chat = () => {
                 {/* Правая колонка — чат для мастера или карточка персонажа для игрока */}
                 {role === "player" ? (
                     <View style={[styles.chatContainer, isMobile && styles.chatContainerMobile]}>
-                        <View style={styles.exitButtonContainer}>
-                            <TouchableOpacity onPress={handleExitSession} style={styles.exitButton}>
-                                <X size={24} color={COLORS.textPrimary} />
-                            </TouchableOpacity>
-                        </View>
 
                         {playerCharacterId ? (
                             playerCharacter ? (
@@ -538,21 +530,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
 
-    // ===== Exit button (desktop player) =====
-    exitButtonContainer: {
-        position: "absolute",
-        top: 16,
-        right: 16,
-        zIndex: 10,
-    },
-    exitButton: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        backgroundColor: COLORS.primary,
-        borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
-    },
 
     // ===== PLAYER MOBILE (compact) =====
     mobileStickyHeader: {
@@ -574,16 +551,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
 
-    mobileExitBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: COLORS.primary,
-        justifyContent: "center",
-        alignItems: "center",
-        flexShrink: 0,
-        marginRight: 8,
-    },
 
     mobileCard: {
         backgroundColor: "#18191A",
