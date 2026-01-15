@@ -39,9 +39,7 @@ const ChatUsers = () => {
     // Подгружаем краткий список персонажей один раз (имя/фото),
     // чтобы не делать N запросов по одному id при каждом обновлении игроков.
     useEffect(() => {
-        if ((charactersStore.getCharacters?.length ?? 0) === 0) {
-            charactersStore.fetchCharacters();
-        }
+        charactersStore.fetchCharacters();
     }, [charactersStore]);
 
     // Если бекенд прислал вложенный character — сохраняем его сразу (самый актуальный источник).

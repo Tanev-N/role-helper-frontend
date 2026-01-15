@@ -249,8 +249,8 @@ const BackButton = ({ small = false }: { small?: boolean }) => {
       router.replace(prev as any);
     } else {
       // Если истории нет — падаем на дефолтный маршрут
-      const fallback = getDefaultRoute(pathname);
-      router.replace(fallback as any);
+    const fallback = getDefaultRoute(pathname);
+    router.replace(fallback as any);
     }
   };
 

@@ -4,7 +4,7 @@ import { usePathname } from "expo-router";
 export const useNavigationHistory = () => {
   const pathname = usePathname();
   const history = useRef<string[]>([]);
-
+  
   useEffect(() => {
     if (history.current.length === 0) {
       // Первая загрузка приложения
@@ -17,19 +17,19 @@ export const useNavigationHistory = () => {
       }
     }
   }, [pathname]);
-
+  
   const getPreviousRoute = () => {
     if (history.current.length < 2) return null;
     return history.current[history.current.length - 2];
   };
-
+  
   const goBack = () => {
     if (history.current.length > 1) {
       // Удаляем текущую страницу из истории при навигации назад
       history.current.pop();
     }
   };
-
+  
   /**
    * Возвращает дефолтный роут, если идти назад некуда.
    * Учитывает и старые пути без "(app)", и новые с "(app)".
@@ -52,7 +52,7 @@ export const useNavigationHistory = () => {
       return "/(app)/main";
     }
   };
-
+  
   return {
     getPreviousRoute,
     goBack,

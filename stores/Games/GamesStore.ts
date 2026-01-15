@@ -17,6 +17,7 @@ export class GamesStore {
   private playerCharacterId: string | null = null;
   private isLoading: boolean = false;
   private error: string | null = null;
+  private fetchSessionPlayersInFlight: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -285,8 +286,10 @@ export class GamesStore {
   }
 
   public async fetchSessionPlayers(sessionId: string) {
-    // Не используем общий isLoading как блокировку: иначе polling игроков может "залипнуть"
-    // из-за параллельной загрузки (например, создание/вход/другие запросы).
+    // Защита от параллельных запросов (polling + focus могут конфликтовать)
+    if (this.fetchSessionPlayersInFlight) return;
+    
+    this.fetchSessionPlayersInFlight = true;
     this.setError(null);
     try {
       const response = await apiGames.getSessionPlayers(sessionId.toString());
@@ -301,6 +304,10 @@ export class GamesStore {
         this.setError(
           e.response?.data?.error || "Ошибка при загрузке игроков сессии"
         );
+      });
+    } finally {
+      runInAction(() => {
+        this.fetchSessionPlayersInFlight = false;
       });
     }
   }
