@@ -36,31 +36,25 @@ const ChatUsers = () => {
     const { gamesStore, charactersStore } = useStore();
     const router = useRouter();
 
-    // // Загружаем персонажей при монтировании, если они еще не загружены
-    // useEffect(() => {
-    //     if (charactersStore.getCharacters.length === 0) {
-    //         charactersStore.fetchCharacters();
-    //     }
-    // }, [charactersStore]);
+    // Подгружаем краткий список персонажей один раз (имя/фото),
+    // чтобы не делать N запросов по одному id при каждом обновлении игроков.
+    useEffect(() => {
+        if ((charactersStore.getCharacters?.length ?? 0) === 0) {
+            charactersStore.fetchCharacters();
+        }
+    }, [charactersStore]);
 
-    // Загружаем персонажей для игроков, если они еще не загружены
+    // Если бекенд прислал вложенный character — сохраняем его сразу (самый актуальный источник).
+    // Важно: здесь НЕ делаем массовые fetchCharacterById по каждому игроку — это может фризить UI.
     useEffect(() => {
         const sessionPlayers = gamesStore.getSessionPlayers;
         if (!sessionPlayers || sessionPlayers.length === 0) return;
 
         sessionPlayers.forEach((player) => {
-            const charId = String(player.character_id);
             const characterFromAPI = player.character;
 
-            // если бекенд уже прислал character — используем его сразу (быстро и актуально)
             if (characterFromAPI) {
                 charactersStore.updateCharacterFromAPI(characterFromAPI);
-                return;
-            }
-
-            // иначе, если нет полной карточки в кэше — подгружаем
-            if (!charactersStore.getCharacterById(charId)) {
-                charactersStore.fetchCharacterById(charId);
             }
         });
     }, [gamesStore.getSessionPlayers, charactersStore]);

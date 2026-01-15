@@ -41,6 +41,7 @@ export class CharactersStore {
   private isLoading: boolean = false;
   private characterDetails: Map<string, Character> = new Map();
   private characterDraft: CharacterFormDraft | null = null;
+  private characterFetchInFlight: Set<string> = new Set();
 
   constructor() {
     makeAutoObservable(this);
@@ -99,6 +100,10 @@ export class CharactersStore {
   }
 
   public async fetchCharacterById(id: string, isMaster: boolean = false) {
+    // защита от шторма запросов: не дергаем один и тот же id параллельно/постоянно
+    if (this.characterFetchInFlight.has(id)) return this.getCharacterById(id);
+    this.characterFetchInFlight.add(id);
+
     this.setIsLoading(true);
     try {
       const response = await apiCharacters.getCharacterById(id);
@@ -126,6 +131,7 @@ export class CharactersStore {
       runInAction(() => {
         this.setIsLoading(false);
       });
+      this.characterFetchInFlight.delete(id);
     }
     return undefined;
   }
