@@ -412,21 +412,24 @@ const CharacterMain = ({
                         isMobile && { width: "100%", height: "auto", marginTop: 16 },
                     ]}
                 >
+                    {/* Имя персонажа */}
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
-                            <TextInput
-                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Имя персонажа"
-                                placeholderTextColor={COLORS.textSecondary}
-                                value={name}
-                                onChangeText={onNameChange}
-                            />
+                        <View style={isMobile ? styles.inputWide : styles.inputHalf}>
+                            <View style={styles.inputWithIcon}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Имя персонажа"
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    value={name}
+                                    onChangeText={onNameChange}
+                                />
+                            </View>
                             {!name.trim() && (
                                 <Text
                                     style={{
                                         color: COLORS.error,
                                         fontSize: 10,
-                                        marginTop: 2,
+                                        marginTop: 4,
                                     }}
                                 >
                                     Обязательное поле
@@ -435,125 +438,141 @@ const CharacterMain = ({
                         </View>
                     </View>
 
+                    {/* Раса + уровень */}
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
-                            <TextInput
-                                style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Раса"
-                                placeholderTextColor={COLORS.textSecondary}
-                                value={race}
-                                editable={false}
-                                onPressIn={() => setRaceModalVisible(true)}
-                            />
-                            {selectedRaceIcon ? (
-                                <TouchableOpacity
-                                    onPress={() => setRaceModalVisible(true)}
-                                    style={styles.iconButton}
-                                >
-                                    <Image source={selectedRaceIcon} style={styles.inputIcon} />
-                                </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity
-                                    onPress={() => setRaceModalVisible(true)}
-                                    style={styles.iconButton}
-                                >
-                                    <ChevronDown size={20} color={COLORS.textSecondary} />
-                                </TouchableOpacity>
-                            )}
+                        {/* Раса */}
+                        <View style={isMobile ? styles.inputWide : styles.inputHalf}>
+                            <View style={styles.inputWithIcon}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
+                                    placeholder="Раса"
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    value={race}
+                                    editable={false}
+                                    onPressIn={() => setRaceModalVisible(true)}
+                                />
+                                {selectedRaceIcon ? (
+                                    <TouchableOpacity
+                                        onPress={() => setRaceModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <Image source={selectedRaceIcon} style={styles.inputIcon} />
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => setRaceModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <ChevronDown size={20} color={COLORS.textSecondary} />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                             {!race.trim() && (
                                 <Text
                                     style={{
                                         color: COLORS.error,
                                         fontSize: 10,
-                                        marginTop: 2,
+                                        marginTop: 4,
                                     }}
                                 >
                                     Обязательное поле
                                 </Text>
                             )}
                         </View>
-                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    isMobile ? styles.inputWide : styles.inputHalf,
-                                    validationErrors.level && { borderColor: COLORS.error }
-                                ]}
-                                placeholder="Уровень (от 1 до 20)"
-                                placeholderTextColor={COLORS.textSecondary}
-                                value={level}
-                                onChangeText={(value) => handleNumberInput(
-                                    value,
-                                    onLevelChange,
-                                    'level',
-                                    LEVEL_MIN_VALUE,
-                                    LEVEL_MAX_VALUE,
-                                    'Уровень'
-                                )}
-                                keyboardType="numeric"
-                                maxLength={2}
-                            />
+
+                        {/* Уровень */}
+                        <View style={isMobile ? styles.inputWide : styles.inputHalf}>
+                            <View style={styles.inputWithIcon}>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        validationErrors.level && { borderColor: COLORS.error, borderWidth: 1 },
+                                    ]}
+                                    placeholder="Уровень (от 1 до 20)"
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    value={level}
+                                    onChangeText={(value) =>
+                                        handleNumberInput(
+                                            value,
+                                            onLevelChange,
+                                            "level",
+                                            LEVEL_MIN_VALUE,
+                                            LEVEL_MAX_VALUE,
+                                            "Уровень"
+                                        )
+                                    }
+                                    keyboardType="numeric"
+                                    maxLength={2}
+                                />
+                            </View>
                             {validationErrors.level && (
                                 <Text
                                     style={{
                                         color: COLORS.error,
                                         fontSize: 10,
-                                        marginTop: 2,
+                                        marginTop: 4,
                                     }}
                                 >
                                     {validationErrors.level}
                                 </Text>
                             )}
-
                         </View>
                     </View>
 
+                    {/* Класс + мировоззрение */}
                     <View style={[styles.row, isMobile && { flexDirection: "column" }]}>
-                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
-                            <TextInput
-                                style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
-                                placeholder="Класс"
-                                placeholderTextColor={COLORS.textSecondary}
-                                value={className}
-                                editable={false}
-                                onPressIn={() => setClassModalVisible(true)}
-                            />
+                        {/* Класс */}
+                        <View style={isMobile ? styles.inputWide : styles.inputHalf}>
+                            <View style={styles.inputWithIcon}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, backgroundColor: "transparent", paddingRight: 0 }]}
+                                    placeholder="Класс"
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    value={className}
+                                    editable={false}
+                                    onPressIn={() => setClassModalVisible(true)}
+                                />
 
-                            {selectedClassIcon ? (
-                                <TouchableOpacity
-                                    onPress={() => setClassModalVisible(true)}
-                                    style={styles.iconButton}
-                                >
-                                    <Image source={selectedClassIcon} style={styles.inputIcon} />
-                                </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity
-                                    onPress={() => setClassModalVisible(true)}
-                                    style={styles.iconButton}
-                                >
-                                    <ChevronDown size={20} color={COLORS.textSecondary} />
-                                </TouchableOpacity>
-                            )}
+                                {selectedClassIcon ? (
+                                    <TouchableOpacity
+                                        onPress={() => setClassModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <Image source={selectedClassIcon} style={styles.inputIcon} />
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => setClassModalVisible(true)}
+                                        style={styles.iconButton}
+                                    >
+                                        <ChevronDown size={20} color={COLORS.textSecondary} />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                             {!className.trim() && (
                                 <Text
                                     style={{
                                         color: COLORS.error,
                                         fontSize: 10,
-                                        marginTop: 2,
+                                        marginTop: 4,
                                     }}
                                 >
                                     Обязательное поле
                                 </Text>
                             )}
                         </View>
-                        <View style={[styles.inputWithIcon, isMobile ? styles.inputWide : styles.inputHalf]}>
-                            <TextInput
-                                style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
-                                placeholder="Мировоззрение"
-                                placeholderTextColor={COLORS.textSecondary}
-                                value={alignment}
-                                onChangeText={onAlignmentChange}
-                            />
+
+                        {/* Мировоззрение (необязательное) */}
+                        <View style={isMobile ? styles.inputWide : styles.inputHalf}>
+                            <View style={styles.inputWithIcon}>
+                                <TextInput
+                                    style={[styles.input, isMobile ? styles.inputWide : styles.inputHalf]}
+                                    placeholder="Мировоззрение"
+                                    placeholderTextColor={COLORS.textSecondary}
+                                    value={alignment}
+                                    onChangeText={onAlignmentChange}
+                                />
+                            </View>
                         </View>
                     </View>
                 </View>
