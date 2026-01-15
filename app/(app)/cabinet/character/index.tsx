@@ -621,7 +621,11 @@ const CharactersScreen = ({
               isMobile && { fontSize: 24 },
             ]}
           >
-            {isEditMode ? "РЕДАКТИРОВАНИЕ ПЕРСОНАЖА" : "ОСНОВНАЯ ИНФОРМАЦИЯ"}
+            {isEditMode
+              ? isMobile
+                ? "РЕДАКТИРОВАНИЕ\nПЕРСОНАЖА"
+                : "РЕДАКТИРОВАНИЕ ПЕРСОНАЖА"
+              : "ОСНОВНАЯ ИНФОРМАЦИЯ"}
           </Text>
           <CharacterMain
             name={name}
@@ -656,7 +660,16 @@ const CharactersScreen = ({
 
         {/* === ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ === */}
         <View style={styles.block}>
-          <Text style={styles.sectionTitle}>ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              isMobile && { fontSize: 24 },
+            ]}
+          >
+            {isMobile
+              ? "ДОПОЛНИТЕЛЬНАЯ\nИНФОРМАЦИЯ"
+              : "ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ"}
+          </Text>
           <CharacterSecondary
             initiative={initiative}
             armorClass={armorClass}

@@ -57,30 +57,28 @@ const ChatUsers = () => {
         });
     }, [gamesStore.getSessionPlayers, charactersStore]);
 
-    // Получаем игроков из store и преобразуем их в формат User
-    const users = useMemo(() => {
-        const sessionPlayers = gamesStore.getSessionPlayers;
-        if (!sessionPlayers || sessionPlayers.length === 0) {
-            return [];
-        }
+    // Получаем игроков из store и преобразуем их в формат User.
+    // НЕ используем useMemo, чтобы MobX нормально реагировал на изменения character.photo.
+    const sessionPlayers = gamesStore.getSessionPlayers;
+    const users: User[] =
+        !sessionPlayers || sessionPlayers.length === 0
+            ? []
+            : sessionPlayers.map((player) => {
+                  const charId = String(player.character_id);
+                  const fullCharacter = charactersStore.getCharacterById(charId);
+                  const shortCharacter =
+                      charactersStore.getCharacters?.find((char) => char.id === charId) || null;
 
-        return sessionPlayers.map((player) => {
-            const charId = String(player.character_id);
-            const fullCharacter = charactersStore.getCharacterById(charId);
-            const shortCharacter =
-                charactersStore.getCharacters?.find((char) => char.id === charId) || null;
+                  const name = fullCharacter?.name || shortCharacter?.name || `Игрок ${player.id}`;
+                  const photo = fullCharacter?.photo || shortCharacter?.photo;
 
-            const name = fullCharacter?.name || shortCharacter?.name || `Игрок ${player.id}`;
-            const photo = fullCharacter?.photo || shortCharacter?.photo;
-
-            return {
-                id: player.id,
-                name,
-                characterId: charId,
-                photo,
-            };
-        });
-    }, [gamesStore.getSessionPlayers, charactersStore.getCharacters, charactersStore]);
+                  return {
+                      id: player.id,
+                      name,
+                      characterId: charId,
+                      photo,
+                  };
+              });
 
     useEffect(() => {
         if (modalActiveCharacterId && !charactersStore.getCharacterById(modalActiveCharacterId)) {
