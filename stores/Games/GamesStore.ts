@@ -17,6 +17,7 @@ export class GamesStore {
   private playerCharacterId: string | null = null;
   private isLoading: boolean = false;
   private error: string | null = null;
+
   private fetchSessionPlayersInFlight: boolean = false;
 
   constructor() {
@@ -295,7 +296,14 @@ export class GamesStore {
       const response = await apiGames.getSessionPlayers(sessionId.toString());
       if (response.status === 200) {
         runInAction(() => {
-          this.setSessionPlayers(response.data as GamePlayer[]);
+  
+          if (this.currentSession?.id === sessionId) {
+            this.setSessionPlayers(response.data as GamePlayer[]);
+          } else {
+            console.warn(
+              `GamesStore: ignoring players response for old session ${sessionId}, current is ${this.currentSession?.id}`
+            );
+          }
         });
       }
     } catch (e: any) {
