@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     FlatList,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -27,7 +28,8 @@ type Message = {
 
 const Chat = () => {
     const { width } = useWindowDimensions();
-    const isMobile = width < 1300;
+    const isMobile = width < 768;
+    const isSmall = width < 425;
     const router = useRouter();
     const { sessionStore, gamesStore, charactersStore } = useStore();
     const role = gamesStore.getSessionRole ?? "master";
@@ -40,14 +42,18 @@ const Chat = () => {
 
     useEffect(() => {
         if (!sessionStore) return;
-        // Map store history -> separate user (query) and bot (answer) messages
         const msgs: Message[] = [];
         sessionStore.getHistory.forEach((h: any, idx: number) => {
             if (h.query) {
                 msgs.push({ id: `s-q-${idx}`, text: h.query, fromUser: true, timestamp: h.timestamp });
             }
             if (h.answer) {
-                msgs.push({ id: `s-a-${idx}`, text: h.answer, fromUser: false, timestamp: h.timestamp });
+                msgs.push({
+                    id: `s-a-${idx}`,
+                    text: h.answer,
+                    fromUser: false,
+                    timestamp: h.timestamp,
+                });
             }
         });
         setLocalMessages(msgs);
@@ -87,9 +93,15 @@ const Chat = () => {
             // Prefer audio/mpeg if supported
             let mimeType = "";
             try {
-                if ((window as any).MediaRecorder && (window as any).MediaRecorder.isTypeSupported("audio/mpeg")) {
+                if (
+                    (window as any).MediaRecorder &&
+                    (window as any).MediaRecorder.isTypeSupported("audio/mpeg")
+                ) {
                     mimeType = "audio/mpeg";
-                } else if ((window as any).MediaRecorder && (window as any).MediaRecorder.isTypeSupported("audio/webm")) {
+                } else if (
+                    (window as any).MediaRecorder &&
+                    (window as any).MediaRecorder.isTypeSupported("audio/webm")
+                ) {
                     mimeType = "audio/webm";
                 }
             } catch {
@@ -102,8 +114,10 @@ const Chat = () => {
             chunksRef.current = [];
             mediaRecorder.ondataavailable = (e: any) => chunksRef.current.push(e.data);
             mediaRecorder.onstop = async () => {
-                const rawBlob = new Blob(chunksRef.current, { type: mimeType || "application/octet-stream" });
-                // If we already have mp3, send directly. Otherwise try to convert.
+                const rawBlob = new Blob(chunksRef.current, {
+                    type: mimeType || "application/octet-stream",
+                });
+
                 if (rawBlob.type.includes("mpeg") || rawBlob.type.includes("mp3")) {
                     await handleRecordedBlob(rawBlob);
                 } else {
@@ -203,8 +217,7 @@ const Chat = () => {
         if (mp3buf.length > 0) mp3Data.push(mp3buf);
 
         const blobParts = mp3Data.map((b: any) => new Uint8Array(b).buffer);
-        const mp3Blob = new Blob(blobParts, { type: "audio/mpeg" });
-        return mp3Blob;
+        return new Blob(blobParts, { type: "audio/mpeg" });
     };
 
     const toggleRecord = async () => {
@@ -259,6 +272,61 @@ const Chat = () => {
         }
     };
 
+
+    // PLAYER MOBILE LAYOUT 
+    if (role === "player" && isMobile) {
+        const pad = isSmall ? 10 : 12;
+        const headerTop = isSmall ? 8 : 10;
+
+        return (
+            <ScrollView
+                style={styles.fullscreen}
+                contentContainerStyle={{ paddingBottom: 18 }}
+                stickyHeaderIndices={[0]}
+                showsVerticalScrollIndicator={true}
+            >
+                {/* Sticky header: players + exit */}
+                <View style={[styles.mobileStickyHeader, { paddingHorizontal: pad, paddingTop: headerTop }]}>
+                    {/* ограничиваем высоту полосы игроков */}
+                    <View style={styles.mobileUsersWrap}>
+                        <ChatUsers />
+                    </View>
+
+                    <TouchableOpacity onPress={handleExitSession} style={styles.mobileExitBtn}>
+                        <X size={20} color={COLORS.textPrimary} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Content */}
+                <View style={{ paddingHorizontal: pad, paddingTop: 10 }}>
+                    {playerCharacterId ? (
+                        playerCharacter ? (
+                            <View style={styles.mobileCard}>
+                                <CharactersScreen
+                                    characterId={playerCharacter.id}
+                                    mode="edit"
+                                    onUpdated={() => {
+                                        charactersStore.fetchCharacterById(playerCharacter.id, true);
+                                    }}
+                                />
+                            </View>
+                        ) : (
+                            <View style={styles.loadingBox}>
+                                <ActivityIndicator size="large" color={COLORS.primary} />
+                                <Text style={styles.loadingText}>Загружаем персонажа…</Text>
+                            </View>
+                        )
+                    ) : (
+                        <View style={styles.loadingBox}>
+                            <Text style={styles.loadingText}>Персонаж не выбран</Text>
+                        </View>
+                    )}
+                </View>
+            </ScrollView>
+        );
+    }
+
+    // DEFAULT (desktop player OR master)
     return (
         <View style={styles.fullscreen}>
             <View style={[styles.page, isMobile && styles.pageMobile]}>
@@ -274,18 +342,9 @@ const Chat = () => {
 
                 {/* Правая колонка — чат для мастера или карточка персонажа для игрока */}
                 {role === "player" ? (
-                    <View
-                        style={[
-                            styles.chatContainer,
-                            isMobile && styles.chatContainerMobile,
-                        ]}
-                    >
-                        {/* Кнопка выхода из сессии для игрока */}
+                    <View style={[styles.chatContainer, isMobile && styles.chatContainerMobile]}>
                         <View style={styles.exitButtonContainer}>
-                            <TouchableOpacity
-                                onPress={handleExitSession}
-                                style={styles.exitButton}
-                            >
+                            <TouchableOpacity onPress={handleExitSession} style={styles.exitButton}>
                                 <X size={24} color={COLORS.textPrimary} />
                             </TouchableOpacity>
                         </View>
@@ -313,12 +372,7 @@ const Chat = () => {
                         )}
                     </View>
                 ) : (
-                    <View
-                        style={[
-                            styles.chatContainer,
-                            isMobile && styles.chatContainerMobile,
-                        ]}
-                    >
+                    <View style={[styles.chatContainer, isMobile && styles.chatContainerMobile]}>
                         <FlatList
                             data={localMessages}
                             keyExtractor={(i) => i.id}
@@ -344,10 +398,7 @@ const Chat = () => {
                             </TouchableOpacity>
 
                             {/* Кнопка завершения сессии для мастера */}
-                            <TouchableOpacity
-                                onPress={handleFinishSession}
-                                style={styles.finishButton}
-                            >
+                            <TouchableOpacity onPress={handleFinishSession} style={styles.finishButton}>
                                 <X size={24} color={COLORS.textPrimary} />
                             </TouchableOpacity>
                         </View>
@@ -367,6 +418,8 @@ const styles = StyleSheet.create({
         height: "100%",
         backgroundColor: COLORS.backgroundPrimary,
     },
+
+    // ===== Desktop / default layout =====
     page: {
         flex: 1,
         flexDirection: "row",
@@ -405,6 +458,8 @@ const styles = StyleSheet.create({
         paddingVertical: 24,
         borderRadius: 16,
     },
+
+    // ===== Master chat =====
     history: {
         flex: 1,
         marginBottom: 8,
@@ -425,17 +480,7 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         color: COLORS.textPrimary,
     },
-    loadingBox: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 12,
-    },
-    loadingText: {
-        color: COLORS.textSecondary,
-        fontFamily: "Roboto",
-        fontSize: 18,
-    },
+
     composer: {
         flexDirection: "row",
         alignItems: "center",
@@ -475,6 +520,22 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
+    // ===== Common loading =====
+    loadingBox: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 12,
+        paddingVertical: 24,
+    },
+    loadingText: {
+        color: COLORS.textSecondary,
+        fontFamily: "Roboto",
+        fontSize: 18,
+    },
+
+    // ===== Exit button (desktop player) =====
     exitButtonContainer: {
         position: "absolute",
         top: 16,
@@ -488,5 +549,41 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
+    },
+
+    // ===== PLAYER MOBILE (compact) =====
+    mobileStickyHeader: {
+        backgroundColor: COLORS.backgroundPrimary,
+        paddingBottom: 6,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.08)",
+        zIndex: 20,
+    },
+
+    // ограничиваем высоту области ChatUsers (он внутри имеет maxHeight 160 — мы сделаем ещё компактнее)
+    mobileUsersWrap: {
+        flex: 1,
+        minWidth: 0,
+        maxHeight: 132,
+        justifyContent: "center",
+    },
+
+    mobileExitBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: COLORS.primary,
+        justifyContent: "center",
+        alignItems: "center",
+        flexShrink: 0,
+    },
+
+    mobileCard: {
+        backgroundColor: "#18191A",
+        borderRadius: 16,
+        overflow: "hidden",
     },
 });
