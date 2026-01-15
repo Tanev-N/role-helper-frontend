@@ -582,6 +582,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         flexShrink: 0,
+        marginRight: 8,
     },
 
     mobileCard: {
