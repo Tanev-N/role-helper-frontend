@@ -31,7 +31,7 @@ export interface CreateSessionResponse {
 
 export interface EnterSessionRequest {
   session_key: string;
-  character_id: string;
+  character_id: number;
 }
 
 export interface FinishSessionRequest {
@@ -94,9 +94,10 @@ export const apiGames = {
   },
 
   async enterSession(sessionKey: string, characterId: string) {
+    const numericCharacterId = Number(characterId);
     return await axios.post(apiGamesUrl.enterSession, {
       session_key: sessionKey,
-      character_id: characterId,
+      character_id: Number.isFinite(numericCharacterId) ? numericCharacterId : 0,
     } as EnterSessionRequest);
   },
 
