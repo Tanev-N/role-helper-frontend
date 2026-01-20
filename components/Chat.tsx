@@ -375,25 +375,41 @@ const Chat = () => {
                             style={styles.history}
                         />
 
-                        <View style={styles.composer}>
+                        <View style={[styles.composer, isMobile && styles.composerMobile]}>
                             <TextInput
                                 placeholder="Введите текст"
                                 placeholderTextColor={COLORS.textLowEmphasis}
                                 value={text}
                                 onChangeText={setText}
-                                style={[styles.input, { fontSize: 24, fontFamily: "Roboto" }]}
+                                style={[
+                                    styles.input,
+                                    { fontSize: isSmall ? 18 : 24, fontFamily: "Roboto" },
+                                ]}
                             />
 
-                            <TouchableOpacity onPress={sendText} style={styles.sendButton}>
-                                <Text style={styles.sendText}>Send</Text>
+                            <TouchableOpacity
+                                onPress={sendText}
+                                style={[styles.sendButton, isSmall && styles.sendButtonSmall]}
+                            >
+                                <Text style={[styles.sendText, isSmall && styles.sendTextSmall]}>
+                                    Send
+                                </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity onPress={toggleRecord} style={styles.micButton}>
-                                <Text style={styles.sendText}>{recording ? "Stop" : "Rec"}</Text>
+                            <TouchableOpacity
+                                onPress={toggleRecord}
+                                style={[styles.micButton, isSmall && styles.micButtonSmall]}
+                            >
+                                <Text style={[styles.sendText, isSmall && styles.sendTextSmall]}>
+                                    {recording ? "Stop" : "Rec"}
+                                </Text>
                             </TouchableOpacity>
 
                             {/* Кнопка завершения сессии для мастера */}
-                            <TouchableOpacity onPress={handleFinishSession} style={styles.finishButton}>
+                            <TouchableOpacity
+                                onPress={handleFinishSession}
+                                style={[styles.finishButton, isSmall && styles.finishButtonSmall]}
+                            >
                                 <X size={24} color={COLORS.textPrimary} />
                             </TouchableOpacity>
                         </View>
@@ -482,6 +498,10 @@ const styles = StyleSheet.create({
         gap: 8,
         marginTop: 12,
     },
+    composerMobile: {
+        flexWrap: "wrap",
+        rowGap: 8,
+    },
     input: {
         flex: 1,
         backgroundColor: "#2C2C31",
@@ -498,13 +518,26 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginLeft: 8,
     },
+    sendButtonSmall: {
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        minWidth: 56,
+    },
     sendText: { color: COLORS.textPrimary, fontFamily: "Roboto" },
+    sendTextSmall: {
+        fontSize: 14,
+    },
     micButton: {
         paddingHorizontal: 16,
         paddingVertical: 10,
         backgroundColor: COLORS.backgroundPrimary,
         borderRadius: 8,
         marginLeft: 8,
+    },
+    micButtonSmall: {
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        minWidth: 56,
     },
     finishButton: {
         paddingHorizontal: 16,
@@ -514,6 +547,10 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         justifyContent: "center",
         alignItems: "center",
+    },
+    finishButtonSmall: {
+        paddingHorizontal: 10,
+        paddingVertical: 8,
     },
 
     // ===== Common loading =====
