@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, Image, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Image, Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Edit2, LogOut } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
@@ -60,6 +60,11 @@ const CabinetHeader = observer(({ authStore, blockWidth }: any) => {
 
   const handleLogout = async () => {
     await authStore.logout();
+
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      window.location.href = "/login";
+      return;
+    }
 
     requestAnimationFrame(() => {
       router.replace("/login");
