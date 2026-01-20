@@ -59,11 +59,13 @@ const CabinetHeader = observer(({ authStore, blockWidth }: any) => {
   };
 
   const handleLogout = async () => {
-    await authStore.logout();
-
-    requestAnimationFrame(() => {
+    try {
       router.replace("/login");
-    });
+
+      await authStore.logout();
+    } catch (e) {
+      console.warn("Ошибка при логауте", e);
+    }
   };
 
   return (

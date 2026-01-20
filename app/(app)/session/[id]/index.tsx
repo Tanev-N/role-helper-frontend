@@ -4,7 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useRef } from "react";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import Chat from "../../../../components/Chat";
 
 
@@ -13,6 +13,8 @@ const SessionScreen = () => {
     const { sessionStore, gamesStore } = useStore();
     useRouter();
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const { width } = useWindowDimensions();
+    const isMobile = width < 768;
 
     useEffect(() => {
         void (async () => {
@@ -57,19 +59,22 @@ const SessionScreen = () => {
         }, [id, gamesStore])
     );
 
+    const horizontalPadding = isMobile ? 12 : 72;
+    const verticalPadding = isMobile ? 12 : 66;
+
     return (
         <View
             style={{
+                flex: 1,
                 height: "100%",
                 width: "100%",
                 backgroundColor: COLORS.backgroundPrimary,
-                paddingHorizontal: 72,
-                paddingVertical: 66,
+                paddingHorizontal: horizontalPadding,
+                paddingVertical: verticalPadding,
             }}
         >
             <Chat />
         </View>
-
     );
 }
 
