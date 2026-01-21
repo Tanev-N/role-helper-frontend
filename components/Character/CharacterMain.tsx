@@ -484,10 +484,6 @@ const CharacterMain = ({
                         <View style={isMobile ? styles.inputWide : styles.inputHalf}>
                             <View style={styles.inputWithIcon}>
                             <TextInput
-                                style={[
-                                    styles.input, 
-                                        validationErrors.level && { borderColor: COLORS.error, borderWidth: 1 },
-                                ]}
                                 placeholder="Уровень (от 1 до 20)"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={level}
