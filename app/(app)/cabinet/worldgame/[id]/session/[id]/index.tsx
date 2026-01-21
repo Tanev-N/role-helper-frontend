@@ -222,14 +222,20 @@ const SessionDetailsScreen = observer(() => {
         return;
       }
 
-      // Сначала проверяем, есть ли summary в session из базы
-      if (session?.summary) {
-        console.log("loadSummary: используем summary из базы", session.summary);
-        setSummaryText(session.summary);
+      // Получаем актуальное значение session на момент выполнения
+      const currentSession = gamesStore.getPreviousSessions.find(
+        (s) => s?.id === id as string
+      );
+
+      // Проверяем, есть ли валидный summary в session из базы (игнорируем дефолтные значения)
+      const defaultTexts = ["Тут будет описание", "Описание будет здесь", ""];
+      if (currentSession?.summary && !defaultTexts.includes(currentSession.summary.trim())) {
+        console.log("loadSummary: используем summary из базы", currentSession.summary);
+        setSummaryText(currentSession.summary);
         return;
       }
 
-      // Если нет в базе, загружаем через API
+      // Если нет валидного summary в базе, загружаем через API
       console.log("loadSummary: загружаем через API для session_id", id);
       try {
         const response = await apiSession.summarize(id as string);
@@ -238,11 +244,11 @@ const SessionDetailsScreen = observer(() => {
         if (response.status === 200) {
           // Проверяем разные возможные форматы ответа
           const text = response.data?.text || response.data?.data?.text || response.data?.summary;
-          if (text) {
+          if (text && !defaultTexts.includes(text.trim())) {
             console.log("loadSummary: установлен текст", text);
             setSummaryText(text);
           } else {
-            console.warn("loadSummary: текст не найден в ответе", response.data);
+            console.warn("loadSummary: текст не найден или дефолтный в ответе", response.data);
           }
         }
       } catch (error: any) {
@@ -257,7 +263,7 @@ const SessionDetailsScreen = observer(() => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [id, session?.summary]);
+  }, [id, gamesStore.getPreviousSessions]);
 
   // Этот useEffect больше не нужен, так как загрузка происходит выше
 
