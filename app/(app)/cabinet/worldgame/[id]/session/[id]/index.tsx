@@ -6,6 +6,7 @@ import { FlatList, ScrollView, Text, useWindowDimensions, View } from "react-nat
 
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { apiSession } from "@/stores/Session/api";
 import { sessionDetailsStyles as styles } from "./styles";
 
 type Message = {
@@ -22,6 +23,7 @@ const SessionDetailsScreen = observer(() => {
   const isMobile = width < 768;
   const [messages, setMessages] = useState<Message[]>([]);
   const [charactersLoaded, setCharactersLoaded] = useState(false);
+  const [summaryText, setSummaryText] = useState<string | null>(null);
 
   const DESKTOP_MAX_WIDTH = 904;
   const containerWidth = Math.min(width * 0.95, DESKTOP_MAX_WIDTH);
@@ -213,6 +215,28 @@ const SessionDetailsScreen = observer(() => {
     }
   }, [gamesStore.getPreviousSessions, id]);
 
+  useEffect(() => {
+    const loadSummary = async () => {
+      if (!id) return;
+      
+      if (session?.summary) {
+        setSummaryText(session.summary);
+        return;
+      }
+
+      try {
+        const response = await apiSession.summarize(id as string);
+        if (response.status === 200 && response.data?.text) {
+          setSummaryText(response.data.text);
+        }
+      } catch (error) {
+        console.warn("Ошибка при загрузке описания сессии:", error);
+      }
+    };
+
+    loadSummary();
+  }, [id, session?.summary]);
+
   // Этот useEffect больше не нужен, так как загрузка происходит выше
 
   // Формируем список персонажей
@@ -305,12 +329,14 @@ const SessionDetailsScreen = observer(() => {
           <Text style={styles.infoCardText}>{charactersList}</Text>
         </View>
 
-        {session?.summary && (
-          <View style={styles.infoCard}>
-            <Text style={styles.infoCardTitle}>Описание сессии</Text>
-            <Text style={styles.infoCardText}>{session.summary}</Text>
-          </View>
-        )}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoCardTitle}>Описание сессии</Text>
+          {summaryText ? (
+            <Text style={styles.infoCardText}>{summaryText}</Text>
+          ) : (
+            <Text style={styles.infoCardText}>Тут будет описание</Text>
+          )}
+        </View>
 
         {/* История чата */}
         <View

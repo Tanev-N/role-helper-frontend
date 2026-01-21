@@ -4,6 +4,8 @@ import { createEndpointML } from "@/api/api";
 const apiSessionUrl = {
   voiseTranscribe: createEndpointML("/voice/transcribe"),
   llmAsk: createEndpointML("/llm/ask"),
+  summarize: (sessionId: string): string =>
+    createEndpointML(`/llm/summarize?session_id=${sessionId}`),
   history: (userId: string, sessionId: string): string =>
     createEndpointML(
       `/history/user_history?user_id=${userId}&session_id=${sessionId}`
@@ -106,5 +108,9 @@ export const apiSession = {
 
   async getHistory(userId: string, sessionId: string) {
     return await axios.get(apiSessionUrl.history(userId, sessionId));
+  },
+
+  async summarize(sessionId: string) {
+    return await axios.get(apiSessionUrl.summarize(sessionId));
   },
 };
