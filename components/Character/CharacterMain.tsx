@@ -484,6 +484,7 @@ const CharacterMain = ({
                         <View style={isMobile ? styles.inputWide : styles.inputHalf}>
                             <View style={styles.inputWithIcon}>
                             <TextInput
+                                style={styles.input}
                                 placeholder="Уровень (от 1 до 20)"
                                 placeholderTextColor={COLORS.textSecondary}
                                 value={level}
