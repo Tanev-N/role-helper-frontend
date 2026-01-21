@@ -503,6 +503,7 @@ const CharacterMain = ({
                                     }
                                 keyboardType="numeric"
                                 maxLength={2}
+                                outlineStyle="none"
                             />
                             </View>
                             {validationErrors.level && (

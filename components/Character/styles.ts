@@ -96,6 +96,8 @@ export const characterStyles = StyleSheet.create({
         height: INPUT_HEIGHT,
         flex: 1,
         paddingVertical: 6,
+        outlineStyle: "none",
+        outlineWidth: 0,
     },
 
     inputWide: {
@@ -116,6 +118,8 @@ export const characterStyles = StyleSheet.create({
         paddingLeft: 16,
         paddingRight: 40,
         position: "relative",
+        outlineStyle: "none",
+        outlineWidth: 0,
     },
 
 

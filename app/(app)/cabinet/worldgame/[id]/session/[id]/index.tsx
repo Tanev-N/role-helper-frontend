@@ -6,7 +6,6 @@ import { FlatList, ScrollView, Text, useWindowDimensions, View } from "react-nat
 
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
-import { apiSession } from "@/stores/Session/api";
 import { sessionDetailsStyles as styles } from "./styles";
 
 type Message = {
@@ -216,58 +215,16 @@ const SessionDetailsScreen = observer(() => {
   }, [gamesStore.getPreviousSessions, id]);
 
   useEffect(() => {
-    const loadSummary = async () => {
-      if (!id) {
-        console.log("loadSummary: нет id");
-        return;
-      }
-
-      // Получаем актуальное значение session на момент выполнения
-      const currentSession = gamesStore.getPreviousSessions.find(
-        (s) => s?.id === id as string
-      );
-
-      // Проверяем, есть ли валидный summary в session из базы (игнорируем дефолтные значения)
+    if (session?.summary) {
       const defaultTexts = ["Тут будет описание", "Описание будет здесь", ""];
-      if (currentSession?.summary && !defaultTexts.includes(currentSession.summary.trim())) {
-        console.log("loadSummary: используем summary из базы", currentSession.summary);
-        setSummaryText(currentSession.summary);
-        return;
+      const trimmedSummary = session.summary.trim();
+      if (!defaultTexts.includes(trimmedSummary)) {
+        setSummaryText(session.summary);
       }
+    }
+  }, [session?.summary]);
 
-      // Если нет валидного summary в базе, загружаем через API
-      console.log("loadSummary: загружаем через API для session_id", id);
-      try {
-        const response = await apiSession.summarize(id as string);
-        console.log("loadSummary: ответ API", response.status, response.data);
-        
-        if (response.status === 200) {
-          // Проверяем разные возможные форматы ответа
-          const text = response.data?.text || response.data?.data?.text || response.data?.summary;
-          if (text && !defaultTexts.includes(text.trim())) {
-            console.log("loadSummary: установлен текст", text);
-            setSummaryText(text);
-          } else {
-            console.warn("loadSummary: текст не найден или дефолтный в ответе", response.data);
-          }
-        }
-      } catch (error: any) {
-        console.error("Ошибка при загрузке описания сессии:", error);
-        console.error("Детали ошибки:", error.response?.data, error.response?.status);
-      }
-    };
 
-    // Загружаем после небольшой задержки, чтобы session успел загрузиться
-    const timer = setTimeout(() => {
-      loadSummary();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [id, gamesStore.getPreviousSessions]);
-
-  // Этот useEffect больше не нужен, так как загрузка происходит выше
-
-  // Формируем список персонажей
   const charactersList = useMemo(() => {
     try {
       const sessionPlayers = gamesStore.getSessionPlayers;

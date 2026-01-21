@@ -1,6 +1,7 @@
 import CharactersScreen from "@/app/(app)/cabinet/character";
 import { COLORS } from "@/constant/colors";
 import useStore from "@/hooks/store";
+import { apiSession } from "@/stores/Session/api";
 import { useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import { observer } from "mobx-react-lite";
@@ -241,7 +242,17 @@ const Chat = () => {
         if (!currentSession) return;
 
         try {
-            await gamesStore.finishSession(currentSession.id, "Тут будет описание");
+            let summary = "Тут будет описание";
+            try {
+                const summaryResponse = await apiSession.summarize(currentSession.id);
+                if (summaryResponse.status === 200 && summaryResponse.data?.text) {
+                    summary = summaryResponse.data.text;
+                }
+            } catch (e) {
+                console.warn("Ошибка при генерации summary через ML API:", e);
+            }
+
+            await gamesStore.finishSession(currentSession.id, summary);
             router.replace("/(app)/main");
         } catch (e) {
             console.warn("Ошибка при завершении сессии", e);
