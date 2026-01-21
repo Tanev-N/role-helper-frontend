@@ -111,6 +111,15 @@ export const apiSession = {
   },
 
   async summarize(sessionId: string) {
-    return await axios.get(apiSessionUrl.summarize(sessionId));
+    const url = apiSessionUrl.summarize(sessionId);
+    console.log("apiSession.summarize: запрос к", url);
+    try {
+      const response = await axios.get(url);
+      console.log("apiSession.summarize: успешный ответ", response.status, response.data);
+      return response;
+    } catch (error: any) {
+      console.error("apiSession.summarize: ошибка", error.response?.data || error.message);
+      throw error;
+    }
   },
 };

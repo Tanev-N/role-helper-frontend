@@ -217,24 +217,46 @@ const SessionDetailsScreen = observer(() => {
 
   useEffect(() => {
     const loadSummary = async () => {
-      if (!id) return;
-      
+      if (!id) {
+        console.log("loadSummary: нет id");
+        return;
+      }
+
+      // Сначала проверяем, есть ли summary в session из базы
       if (session?.summary) {
+        console.log("loadSummary: используем summary из базы", session.summary);
         setSummaryText(session.summary);
         return;
       }
 
+      // Если нет в базе, загружаем через API
+      console.log("loadSummary: загружаем через API для session_id", id);
       try {
         const response = await apiSession.summarize(id as string);
-        if (response.status === 200 && response.data?.text) {
-          setSummaryText(response.data.text);
+        console.log("loadSummary: ответ API", response.status, response.data);
+        
+        if (response.status === 200) {
+          // Проверяем разные возможные форматы ответа
+          const text = response.data?.text || response.data?.data?.text || response.data?.summary;
+          if (text) {
+            console.log("loadSummary: установлен текст", text);
+            setSummaryText(text);
+          } else {
+            console.warn("loadSummary: текст не найден в ответе", response.data);
+          }
         }
-      } catch (error) {
-        console.warn("Ошибка при загрузке описания сессии:", error);
+      } catch (error: any) {
+        console.error("Ошибка при загрузке описания сессии:", error);
+        console.error("Детали ошибки:", error.response?.data, error.response?.status);
       }
     };
 
-    loadSummary();
+    // Загружаем после небольшой задержки, чтобы session успел загрузиться
+    const timer = setTimeout(() => {
+      loadSummary();
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [id, session?.summary]);
 
   // Этот useEffect больше не нужен, так как загрузка происходит выше
